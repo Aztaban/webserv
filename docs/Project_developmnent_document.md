@@ -1,22 +1,22 @@
 # Webserv - Project Development Document
 
 ## Table of content
-- [1. Project goal](#1-project-goal)
-- [2. Constraints](#2-constraints)
-- [3. Development strategy](#3-development-strategy)
-- [4. High-level architecture](#4-high-level-architecture)
-- [5. Core classes / responsibilites](#5-core-classes--responsibilities)
-- [6. Connection lifecycle design](#6-connection-lifecycle-design)
-- [7. Minimal HTTP feature scope for first working version](#7-minimal-http-feature-scope-for-first-working-version)
-- [8. Important design decisions to settle early](#8-important-design-decisions-to-settle-early)
-- [9. Major risks and how to reduce them](#9-major-risks-and-how-to-reduce-them)
-- [10. Recommended data model](#10-recommended-data-model)
-- [11. Testing strategy from the beginning](#11-testing-strategy-from-the-beginning)
-- [12. Concrete milestone plan](#12-concrete-milestone-plan)
-- [13. First draft of team split for 3 people](#13-first-draft-of-team-split-for-3-people)
-- [14. Team workflow recommendation](#14-team-workflow-recommendation)
-- [15. Definition of done for mandatory part](#15-definition-of-done-for-mandatory-part)
-- [16. Recommended documents to maintain during development](#16-recommended-documents-to-maintain-during-development)
+1. [Project goal](#1-project-goal)
+2. [Constraints](#2-constraints)
+3. [Development strategy](#3-development-strategy)
+4. [High-level architecture](#4-high-level-architecture)
+5. [Core classes / responsibilites](#5-core-classes--responsibilities)
+6. [Connection lifecycle design](#6-connection-lifecycle-design)
+7. [Minimal HTTP feature scope for first working version](#7-minimal-http-feature-scope-for-first-working-version)
+8. [Important design decisions to settle early](#8-important-design-decisions-to-settle-early)
+9. [Major risks and how to reduce them](#9-major-risks-and-how-to-reduce-them)
+10. [Recommended data model](#10-recommended-data-model)
+11. [Testing strategy from the beginning](#11-testing-strategy-from-the-beginning)
+12. [Concrete milestone plan](#12-concrete-milestone-plan)
+13. [First draft of team split for 3 people](#13-first-draft-of-team-split-for-3-people)
+14. [Team workflow recommendation](#14-team-workflow-recommendation)
+15. [Definition of done for mandatory part](#15-definition-of-done-for-mandatory-part)
+16. [Recommended documents to maintain during development](#16-recommended-documents-to-maintain-during-development)
 
 ## 1. Project goal
 
@@ -30,6 +30,8 @@ Build a non-blocking HTTP server in **C++98** that can:
 - support CGI execution,
 - listen on multiple ports,
 - stay stable under stress.
+
+---
 
 ## 2. Constraints
 
@@ -70,6 +72,7 @@ The project is not only about “it works once”. It will be checked for:
 - ability to explain architecture and decisions,
 - testing quality.
 
+---
 
 ## 3. Development strategy
 
@@ -92,6 +95,7 @@ Recommended order:
 
 Reason: the project becomes manageable only if the event loop and connection lifecycle are stable first.
 
+---
 
 ## 4. High-level architecture
 
@@ -134,6 +138,7 @@ Reason: the project becomes manageable only if the event loop and connection lif
     - String helpers
     - Test configs and demo content
 
+---
 
 ## 5. Core classes / responsibilities
 
@@ -192,6 +197,7 @@ Reason: the project becomes manageable only if the event loop and connection lif
 - `StatusCode`
 - `Logger`
 
+---
 
 ## 6. Connection lifecycle design
 
@@ -217,6 +223,7 @@ Reason: the project becomes manageable only if the event loop and connection lif
 13. Close or keep-alive according to chosen behavior/support level
 14. Clean up fd and memory safely
 
+---
 
 ## 7. Minimal HTTP feature scope for first working version
 
@@ -250,6 +257,7 @@ Reason: the project becomes manageable only if the event loop and connection lif
 - NGINX comparison
 - documentation cleanup
 
+---
 
 ## 8. Important design decisions to settle early
 
@@ -295,6 +303,7 @@ Prevent broken path resolution and traversal issues:
 - check route root joins carefully,
 - validate upload target directories.
 
+---
 
 ## 9. Major risks and how to reduce them
 
@@ -329,6 +338,7 @@ Prevent broken path resolution and traversal issues:
 
 `Mitigation:` compare against browser behavior, curl, telnet, and NGINX regularly.
 
+---
 
 ## 10. Recommended data model
 
@@ -362,6 +372,8 @@ Prevent broken path resolution and traversal issues:
 - bytes sent
 - last activity time
 - CGI metadata if active
+
+---
 
 ## 11. Testing strategy from the beginning
 
@@ -411,6 +423,7 @@ Testing cannot be postponed to the end.
 
 Every bug found during manual testing should produce a reproducible test case.
 
+---
 
 ## 12. Concrete milestone plan
 
@@ -458,6 +471,7 @@ Every bug found during manual testing should produce a reproducible test case.
 - compare with NGINX
 - README and evaluator demo prep
 
+---
 
 ## 13. First draft of team split for 3 people
 
@@ -495,6 +509,7 @@ All three should understand:
 
 Nobody should own a subsystem that only they can explain.
 
+---
 
 ## 14. Team workflow recommendation
 
@@ -510,6 +525,7 @@ Suggested recurring team routine:
 - quick demo after each milestone
 - add tests before moving to next big subsystem
 
+---
 
 ## 15. Definition of done for mandatory part
 
@@ -526,6 +542,7 @@ You are ready for evaluation only when you can demonstrate:
 - server stays alive under stress and bad input,
 - every teammate can explain the architecture.
 
+---
 
 ## 16. Recommended documents to maintain during development
 
