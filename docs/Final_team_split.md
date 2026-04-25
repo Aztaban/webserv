@@ -30,6 +30,6 @@
 
 # Integration Points to Watch
 The moments where your work connects are the riskiest — plan for them explicitly:
-A ↔ B: Person A reads raw bytes from the socket and hands them to B's parser. Agree on the interface early (a buffer? a string? a class method?).
-B ↔ C: Person B needs the config/route data from C to know what to serve and how. The Location struct is shared.
-C ↔ A: CGI uses fork() and pipes — the file descriptors from CGI need to be registered with A's poll() loop.
+- A ↔ B: Person A reads raw bytes from the socket and hands them to B's parser. Agree on the interface early (a buffer? a string? a class method?).
+- B ↔ C: Person B needs the config/route data from C to know what to serve and how. The Location struct is shared.
+- C ↔ A: CGI uses fork() and pipes — the file descriptors from CGI need to be registered with A's poll() loop.
