@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import time
@@ -60,3 +62,123 @@ def start_server():
     
     return server
 
+def stop_server(server):
+    if server.poll() is None;
+    server.terminate()
+    try:
+        server.wait(timeout=2)
+    except subprocess.TimeoutExpired:
+        server.kill()
+        server.wait()
+
+def send_raw_request(request):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(2)
+    sock.connect(HOST, PORT)
+    sock.sendall(request.encode("utf-8"))
+
+    chunks = []
+
+    while True:
+        try:
+            data = sock.recv(4096)
+            if not data:
+                break
+            chunks.append(data)
+        except socket.timout:
+            break
+
+        sock.close()
+
+        response = b"".join(chunks)
+        return response.decode("utf-8", errors="replace")
+
+def test_server_accepts_connection():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(2)
+    sock.connect(HOST, PORT)
+    sock.close()
+
+def test_get_root_returns_200():
+    response = send_raw_request(
+        "GET / HTTP/1.1\r\n"
+        "Host: localhost\r\n\"
+        "\r\n"
+    )
+
+    assert_in("HTTP/1.1 200", response , "GET / should return 200")
+
+def test_get_index_contains_test_text():
+    response = send_raw_request(
+        "GET /index.html HTTP/1.1\r\n"
+        "Host: localhost\r\n"
+        "\r\n"
+    )
+
+    assert_in("Webserv Test Index", response, "index page body should be returned")
+
+def test_missing_file_returns_404():
+    response = send_raw_request(
+        "GET /missing.html HTTP/1.1\r\n"
+        "Host: localhost\r\n"
+        "\r\n"
+    )
+
+    assert_in("404", response, "missing file should return 404")
+
+def test_unsupported_method_returns_405():
+    response = send_raw_request(
+        "PUT / HTTP/1.1\r\n"
+        "Host: localhost\r\n"
+        "\r\n"
+    )
+
+    assert_in("405", response, "unsupported method should return 405")
+
+def run_test(name, function):
+    try:
+        function()
+        print_ok(name)
+        return True
+    except Exception as error:
+        print_fail(name + " -> " + str(error))
+        return False
+
+def main():
+    server = None
+
+    tests = [
+        ("server accepts connection", test_server_accepts_connection),
+        ("GET / returns 200", test_get_root_returns_200),
+        ("GET /index.html contains test text", test_get_index_contains_test_text),
+        ("GET /missing.html returns 404", test_missing_file_returns_404),
+        ("PUT / returns 405", test_unsupported_method_returns_405),
+    ]
+
+    try:
+        server = start_server()
+
+        passed = 0
+
+        for name, function in tests:
+            if run_test(name, function):
+                passed += 1
+
+        print()
+        print("Result: {}/{} tests passed".format(passed, len(tests)))
+
+        if passed != len(tests):
+            return 1
+
+        return 0
+
+    except Exception as error:
+        print_fail(str(error))
+        return 1
+
+    finally:
+        if server is not None:
+            stop_server(server)
+
+if __name__ == "__main__":
+    sys.exit(main())
