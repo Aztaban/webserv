@@ -33,3 +33,5 @@ public:
     void        writeToSocket();
 
 };
+
+#endif
