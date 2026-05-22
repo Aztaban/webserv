@@ -35,7 +35,7 @@ void    EventLoop::addPollFd(int fd, short events)
 
     pfd.fd = fd;
     pfd.events = events;
-    pvd.revents = 0;
+    pfd.revents = 0;
 
     _pollFds.push_back(pfd);
 }
@@ -72,7 +72,7 @@ void    EventLoop::addClient(int clientFd)
 
 void    EventLoop::removeClient(int clientFd)
 {
-    std:map<int, ClientConnection *>::iterator it = _clients.find(clientFd);
+    std::map<int, ClientConnection *>::iterator it = _clients.find(clientFd);
     if (it != _clients.end())
     {
         delete it->second;
@@ -93,7 +93,7 @@ void    EventLoop::updateClientEvents(int fd)
         events |= POLLIN;
     if (client->wantsWrite())
         events |= POLLOUT;
-    for (std:::size_t i = 0; i < _pollFds.size(); i++)
+    for (std::size_t i = 0; i < _pollFds.size(); i++)
     {
         if (_pollFds[i].fd == fd)
         {
@@ -121,7 +121,7 @@ void    EventLoop::handleClientEvent(int fd, short revents)
     if (it == _clients.end())
         return;
     ClientConnection    *client = it->second;
-    if (revents & (POLLER | POLLHUP | POLLNVAL))
+    if (revents & (POLLERR | POLLHUP | POLLNVAL))
     {
         removeClient(fd);
         return;
@@ -132,7 +132,7 @@ void    EventLoop::handleClientEvent(int fd, short revents)
         client->writeToSocket();
     if (!isClientFd(fd))
         return;
-    if (client->isdone())
+    if (client->isDone())
         removeClient(fd);
     else
         updateClientEvents(fd);

@@ -50,7 +50,7 @@ void    ClientConnection::readFromSocket()
     _readBuffer.append(buffer, bytes);
     if (_readBuffer.find("\r\n\r\n") != std::string::npos)
     {
-        prepareHardcodedResponse();
+        prepareHardcodeResponse();
         _state = CLIENT_WRITING;
     }
 }
@@ -73,7 +73,7 @@ void    ClientConnection::writeToSocket()
         _state = CLIENT_DONE;
 }
 
-void ClientConnection::prepareHardcodedResponse()
+void ClientConnection::prepareHardcodeResponse()
 {
     std::string body =
         "<!DOCTYPE html>\n"

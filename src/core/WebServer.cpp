@@ -4,7 +4,7 @@ WebServer::WebServer(const ServerConfig& config) : _config(config) {}
 
 WebServer::~WebServer()
 {
-    for (std::size-t i = 0; i < _listeners.size(); i++)
+    for (std::size_t i = 0; i < _listeners.size(); i++)
         delete _listeners[i];
 }
 

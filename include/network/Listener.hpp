@@ -16,7 +16,7 @@ public:
     Listener(const std::string& host, int port);
     ~Listener();
 
-    void    setup()
+    void    setup();
     int     getFd() const;
     int     getPort() const;
 

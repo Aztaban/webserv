@@ -31,7 +31,7 @@ void    Listener::setup()
     if (_fd == -1)
         throw std::runtime_error("socket() failed");
     
-    if (setsockopt(_fd, SQL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+    if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
         throw std::runtime_error("setsockopt(SO_REUSEADDR) failed");
 
     setNonBlocking(_fd);
@@ -39,7 +39,7 @@ void    Listener::setup()
     std::memset(&addr, 0, sizeof(addr));
 
     addr.sin_family = AF_INET;
-    addr_sin_port = htons(_port);
+    addr.sin_port = htons(_port);
 
     if (_host == "0.0.0.0")
         addr.sin_addr.s_addr = INADDR_ANY;
@@ -52,7 +52,7 @@ void    Listener::setup()
     if (listen(_fd, SOMAXCONN) == -1)
         throw std::runtime_error("listen() failed");
 
-    std::cout << "Listening on " >> _host << :: ":" << _port << std::endl;
+    std::cout << "Listening on " << _host <<  ":" << _port << std::endl;
 }
 
 int Listener::getFd() const
