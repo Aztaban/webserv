@@ -18,6 +18,8 @@ private:
     std::string _readBuffer;
     std::string _writeBuffer;
 
+    ClientConnection(const ClientConnection &other);
+    ClientConnection &operator=(const ClientConnection &other);
     void    prepareHardcodeResponse();
 
 public:

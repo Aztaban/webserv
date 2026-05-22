@@ -19,7 +19,8 @@ SRCS := \
 	$(SRC_DIR)/core/WebServer.cpp \
 	$(SRC_DIR)/network/Listener.cpp \
 	$(SRC_DIR)/network/ClientConnection.cpp \
-	$(SRC_DIR)/network/EventLoop.cpp
+	$(SRC_DIR)/network/EventLoop.cpp \
+	$(SRC_DIR)/utils/Logger.cpp
 
 OBJS := $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)

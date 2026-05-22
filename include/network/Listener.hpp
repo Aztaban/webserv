@@ -10,6 +10,8 @@ private:
     int         _port;
     int         _fd;
 
+    Listener(const Listener &other);
+    Listener &operator=(const Listener &other);
     void    setNonBlocking(int fd);
 
 public:

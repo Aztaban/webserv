@@ -1,5 +1,6 @@
 #include "core/WebServer.hpp"
 #include "config/ServerConfig.hpp"
+#include "utils/Logger.hpp"
 
 #include <iostream>
 #include <string>
@@ -9,7 +10,7 @@ int main(int argc, char **argv)
 {
     if (argc > 2)
     {
-        std::cerr << "Usage: ./webserv [configuration file]" << std::endl;
+        Logger::error("Usage: ./webserv [configuration file]");
         return 1;
     }
 
@@ -19,6 +20,9 @@ int main(int argc, char **argv)
         configPath = argv[1];
     else
         configPath = "conf/default.conf";
+
+    Logger::info("Starting webserv");
+    Logger::debug("Config path: " + configPath);
 
     try
     {
@@ -41,7 +45,7 @@ int main(int argc, char **argv)
     }
     catch (const std::exception &e)
     {
-        std::cerr << "webserv: " << e.what() << std::endl;
+        Logger::error(std::string("webserv: ") + e.what());
         return 1;
     }
 
