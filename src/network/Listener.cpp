@@ -78,8 +78,13 @@ int Listener::acceptClient() const
     struct      sockaddr_in clientAddr;
     socklen_t   clientLen = sizeof(clientAddr);
 
+    std::memset(&clientAddr, 0, sizeof(clientAddr));
+
     int clientFd = accept(_fd, reinterpret_cast<struct sockaddr *>(&clientAddr), &clientLen);
+    if (clientFd == -1)
+        return (-1);
+        
     Logger::info("Accepted client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + toString(ntohs(clientAddr.sin_port)));
-    
+
     return (clientFd);
 }
