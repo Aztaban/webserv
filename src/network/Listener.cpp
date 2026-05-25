@@ -1,7 +1,10 @@
 #include "network/Listener.hpp"
+#include "utils/Logger.hpp"
+
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -24,6 +27,7 @@ void    Listener::setNonBlocking(int fd)
 
 void    Listener::setup() 
 {
+    Logger::debug("Creating listening socket");
     struct sockaddr_in addr;
     int opt = 1;
 
@@ -34,6 +38,7 @@ void    Listener::setup()
     if (setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
         throw std::runtime_error("setsockopt(SO_REUSEADDR) failed");
 
+    Logger::debug("Setting listener fd " + toString(_fd) + " non-blocking");
     setNonBlocking(_fd);
 
     std::memset(&addr, 0, sizeof(addr));
@@ -46,13 +51,15 @@ void    Listener::setup()
     else
         addr.sin_addr.s_addr = inet_addr(_host.c_str());
 
+    Logger::debug("Binding listener socket");
     if (bind(_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
         throw std::runtime_error("bind() failed");
 
+    Logger::debug("Starting listen()");
     if (listen(_fd, SOMAXCONN) == -1)
         throw std::runtime_error("listen() failed");
 
-    std::cout << "Listening on " << _host <<  ":" << _port << std::endl;
+    Logger::info("Listening on " + _host + ":" + toString(_port));
 }
 
 int Listener::getFd() const

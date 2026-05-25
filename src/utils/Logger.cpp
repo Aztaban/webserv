@@ -16,7 +16,7 @@ void    Logger::setDebug(bool enabled)
 std::string Logger::getTimestamp()
 {
     std::time_t now = std::time(NULL);
-    std::tm *timeinfo = std::localtime(&now);
+    std::tm *timeInfo = std::localtime(&now);
 
     char    buffer[32];
 
@@ -37,7 +37,7 @@ std::string Logger::levelToString(LogLevel level)
             return "INFO";
         case LOG_WARN:
             return "WARN";
-        case LOG_ERROR;
+        case LOG_ERROR:
             return "ERROR";
         default:
             return "UNKNOWN";

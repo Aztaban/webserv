@@ -12,7 +12,7 @@ enum LogLevel
     LOG_ERROR
 };
 
-class LOGGER_HPP {
+class Logger {
 
 private:
     Logger();
@@ -27,10 +27,10 @@ private:
 public:
     static void setDebug(bool enabled);
     static void log(LogLevel level, const std::string& message);
-    static void debug(const std::string);
-    static void info(const std::string);
-    static void warn(const std::string);
-    static void error(const std::string);
+    static void debug(const std::string& message);
+    static void info(const std::string& message);
+    static void warn(const std::string& message);
+    static void error(const std::string& message);
 
 };
 

@@ -1,6 +1,8 @@
 #include "network/ClientConnection.hpp"
+#include "utils/Logger.hpp"
 
 #include <sstream>
+
 #include <unistd.h>
 #include <sys/socket.h>
 
@@ -44,14 +46,22 @@ void    ClientConnection::readFromSocket()
 
     if (bytes <= 0)
     {
+        Logger::debug("Client fd " + toString(_fd) + " disconnected during read");
         _state = CLIENT_DONE;
         return;
     }
+
+    Logger::debug("Client fd " + toString(_fd) + " read " + toString(bytes) + " byte(s)");
+    
     _readBuffer.append(buffer, bytes);
     if (_readBuffer.find("\r\n\r\n") != std::string::npos)
     {
+        Logger::debug("Client fd " + toString(_fd) + " headers complete");
+
         prepareHardcodeResponse();
         _state = CLIENT_WRITING;
+
+        Logger::debug("Client fd " + toString(_fd) + " switched to WRITING_RESPONSE");
     }
 }
 
@@ -65,9 +75,13 @@ void    ClientConnection::writeToSocket()
     int bytes = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
     if (bytes <= 0)
     {
+        Logger::debug("Client fd " + toString(_fd) + " disconnected during write");
         _state = CLIENT_DONE;
         return;
     }
+    
+    Logger::debug("Client fd " + toString(_fd) + " sent " + toString(bytes) + " byte(s)");
+    
     _writeBuffer.erase(0, bytes);
     if (_writeBuffer.empty())
         _state = CLIENT_DONE;

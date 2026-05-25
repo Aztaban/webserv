@@ -1,4 +1,5 @@
 #include "network/EventLoop.hpp"
+#include "utils/Logger.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -27,6 +28,7 @@ void    EventLoop::addListener(Listener *listener)
 
     _listeners[fd] = listener;
     addPollFd(fd, POLLIN);
+    Logger::debug("Registered listener fd " + toString(fd) + " in poll");
 }
 
 void    EventLoop::addPollFd(int fd, short events)
@@ -67,7 +69,7 @@ void    EventLoop::addClient(int clientFd)
     setNonBlocking(clientFd);
     _clients[clientFd] = new ClientConnection(clientFd);
     addPollFd(clientFd, POLLIN);
-    std::cout << "Client connected: fd " << clientFd << std::endl;
+    Logger::info("Client connected: fd " + toString(clientFd));
 }
 
 void    EventLoop::removeClient(int clientFd)
@@ -79,7 +81,7 @@ void    EventLoop::removeClient(int clientFd)
         _clients.erase(it);
     }
     removePollFd(clientFd);
-    std::cout << "Client closed: fd " << clientFd << std::endl;
+    Logger::info("Client closed: fd " + toString(clientFd));
 }
 
 void    EventLoop::updateClientEvents(int fd)
@@ -99,6 +101,7 @@ void    EventLoop::updateClientEvents(int fd)
         {
             _pollFds[i].events = events;
             _pollFds[i].revents = 0;
+            Logger::debug("Updated client fd " + toString(fd) + " events to " + toString(events));
             return;
         }
     }
@@ -106,6 +109,8 @@ void    EventLoop::updateClientEvents(int fd)
 
 void    EventLoop::handleListenerEvent(int fd)
 {
+    Logger::debug("Listener fd " + toString(fd) + " is readable");
+
     Listener    *listener = _listeners[fd];
     int         clientFd = listener->acceptClient();
 
@@ -116,6 +121,8 @@ void    EventLoop::handleListenerEvent(int fd)
 
 void    EventLoop::handleClientEvent(int fd, short revents)
 {
+    Logger::debug("Client fd " + toString(fd) + " event: " + toString(revents));
+
     std::map<int, ClientConnection *>::iterator it = _clients.find(fd);
 
     if (it == _clients.end())
@@ -140,6 +147,8 @@ void    EventLoop::handleClientEvent(int fd, short revents)
 
 void    EventLoop::run()
 {
+    Logger::info("Event loop started");
+
     while (true)
     {
         if (_pollFds.empty())
@@ -147,6 +156,8 @@ void    EventLoop::run()
         int ready = poll(&_pollFds[0], _pollFds.size(), -1);
         if (ready == -1)
             throw std::runtime_error("poll() failed");
+
+        Logger::debug("poll() returned " + toString(ready) + " ready fd(s)");
         std::vector<struct pollfd>  readyFds = _pollFds;
         for (std::size_t i = 0; i < readyFds.size(); i++)
         {
