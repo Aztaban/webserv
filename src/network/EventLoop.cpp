@@ -4,7 +4,6 @@
 #include <stdexcept>
 #include <iostream>
 
-#include <unistd.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 
@@ -152,7 +151,7 @@ void    EventLoop::run()
     while (true)
     {
         if (_pollFds.empty())
-            throw std::runtime_error("now file descriptors registered in event loop");
+            throw std::runtime_error("no file descriptors registered in event loop");
         int ready = poll(&_pollFds[0], _pollFds.size(), -1);
         if (ready == -1)
             throw std::runtime_error("poll() failed");
