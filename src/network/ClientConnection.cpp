@@ -6,7 +6,9 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-ClientConnection::ClientConnection(int fd) : _fd(fd), _state(CLIENT_READING) {}
+ClientConnection::ClientConnection(int fd) : _fd(fd), _state(CLIENT_READING)
+{
+}
 
 ClientConnection::~ClientConnection()
 {
@@ -26,11 +28,13 @@ ClientState ClientConnection::getState() const
 
 bool    ClientConnection::wantsRead() const
 {
+    /* reading heder, reading body */
     return (_state == CLIENT_READING);
 }
 
 bool    ClientConnection::wantsWrite() const
 {
+    /* true when response ready in buffer. */
     return (_state == CLIENT_WRITING);
 }
 
@@ -54,9 +58,13 @@ void    ClientConnection::readFromSocket()
     Logger::debug("Client fd " + toString(_fd) + " read " + toString(bytes) + " byte(s)");
     
     _readBuffer.append(buffer, bytes);
+
+    /* TODO plug http parser here. */
     if (_readBuffer.find("\r\n\r\n") != std::string::npos)
     {
         Logger::debug("Client fd " + toString(_fd) + " headers complete");
+
+        /* TODO PLUG RESPONSE BUILDER HERE*/
 
         prepareHardcodeResponse();
         _state = CLIENT_WRITING;

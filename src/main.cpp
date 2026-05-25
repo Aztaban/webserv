@@ -39,6 +39,8 @@ int main(int argc, char **argv)
 
         ServerConfig config("127.0.0.1", 8000);
 
+        /* TODO multi-server config here*/
+
         WebServer server(config);
         server.setup();
         server.run();

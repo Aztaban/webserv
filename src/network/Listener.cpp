@@ -3,7 +3,6 @@
 
 #include <stdexcept>
 #include <cstring>
-#include <iostream>
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -11,7 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-Listener::Listener(const std::string& host, int port) : _host(host), _port(port) {}
+Listener::Listener(const std::string& host, int port) : _host(host), _port(port) , _fd(-1) {}
 
 Listener::~Listener()
 {
@@ -27,7 +26,7 @@ void    Listener::setNonBlocking(int fd)
 
 void    Listener::setup() 
 {
-    Logger::debug("Creating listening socket");
+    Logger::debug("Creating listening IPv4 socket");
     struct sockaddr_in addr;
     int opt = 1;
 
@@ -50,6 +49,8 @@ void    Listener::setup()
         addr.sin_addr.s_addr = INADDR_ANY;
     else
         addr.sin_addr.s_addr = inet_addr(_host.c_str());
+    if (addr.sin_addr.s_addr == INADDR_NONE)
+        throw std::runtime_error("invalid host address");
 
     Logger::debug("Binding listener socket");
     if (bind(_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
@@ -78,6 +79,7 @@ int Listener::acceptClient() const
     socklen_t   clientLen = sizeof(clientAddr);
 
     int clientFd = accept(_fd, reinterpret_cast<struct sockaddr *>(&clientAddr), &clientLen);
-
+    Logger::info("Accepted client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + toString(ntohs(clientAddr.sin_port)));
+    
     return (clientFd);
 }
