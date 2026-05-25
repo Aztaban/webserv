@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <ctime>
 
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -111,11 +112,13 @@ void    EventLoop::handleListenerEvent(int fd)
     Logger::debug("Listener fd " + toString(fd) + " is readable");
 
     Listener    *listener = _listeners[fd];
-    int         clientFd = listener->acceptClient();
-
-    if (clientFd == -1)
-        return;
-    addClient(clientFd);
+    while (true)
+    {
+        int clientFd = listener->acceptClient();
+        if (clientFd == -1)
+            return;
+        addClient(clientFd);
+    }
 }
 
 void    EventLoop::handleClientEvent(int fd, short revents)
@@ -152,11 +155,15 @@ void    EventLoop::run()
     {
         if (_pollFds.empty())
             throw std::runtime_error("no file descriptors registered in event loop");
-        int ready = poll(&_pollFds[0], _pollFds.size(), -1);
+        int ready = poll(&_pollFds[0], _pollFds.size(), 1000);
         if (ready == -1)
             throw std::runtime_error("poll() failed");
+        removeTimedOutClients();
+        if (ready == 0)
+            continue;
 
         Logger::debug("poll() returned " + toString(ready) + " ready fd(s)");
+        
         std::vector<struct pollfd>  readyFds = _pollFds;
         for (std::size_t i = 0; i < readyFds.size(); i++)
         {
@@ -170,5 +177,23 @@ void    EventLoop::run()
             else if (isClientFd(fd))
                 handleClientEvent(fd, revents);
         }
+    }
+}
+
+void    EventLoop::removeTimedOutClients()
+{
+    std::time_t         now = std::time(NULL);
+    std::vector<int>    timedOutFds;
+
+    for (std::map<int, ClientConnection *>::iterator it = _clients.begin(); it != _clients.end(); it++)
+    {
+        if (it->second->isTimedOut(now, CLIENT_TIMEOUT_SECONDS))
+            timedOutFds.push_back(it->first);
+    }
+
+    for (std::size_t i = 0; i < timedOutFds.size(); i++)
+    {
+        Logger::warn("Client timed out: fd " + toString(timedOutFds[i]));
+        removeClient(timedOutFds[i]);
     }
 }

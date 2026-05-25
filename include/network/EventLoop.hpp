@@ -3,13 +3,17 @@
 
 # include "network/Listener.hpp"
 # include "network/ClientConnection.hpp"
+
 # include <vector>
 # include <map>
+
 # include <poll.h>
 
 class EventLoop {
 
 private:
+    static const int    CLIENT_TIMEOUT_SECONDS = 30;
+
     std::vector<struct pollfd>          _pollFds;
     std::map<int, Listener *>           _listeners;
     std::map<int, ClientConnection *>   _clients;
@@ -25,6 +29,7 @@ private:
     void    addClient(int clientFd);
     void    removeClient(int clientFd);
     void    setNonBlocking(int fd);
+    void    removeTimedOutClients();
 
 public:
     EventLoop();
