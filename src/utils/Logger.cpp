@@ -1,4 +1,5 @@
 #include "utils/Logger.hpp"
+#include "utils/Colors.hpp"
 
 #include <iostream>
 #include <ctime>
@@ -11,6 +12,23 @@ Logger::~Logger() {}
 void    Logger::setDebug(bool enabled)
 {
     _debugEnabled = enabled;
+}
+
+std::string Logger::levelToColor(LogLevel level)
+{
+    switch (level)
+    {
+    case LOG_DEBUG:
+        return RESET;
+    case LOG_INFO:
+        return BLUE;
+    case LOG_WARN:
+        return YELLOW;
+    case LOG_ERROR:
+        return RED;
+    default:
+        return RESET;
+    }
 }
 
 std::string Logger::getTimestamp()
@@ -49,8 +67,8 @@ void    Logger::log(LogLevel level, const std::string& message)
     if (level == LOG_DEBUG && !_debugEnabled)
         return;
     std::ostream& out = (level == LOG_ERROR) ? std::cerr : std::cout;
-    out << "[" << getTimestamp() << "] " << "[" << levelToString(level) << "] "
-        << message << std::endl;
+    out << levelToColor(level) << "[" << getTimestamp() << "] " << "[" << levelToString(level)
+        << "] " << message << RESET << std::endl;
 }
 
 void    Logger::debug(const std::string& message)

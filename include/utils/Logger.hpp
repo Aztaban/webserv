@@ -23,6 +23,7 @@ private:
     static bool         _debugEnabled;
     static std::string  getTimestamp();
     static std::string  levelToString(LogLevel level);
+    static std::string  levelToColor(LogLevel level);
 
 public:
     static void setDebug(bool enabled);

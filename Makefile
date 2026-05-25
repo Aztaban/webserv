@@ -40,7 +40,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	@printf "$(BLU)Link$(RESET)   $(NAME)... "
 	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) && \
-		printf "%-22s[$(GRN)OK$(RESET)]\n" || \
+		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
 		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
 
 $(OBJ_DIR)/%.o: %.cpp
