@@ -14,7 +14,13 @@ RM := rm -rf
 
 # -------- Sources --------
 SRCS := \
-	(SRC_DIR)/main.cpp \
+	$(SRC_DIR)/main.cpp \
+	$(SRC_DIR)/config/ServerConfig.cpp \
+	$(SRC_DIR)/core/WebServer.cpp \
+	$(SRC_DIR)/network/Listener.cpp \
+	$(SRC_DIR)/network/ClientConnection.cpp \
+	$(SRC_DIR)/network/EventLoop.cpp \
+	$(SRC_DIR)/utils/Logger.cpp
 
 OBJS := $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
@@ -34,7 +40,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	@printf "$(BLU)Link$(RESET)   $(NAME)... "
 	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) && \
-		printf "%-22s[$(GRN)OK$(RESET)]\n" || \
+		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
 		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
 
 $(OBJ_DIR)/%.o: %.cpp
