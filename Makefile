@@ -16,10 +16,16 @@ RM := rm -rf
 SRCS := \
 	$(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/config/ServerConfig.cpp \
+	$(SRC_DIR)/core/RequestHandler.cpp \
 	$(SRC_DIR)/core/WebServer.cpp \
+	$(SRC_DIR)/http/HttpRequest.cpp \
+	$(SRC_DIR)/http/HttpRequestParser.cpp \
+	$(SRC_DIR)/http/HttpResponse.cpp \
+	$(SRC_DIR)/http/HttpResponseBuilder.cpp \
 	$(SRC_DIR)/network/Listener.cpp \
 	$(SRC_DIR)/network/ClientConnection.cpp \
 	$(SRC_DIR)/network/EventLoop.cpp \
+	$(SRC_DIR)/routing/Router.cpp \
 	$(SRC_DIR)/utils/Logger.cpp
 
 OBJS := $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
