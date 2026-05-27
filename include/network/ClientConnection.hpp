@@ -37,7 +37,6 @@ private:
     void        processReadBuffer();  // TEMP: replace with HttpRequestParser state handling
     void        parseTempContentLength(); // TEMP: replace with parser header parsing
     std::size_t getBodyBytesReceived() const; // TEMP: parser/request object should know this later
-    void        prepareHardcodeResponse(); // TEMP: remove when HttpResponseBuilder is ready
     void        prepareErrorResponse(int code); // TEMP: later move to ErrorResponseBuilder / HttpResponseBuilder
 
 public:

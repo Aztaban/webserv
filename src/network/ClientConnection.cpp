@@ -1,5 +1,6 @@
 #include "network/ClientConnection.hpp"
 #include "utils/Logger.hpp"
+#include "core/RequestHandler.hpp"
 
 #include <sstream>
 
@@ -84,12 +85,14 @@ void ClientConnection::readFromSocket()
 
 void ClientConnection::writeToSocket()
 {
+    ssize_t bytes;
+
     if (_writeBuffer.empty())
     {
         _state = CLIENT_DONE;
         return;
     }
-    ssize_t bytes = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
+    bytes = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
     if (bytes <= 0)
     {
         Logger::debug("Client fd " + toString(_fd) + " disconnected during write");
@@ -126,23 +129,30 @@ std::size_t ClientConnection::getBodyBytesReceived() const
 
 void ClientConnection::parseTempContentLength()
 {
-    std::size_t pos = _readBuffer.find("Content-Length:"); // TEMP: replace with real header parsing
+    std::istringstream iss;
+    std::size_t pos;
+    std::size_t end;
+    std::string value;
 
     _contentLength = 0;
+    // TEMP: replace with real header parsing
+    pos = _readBuffer.find("Content-Length:");
     if (pos == std::string::npos)
         return;
     pos += std::string("Content-Length:").size();
     while (pos < _readBuffer.size() && (_readBuffer[pos] == ' ' || _readBuffer[pos] == '\t'))
         pos++;
-    std::size_t end = _readBuffer.find("\r\n", pos);
+    end = _readBuffer.find("\r\n", pos);
     if (end == std::string::npos)
         return;
 
-    std::string value = _readBuffer.substr(pos, end - pos);
-    std::istringstream iss(value);
+    value = _readBuffer.substr(pos, end - pos);
+    iss.str(value);
     iss >> _contentLength;
+
     if (iss.fail())
     {
+        Logger::error("Client fd " + toString(_fd) + " invalid Content-Length");
         prepareErrorResponse(400);
         _state = CLIENT_WRITING;
     }
@@ -153,14 +163,16 @@ void ClientConnection::processReadBuffer()
 {
     if (_state == CLIENT_READING_HEADERS)
     {
-        std::size_t pos = _readBuffer.find("\r\n\r\n");
+        std::size_t pos;
 
+        pos = _readBuffer.find("\r\n\r\n");
         if (pos == std::string::npos)
             return;
         _headerEnd = pos + 4;
         Logger::debug("Client fd " + toString(_fd) + " headers complete");
 
         parseTempContentLength();
+
         if (_state == CLIENT_WRITING)
             return;
         if (_contentLength > MAX_BODY_SIZE) // TEMP: max body size should come from matched server/location config
@@ -187,38 +199,10 @@ void ClientConnection::processReadBuffer()
     if (_state == CLIENT_PROCESSING)
     {
         // PLUG HERE: Router + HttpResponseBuilder
-        prepareHardcodeResponse();
+        _writeBuffer = RequestHandler::handleRawRequest(_readBuffer);
         _state = CLIENT_WRITING;
         Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
     }
-}
-
-// TEMP: remove when HttpResponseBuilder can create real responses
-void ClientConnection::prepareHardcodeResponse()
-{
-    std::string body =
-        "<!DOCTYPE html>\n"
-        "<html>\n"
-        "<head><title>webserv</title></head>\n"
-        "<body>\n"
-        "<h1>Hello from webserv</h1>\n"
-        "<p>Network core is alive.</p>\n"
-        "</body>\n"
-        "</html>\n";
-
-    std::ostringstream length;
-    length << body.size();
-
-    _writeBuffer =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        "Content-Length: ";
-
-    _writeBuffer += length.str();
-    _writeBuffer += "\r\n";
-    _writeBuffer += "Connection: close\r\n";
-    _writeBuffer += "\r\n";
-    _writeBuffer += body;
 }
 
 void ClientConnection::prepareErrorResponse(int code)
