@@ -1,5 +1,5 @@
-#ifndef WBSERVER_HPP
-# define WBSERVER_HPP
+#ifndef WEBSERVER_HPP
+# define WEBSERVER_HPP
 
 # include "config/ServerConfig.hpp"
 # include "network/Listener.hpp"
