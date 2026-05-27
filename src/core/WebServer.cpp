@@ -8,13 +8,19 @@ WebServer::~WebServer()
         delete _listeners[i];
 }
 
+// TEMP: later loop over std::vector<ServerConfig>
 void    WebServer::createListeners()
 {
-    Listener    *listener = new Listener(_config.getHost(), _config.getPort());
+    // TEMP: later create listeners from parsed config server blocks
+    Listener *listener1 = new Listener(_config.getHost(), _config.getPort());
+    listener1->setup();
+    _listeners.push_back(listener1);
+    _eventLoop.addListener(listener1);
 
-    listener->setup();
-    _listeners.push_back(listener);
-    _eventLoop.addListener(listener);
+    Listener    *listener2 = new Listener("127.0.0.1", 8001);
+    listener2->setup();
+    _listeners.push_back(listener2);
+    _eventLoop.addListener(listener2);
 }
 
 void WebServer::setup()

@@ -111,7 +111,11 @@ void EventLoop::handleListenerEvent(int fd)
 {
     Logger::debug("Listener fd " + toString(fd) + " is readable");
 
-    Listener *listener = _listeners[fd];
+    std::map<int, Listener *>::iterator it = _listeners.find(fd);
+    if (it == _listeners.end())
+        return;
+    
+    Listener    *listener = it->second;
     while (true)
     {
         int clientFd = listener->acceptClient();
