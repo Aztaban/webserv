@@ -6,12 +6,11 @@
 
 class HttpResponse
 {
-
-public:
-    std::map<std::string, std::string> headers;
-    std::string reasonPhrase;
-    std::string body;
-    int         statusCode;
+	public:
+		std::map<std::string, std::string> headers;
+		std::string reasonPhrase;
+		std::string body;
+		int         statusCode;
 };
 
 #endif
