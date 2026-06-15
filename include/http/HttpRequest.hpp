@@ -6,13 +6,13 @@
 
 class HttpRequest
 {
-
 	public:
 		std::map<std::string, std::string> headers;
+		std::string body;
+	
 		std::string method;
 		std::string target;
 		std::string version;
-		std::string body;
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 # include <string>
 
+//Converts response object -> raw HTTP string
 class HttpResponseBuilder
 {
 	public:

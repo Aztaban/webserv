@@ -3,13 +3,10 @@
 
 #include "http/HttpRequest.hpp"
 #include <string>
+#include <cstdlib>
 
 class HttpRequestParser
 {
-	private:
-		HttpRequest _request;
-		int         _errorStatusCode;
-
 	public:
 		enum ParseStatus
 		{
@@ -18,11 +15,26 @@ class HttpRequestParser
 			PARSE_ERROR
 		};
 
-		HttpRequestParser();
+	private:
+		HttpRequest _request;
+		int _errorStatusCode;
 
-		ParseStatus         parse(const std::string &rawRequest);
-		const HttpRequest&  getRequest() const;
-		int                 getErrorStatusCode() const;
-};
+		ParseStatus parseRequestLine(const std::string& requestLine);
+		ParseStatus parseHeaders(const std::string& rawRequest, size_t startPos);
+		ParseStatus validateRequest();
+
+		void reset();
+
+	public:
+		HttpRequestParser();
+		HttpRequestParser(const HttpRequestParser& other);
+		HttpRequestParser& operator=(const HttpRequestParser& other);
+		~HttpRequestParser();
+
+		ParseStatus parse(const std::string& rawRequest);
+
+		const HttpRequest& getRequest() const;
+		int getErrorStatusCode() const;
+	};
 
 #endif
