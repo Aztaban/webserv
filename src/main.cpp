@@ -37,11 +37,12 @@ int main(int argc, char **argv)
         */
         (void)configPath;
 
-        ServerConfig config("127.0.0.1", 8000);
+        std::vector<ServerConfig> configs;
 
-        /* TODO multi-server config here*/
+        configs.push_back(ServerConfig("127.0.0.1", 8000));
+        configs.push_back(ServerConfig("127.0.0.1", 8001));
 
-        WebServer server(config);
+        WebServer server(configs);
         server.setup();
         server.run();
     }

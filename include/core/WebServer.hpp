@@ -10,18 +10,18 @@
 class WebServer {
 
 private:
-    ServerConfig            _config;
-    std::vector<Listener *> _listeners;
-    EventLoop               _eventLoop;
+	std::vector<ServerConfig>	_configs;
+	std::vector<Listener *>		_listeners;
+	EventLoop					_eventLoop;
 
-    void    createListeners();
+	void	createListeners();
 
 public:
-    WebServer(const ServerConfig& config);
-    ~WebServer();
+	WebServer(const std::vector<ServerConfig>& configs);
+	~WebServer();
 
-    void    setup();
-    void    run();
+	void	setup();
+	void	run();
 
 };
 

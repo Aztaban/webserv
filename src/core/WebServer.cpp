@@ -1,34 +1,45 @@
 #include "core/WebServer.hpp"
+#include "utils/Logger.hpp"
 
-WebServer::WebServer(const ServerConfig& config) : _config(config) {}
+#include <stdexcept>
+#include <sstream>
+
+WebServer::WebServer(const std::vector<ServerConfig>& configs) : _configs(configs) {}
 
 WebServer::~WebServer()
 {
-    for (std::size_t i = 0; i < _listeners.size(); i++)
-        delete _listeners[i];
+	for (std::size_t i = 0; i < _listeners.size(); i++)
+		delete _listeners[i];
 }
 
-// TEMP: later loop over std::vector<ServerConfig>
-void    WebServer::createListeners()
+void	WebServer::createListeners()
 {
-    // TEMP: later create listeners from parsed config server blocks
-    Listener *listener1 = new Listener(_config.getHost(), _config.getPort());
-    listener1->setup();
-    _listeners.push_back(listener1);
-    _eventLoop.addListener(listener1);
+	if (_configs.empty())
+		throw std::runtime_error("No server configuration provided");
 
-    Listener    *listener2 = new Listener("127.0.0.1", 8001);
-    listener2->setup();
-    _listeners.push_back(listener2);
-    _eventLoop.addListener(listener2);
+	for (std::size_t i = 0; i < _configs.size(); i++)
+	{
+		Listener *listener = new Listener(_configs[i].getHost(), _configs[i].getPort());
+
+		try {
+			listener->setup();
+			_eventLoop.addListener(listener);
+			_listeners.push_back(listener);
+		}
+		catch (...){
+			delete listener;
+			throw;
+		}
+	}
 }
 
 void WebServer::setup()
 {
-    createListeners();
+	createListeners();
 }
 
 void WebServer::run()
 {
-    _eventLoop.run();
+	Logger::info("Starting server event loop");
+	_eventLoop.run();
 }
