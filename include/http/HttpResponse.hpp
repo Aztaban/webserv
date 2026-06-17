@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 
+//store informations only, it contains everything needed to send back to browser:
 class HttpResponse
 {
 	public:
