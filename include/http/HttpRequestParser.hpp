@@ -23,8 +23,6 @@ class HttpRequestParser
 		ParseStatus parseHeaders(const std::string& rawRequest, size_t startPos);
 		ParseStatus validateRequest();
 
-		void reset();
-
 	public:
 		HttpRequestParser();
 		HttpRequestParser(const HttpRequestParser& other);

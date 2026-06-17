@@ -162,7 +162,7 @@ HttpRequestParser::parse(const std::string& rawRequest)
 		_request.body = bodyPart; // optional requests
 	}
 
-	ParseStatus status = validateRequest();
+	status = validateRequest();
 	if (status != PARSE_COMPLETE)
 		return status;
 
