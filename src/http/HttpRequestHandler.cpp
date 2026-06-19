@@ -1,78 +1,88 @@
 #include "http/HttpRequestHandler.hpp"
 
-HttpRequestHandler::HttpRequestHandler() {}
+// ---------------- ORTODOX CANON ----------------
+HttpRequestHandler::HttpRequestHandler(const std::string& root)
+	: _root(root) {}
 
 HttpRequestHandler::HttpRequestHandler(const HttpRequestHandler& other)
-{
-	(void)other;
-}
+	: _root(other._root) {}
 
 HttpRequestHandler& HttpRequestHandler::operator=(const HttpRequestHandler& other)
 {
-	(void)other;
+	if (this != &other)
+		_root = other._root;
 	return *this;
 }
 
 HttpRequestHandler::~HttpRequestHandler() {}
 
-// 
+// ---------------- FILE READER ----------------
+
+static std::string readFile(const std::string& path)
+{
+	std::ifstream file(path.c_str());
+	if (!file.is_open())
+		return "";
+
+	std::ostringstream ss;
+	ss << file.rdbuf();
+	return ss.str();
+}
+
+// ---------------- DISPATCH ----------------
 
 HttpResponse HttpRequestHandler::handle(const HttpRequest& request)
 {
 	if (request.method == "GET")
-		return handleGET(request);
+		return _handleGET(request);
 
 	if (request.method == "POST")
-		return handlePOST(request);
+		return _handlePOST(request);
 
 	if (request.method == "DELETE")
-		return handleDELETE(request);
+		return _handleDELETE(request);
 
-	return error405();
+	return _error405();
 }
 
-// GET
-HttpResponse HttpRequestHandler::handleGET(const HttpRequest& request)
+// ---------------- GET ----------------
+
+HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 {
-	(void)request;
 	HttpResponse res;
 
-	if (request.target == "/")
-	{
-		res.statusCode = 200;
-		res.reasonPhrase = "OK";
-		res.body = "Welcome to webserv";
-		return res;
-	}
+	std::string path = _resolvePath(request.target);
+	std::string content = readFile(path);
 
-	if (request.target == "/hello")
-	{
-		res.statusCode = 200;
-		res.reasonPhrase = "OK";
-		res.body = "Hola mundito";
-		return res;
-	}
-
-	return error404();
-}
-
-//POST
-HttpResponse HttpRequestHandler::handlePOST(const HttpRequest& request)
-{
-	(void)request;
-	HttpResponse res;
+	if (content.empty())
+		return _error404();
 
 	res.statusCode = 200;
 	res.reasonPhrase = "OK";
-	res.body = "POST received: " + request.body;
+	res.body = content;
 
 	return res;
 }
 
-//DELETE
-HttpResponse HttpRequestHandler::handleDELETE(const HttpRequest& request)
+// ---------------- POST ----------------
+
+HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
+{
+	HttpResponse res;
+
+	res.statusCode = 200;
+	res.reasonPhrase = "OK";
+	res.body = "POST received: " + request.body + "\n";
+
+	return res;
+}
+
+// ---------------- DELETE ----------------
+
+HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
 {
 	(void)request;
+
 	HttpResponse res;
 
 	res.statusCode = 200;
@@ -82,8 +92,9 @@ HttpResponse HttpRequestHandler::handleDELETE(const HttpRequest& request)
 	return res;
 }
 
-//ERRORS
-HttpResponse HttpRequestHandler::error404()
+// ---------------- ERRORS ----------------
+
+HttpResponse HttpRequestHandler::_error404()
 {
 	HttpResponse res;
 
@@ -94,7 +105,7 @@ HttpResponse HttpRequestHandler::error404()
 	return res;
 }
 
-HttpResponse HttpRequestHandler::error405()
+HttpResponse HttpRequestHandler::_error405()
 {
 	HttpResponse res;
 
@@ -103,4 +114,21 @@ HttpResponse HttpRequestHandler::error405()
 	res.body = "405 Method Not Allowed";
 
 	return res;
+}
+
+// ---------------- PATH RESOLUTION ----------------
+
+std::string HttpRequestHandler::_resolvePath(const std::string& target)
+{
+	std::string path = _root;
+
+	if (target == "/")
+		return path + "/index.html";
+
+	path += target;
+
+	if (!target.empty() && target[target.size() - 1] == '/')
+		path += "index.html";
+
+	return path;
 }
