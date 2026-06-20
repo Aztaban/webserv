@@ -1,37 +1,31 @@
-#!/usr/bin/env python3
-
-import socket
 import threading
 from typing import List
 
-CLIENTS = 100
+from tests.lib.assertions import assert_http_response
+from tests.lib.test_context import TestContext
 
 
-def worker(host: str, port: int, index: int, failures: List[str]) -> None:
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(3)
-        s.connect((host, port))
-        request = (
-            "GET / HTTP/1.1\r\n"
-            "Host: localhost\r\n"
-            "Connection: close\r\n\r\n"
-        )
-        s.sendall(request.encode())
-        data = s.recv(4096)
-        if not data.startswith(b"HTTP/1.1"):
-            failures.append("client {} received a bad response".format(index))
-        s.close()
-    except Exception as error:
-        failures.append("client {} failed: {}".format(index, error))
+def test_many_simultaneous_clients(ctx: TestContext) -> None:
+    """
+    Open many client connections at roughly the same time.
 
-
-def test_many_clients(ctx) -> None:
+    This tests whether the poll loop remains stable under concurrent clients.
+    """
     failures: List[str] = []
+    client_count: int = 100
+
+    def worker(index: int) -> None:
+        """Single client worker used by the stress test."""
+        try:
+            response: str = ctx.get("/", timeout=3)
+            assert_http_response(response)
+        except Exception as error:
+            failures.append("client {} failed: {}".format(index, error))
+
     threads: List[threading.Thread] = []
 
-    for i in range(CLIENTS):
-        thread = threading.Thread(target=worker, args=(ctx.host, ctx.port, i, failures))
+    for i in range(client_count):
+        thread: threading.Thread = threading.Thread(target=worker, args=(i,))
         threads.append(thread)
         thread.start()
 
@@ -39,19 +33,10 @@ def test_many_clients(ctx) -> None:
         thread.join()
 
     if failures:
-        raise AssertionError("\n".join(failures))
+        raise AssertionError(failures)
 
 
 def register_tests():
     return [
-        ("many clients receive HTTP responses", test_many_clients),
+        ("many simultaneous clients", test_many_simultaneous_clients),
     ]
-
-
-if __name__ == "__main__":
-    class ManualContext:
-        host = "127.0.0.1"
-        port = 8000
-
-    test_many_clients(ManualContext())
-    print("done")
