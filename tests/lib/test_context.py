@@ -10,10 +10,18 @@ class TestContext:
     Tests should use this instead of hardcoding paths/host/port everywhere.
     """
 
-    def __init__(self, root_dir: str, host: str, port: int, config_path: str) -> None:
+    def __init__(
+        self,
+        root_dir: str,
+        host: str,
+        port: int,
+        second_port: int,
+        config_path: str,
+    ) -> None:
         self.root_dir = root_dir
         self.host = host
         self.port = port
+        self.second_port = second_port
         self.config_path = config_path
 
     def path(self, *parts: str) -> str:
@@ -44,4 +52,25 @@ class TestContext:
             "\r\n"
             "{}".format(path, len(body), body),
             timeout=timeout,
+        )
+
+    def send_raw_request_to_port(
+        self,
+        port: int,
+        request: str,
+        timeout: float = 2.0,
+    ) -> str:
+        """Send a raw HTTP request to a specific port."""
+        return send_raw_request(self.host, port, request, timeout)
+    
+    
+    def get_on_port(self, port: int, path: str = "/", timeout: float = 2.0) -> str:
+        """Send a GET request to a specific port."""
+        return self.send_raw_request_to_port(
+            port,
+            "GET {} HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Connection: close\r\n"
+            "\r\n".format(path),
+            timeout,
         )

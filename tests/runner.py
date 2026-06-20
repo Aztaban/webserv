@@ -12,6 +12,7 @@ ROOT_DIR: str = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
+from tests import test_settings
 from tests.lib.html_report import generate_html_report
 from tests.lib.http_client import can_connect
 from tests.lib.test_context import TestContext
@@ -19,13 +20,15 @@ from tests.lib.test_result import TestResult
 
 
 WEBSERV_PATH: str = os.path.join(ROOT_DIR, "webserv")
-CONFIG_PATH: str = os.path.join(ROOT_DIR, "tests", "fixtures", "test.conf")
-TEMPLATE_PATH: str = os.path.join(ROOT_DIR, "tests", "report_template.html")
-REPORT_PATH: str = os.path.join(ROOT_DIR, "tests", "report.html")
 
-# These values should match tests/fixtures/test.conf.
-HOST: str = "127.0.0.1"
-PORT: int = 8000
+CONFIG_PATH: str = os.path.join(ROOT_DIR, test_settings.CONFIG_PATH)
+TEMPLATE_PATH: str = os.path.join(ROOT_DIR, test_settings.REPORT_TEMPLATE_PATH)
+REPORT_PATH: str = os.path.join(ROOT_DIR, test_settings.REPORT_OUTPUT_PATH)
+SERVER_LOG_PATH: str = os.path.join(ROOT_DIR, test_settings.SERVER_LOG_PATH)
+
+HOST: str = test_settings.HOST
+PORT: int = test_settings.PORT
+SECOND_PORT: int = test_settings.SECOND_PORT
 
 TEST_DIRS: List[str] = [
     "network",
@@ -82,8 +85,7 @@ def start_server() -> subprocess.Popen:
     if not os.path.exists(CONFIG_PATH):
         raise RunnerError("test config not found: {}".format(CONFIG_PATH))
 
-    log_path: str = os.path.join(ROOT_DIR, "tests", "server_test.log")
-    log_file = open(log_path, "w")
+    log_file = open(SERVER_LOG_PATH, "w")
     
     server: subprocess.Popen = subprocess.Popen(
         [WEBSERV_PATH, CONFIG_PATH],
@@ -198,6 +200,7 @@ def main() -> int:
         root_dir=ROOT_DIR,
         host=HOST,
         port=PORT,
+        second_port=SECOND_PORT,
         config_path=CONFIG_PATH,
     )
 
