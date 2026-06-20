@@ -1,4 +1,6 @@
 import os
+import shutil
+from typing import List
 
 from tests.lib.http_client import send_raw_request
 
@@ -62,8 +64,8 @@ class TestContext:
     ) -> str:
         """Send a raw HTTP request to a specific port."""
         return send_raw_request(self.host, port, request, timeout)
-    
-    
+
+
     def get_on_port(self, port: int, path: str = "/", timeout: float = 2.0) -> str:
         """Send a GET request to a specific port."""
         return self.send_raw_request_to_port(
@@ -74,3 +76,72 @@ class TestContext:
             "\r\n".format(path),
             timeout,
         )
+
+    def uploads_dir(self) -> str:
+        """Return the test upload directory path."""
+        return self.path("tests", "fixtures", "www", "uploads")
+
+    def reset_uploads(self) -> None:
+        """
+        Clean and recreate the upload fixture directory.
+
+        Use this before upload/delete tests so one test does not affect another.
+        """
+        upload_dir: str = self.uploads_dir()
+
+        if os.path.isdir(upload_dir):
+            shutil.rmtree(upload_dir)
+
+        os.makedirs(upload_dir)
+
+    def write_fixture_file(self, relative_path: str, content: str) -> str:
+        """
+        Write a file under the project root and return its absolute path.
+
+        Example:
+            ctx.write_fixture_file(
+                "tests/fixtures/www/uploads/delete_me.txt",
+                "delete me\\n"
+            )
+        """
+        path: str = self.path(relative_path)
+        directory: str = os.path.dirname(path)
+
+        if directory and not os.path.isdir(directory):
+            os.makedirs(directory)
+
+        with open(path, "w") as file:
+            file.write(content)
+
+        return path
+
+    def read_file(self, relative_path: str) -> str:
+        """Read a text file under the project root."""
+        with open(self.path(relative_path), "r", errors="ignore") as file:
+            return file.read()
+
+    def upload_files(self) -> List[str]:
+        """Return absolute paths of regular files currently in the upload directory."""
+        upload_dir: str = self.uploads_dir()
+
+        if not os.path.isdir(upload_dir):
+            return []
+
+        files: List[str] = []
+
+        for filename in os.listdir(upload_dir):
+            path: str = os.path.join(upload_dir, filename)
+
+            if os.path.isfile(path):
+                files.append(path)
+
+        return files
+
+    def upload_contains(self, expected_text: str) -> bool:
+        """Return True if any uploaded file contains expected_text."""
+        for path in self.upload_files():
+            with open(path, "r", errors="ignore") as file:
+                if expected_text in file.read():
+                    return True
+
+        return False
