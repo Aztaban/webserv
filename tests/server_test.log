@@ -1,0 +1,1039 @@
+[34m[2026-06-20 02:32:08] [INFO] Starting webserv[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Config path: /home/aztaban/projects/42projects/webserv/tests/fixtures/test.conf[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Creating listening IPv4 socket[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Setting listener fd 3 non-blocking[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Binding listener socket[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Starting listen()[0m
+[34m[2026-06-20 02:32:08] [INFO] Listening on 127.0.0.1:8000[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Registered listener fd 3 in poll[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Creating listening IPv4 socket[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Setting listener fd 4 non-blocking[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Binding listener socket[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Starting listen()[0m
+[34m[2026-06-20 02:32:08] [INFO] Listening on 127.0.0.1:8001[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Registered listener fd 4 in poll[0m
+[34m[2026-06-20 02:32:08] [INFO] Event loop started[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54762[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54772[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 disconnected during read[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 disconnected during read[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54774[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54782[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54790[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54798[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54804[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54816[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54824[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54836[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 5 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54846[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54858[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54870[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 6 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54876[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54886[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 11 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 6 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54896[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54906[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 5 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54922[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54938[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 5 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54940[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54948[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54956[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54968[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54984[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:54988[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55004[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55006[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55018[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55030[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55042[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55048[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55060[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55072[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55088[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55092[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55098[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55108[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55116[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55130[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55144[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55146[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55150[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55162[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 11[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55164[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 12[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55180[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 13[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55196[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 14[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 9 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55210[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 11 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 12 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 13 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 14 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 9 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55226[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55238[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55242[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 15[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55248[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 16[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55260[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 17[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 13[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 14[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 7 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55272[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55284[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55300[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 15 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 16 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 16 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 16 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 16 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 17 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 17 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 17 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 17 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 9 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55316[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55332[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 11[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55346[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 15[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 16 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 16 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 16[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 17 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 17 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 17[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 7 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55348[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55352[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 11 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 12 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 6 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55368[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55380[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55386[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55394[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 13[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55410[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 14[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55412[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 15[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 9 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55416[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55422[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 11[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55426[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 13 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 14 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 15 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 10 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55428[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55440[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 13[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 14[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 15 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 15[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 11 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 12 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 6 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55444[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55456[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55468[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55482[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 13[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55494[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 14[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 7 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55508[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 13 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 13[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55510[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55526[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55528[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55542[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55558[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55568[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 14 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 14[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55578[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55584[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55590[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 11 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 1 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 12 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 3 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55602[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55612[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55614[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55624[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 11[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55634[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55640[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55644[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 7[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55660[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 2 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 11 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 7 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55674[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 10[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55680[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 13[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 12 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 7 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55688[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 6[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55704[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 11[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55720[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 14[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 10 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 13 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 7 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Listener fd 3 is readable[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55728[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 5[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55732[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 8[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55736[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 9[0m
+[34m[2026-06-20 02:32:08] [INFO] Accepted client from 127.0.0.1:55740[0m
+[34m[2026-06-20 02:32:08] [INFO] Client connected: fd 12[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 7 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 10 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 10[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 13 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 13[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 6 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 11 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 14 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 8 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 7 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 7[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 6 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 6[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 11 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 11[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 14 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 14[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 5 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 8 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 9 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 1[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 read 54 byte(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 switched to CLIENT_WRITING[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Updated client fd 12 events to 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] poll() returned 4 ready fd(s)[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 5 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 5[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 8 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 8[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 9 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 9[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 event: 4[0m
+[0m[2026-06-20 02:32:08] [DEBUG] Client fd 12 sent 104 byte(s)[0m
+[34m[2026-06-20 02:32:08] [INFO] Client closed: fd 12[0m
