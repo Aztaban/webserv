@@ -23,6 +23,7 @@ CONFIG_PATH: str = os.path.join(ROOT_DIR, "tests", "fixtures", "test.conf")
 TEMPLATE_PATH: str = os.path.join(ROOT_DIR, "tests", "report_template.html")
 REPORT_PATH: str = os.path.join(ROOT_DIR, "tests", "report.html")
 
+# These values should match tests/fixtures/test.conf.
 HOST: str = "127.0.0.1"
 PORT: int = 8000
 

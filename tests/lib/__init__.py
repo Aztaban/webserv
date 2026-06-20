@@ -7,4 +7,5 @@ Modules:
     http_client.py
     test_context.py
     test_result.py
+    http_response.py
 """
