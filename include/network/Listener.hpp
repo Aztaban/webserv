@@ -12,7 +12,7 @@ private:
 
     Listener(const Listener &other);
     Listener &operator=(const Listener &other);
-    void    setNonBlocking(int fd);
+    void    _setNonBlocking(int fd);
 
 public:
     Listener(const std::string& host, int port);

@@ -29,8 +29,8 @@ private:
 	ClientConnection(const ClientConnection &other);
 	ClientConnection &operator=(const ClientConnection &other);
 
-    void        processReadBuffer();
-    void        prepareErrorResponse(int code);
+    void        _processReadBuffer();
+    void        _prepareErrorResponse(int code);
 
 public:
 	ClientConnection(int fd);

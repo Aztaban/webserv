@@ -14,7 +14,7 @@ private:
 	std::vector<Listener *>		_listeners;
 	EventLoop					_eventLoop;
 
-	void	createListeners();
+	void	_createListeners();
 
 public:
 	WebServer(const std::vector<ServerConfig>& configs);

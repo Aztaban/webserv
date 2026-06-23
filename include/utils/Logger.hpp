@@ -21,9 +21,9 @@ private:
     ~Logger();
 
     static bool         _debugEnabled;
-    static std::string  getTimestamp();
-    static std::string  levelToString(LogLevel level);
-    static std::string  levelToColor(LogLevel level);
+    static std::string  _getTimestamp();
+    static std::string  _levelToString(LogLevel level);
+    static std::string  _levelToColor(LogLevel level);
 
 public:
     static void setDebug(bool enabled);

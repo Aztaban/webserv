@@ -78,18 +78,18 @@ void ClientConnection::readFromSocket()
         && _readBuffer.size() > MAX_HEADER_SIZE)
     {
         Logger::error("Client fd " + toString(_fd) + " header too large");
-        prepareErrorResponse(400);
+        _prepareErrorResponse(400);
         _state = CLIENT_WRITING;
         return;
     }
     if (_readBuffer.size() > MAX_HEADER_SIZE + MAX_BODY_SIZE)
     {
         Logger::error("Client fd " + toString(_fd) + " request too large");
-        prepareErrorResponse(413);
+        _prepareErrorResponse(413);
         _state = CLIENT_WRITING;
         return;
     }
-    processReadBuffer();
+    _processReadBuffer();
 }
 
 void ClientConnection::writeToSocket()
@@ -127,7 +127,7 @@ bool ClientConnection::isTimedOut(std::time_t now, int timeoutSeconds) const
 	return (now - _lastActivity >= timeoutSeconds);
 }
 
-void ClientConnection::processReadBuffer()
+void ClientConnection::_processReadBuffer()
 {
     HttpRequestParser parser;
     HttpRequestParser::ParseStatus status;
@@ -138,7 +138,7 @@ void ClientConnection::processReadBuffer()
     if (status == HttpRequestParser::PARSE_ERROR)
     {
         Logger::error("Client fd " + toString(_fd) + " malformed request");
-        prepareErrorResponse(parser.getErrorStatusCode());
+        _prepareErrorResponse(parser.getErrorStatusCode());
         _state = CLIENT_WRITING;
         return;
     }
@@ -149,7 +149,7 @@ void ClientConnection::processReadBuffer()
     Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
 }
 
-void ClientConnection::prepareErrorResponse(int code)
+void ClientConnection::_prepareErrorResponse(int code)
 {
     std::string reason = reasonPhrase(code);
 

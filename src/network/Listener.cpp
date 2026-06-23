@@ -18,7 +18,7 @@ Listener::~Listener()
         close(_fd);
 }
 
-void    Listener::setNonBlocking(int fd)
+void    Listener::_setNonBlocking(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
         throw std::runtime_error("fcntl(O_NONBLOCK) failed");
@@ -38,7 +38,7 @@ void    Listener::setup()
         throw std::runtime_error("setsockopt(SO_REUSEADDR) failed");
 
     Logger::debug("Setting listener fd " + toString(_fd) + " non-blocking");
-    setNonBlocking(_fd);
+    _setNonBlocking(_fd);
 
     std::memset(&addr, 0, sizeof(addr));
 

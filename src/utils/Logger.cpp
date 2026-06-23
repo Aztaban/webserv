@@ -14,7 +14,7 @@ void    Logger::setDebug(bool enabled)
     _debugEnabled = enabled;
 }
 
-std::string Logger::levelToColor(LogLevel level)
+std::string Logger::_levelToColor(LogLevel level)
 {
     switch (level)
     {
@@ -31,7 +31,7 @@ std::string Logger::levelToColor(LogLevel level)
     }
 }
 
-std::string Logger::getTimestamp()
+std::string Logger::_getTimestamp()
 {
     std::time_t now = std::time(NULL);
     std::tm *timeInfo = std::localtime(&now);
@@ -45,7 +45,7 @@ std::string Logger::getTimestamp()
     return (std::string(buffer));
 }
 
-std::string Logger::levelToString(LogLevel level)
+std::string Logger::_levelToString(LogLevel level)
 {
     switch (level)
     {
@@ -67,7 +67,7 @@ void    Logger::log(LogLevel level, const std::string& message)
     if (level == LOG_DEBUG && !_debugEnabled)
         return;
     std::ostream& out = (level == LOG_ERROR) ? std::cerr : std::cout;
-    out << levelToColor(level) << "[" << getTimestamp() << "] " << "[" << levelToString(level)
+    out << _levelToColor(level) << "[" << _getTimestamp() << "] " << "[" << _levelToString(level)
         << "] " << message << RESET << std::endl;
 }
 

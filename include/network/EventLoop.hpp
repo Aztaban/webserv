@@ -18,18 +18,18 @@ private:
     std::map<int, Listener *>           _listeners;
     std::map<int, ClientConnection *>   _clients;
 
-    bool    isListenerFd(int fd) const;
-    bool    isClientFd(int fd) const;
+    bool    _isListenerFd(int fd) const;
+    bool    _isClientFd(int fd) const;
     
-    void    addPollFd(int fd, short events);
-    void    removePollFd(int fd);
-    void    updateClientEvents(int fd);
-    void    handleListenerEvent(int fd);
-    void    handleClientEvent(int fd, short revents);
-    void    addClient(int clientFd);
-    void    removeClient(int clientFd);
-    void    setNonBlocking(int fd);
-    void    removeTimedOutClients();
+    void    _addPollFd(int fd, short events);
+    void    _removePollFd(int fd);
+    void    _updateClientEvents(int fd);
+    void    _handleListenerEvent(int fd);
+    void    _handleClientEvent(int fd, short revents);
+    void    _addClient(int clientFd);
+    void    _removeClient(int clientFd);
+    void    _setNonBlocking(int fd);
+    void    _removeTimedOutClients();
 
 public:
     EventLoop();

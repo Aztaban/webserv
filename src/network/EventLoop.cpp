@@ -16,7 +16,7 @@ EventLoop::~EventLoop()
         delete it->second;
 }
 
-void EventLoop::setNonBlocking(int fd)
+void EventLoop::_setNonBlocking(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
         throw std::runtime_error("fcntl(O_NONBLOCK) failed");
@@ -27,11 +27,11 @@ void EventLoop::addListener(Listener *listener)
     int fd = listener->getFd();
 
     _listeners[fd] = listener;
-    addPollFd(fd, POLLIN);
+    _addPollFd(fd, POLLIN);
     Logger::debug("Registered listener fd " + toString(fd) + " in poll");
 }
 
-void EventLoop::addPollFd(int fd, short events)
+void EventLoop::_addPollFd(int fd, short events)
 {
     struct pollfd pfd;
 
@@ -42,7 +42,7 @@ void EventLoop::addPollFd(int fd, short events)
     _pollFds.push_back(pfd);
 }
 
-void EventLoop::removePollFd(int fd)
+void EventLoop::_removePollFd(int fd)
 {
     for (std::vector<struct pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); it++)
     {
@@ -54,25 +54,25 @@ void EventLoop::removePollFd(int fd)
     }
 }
 
-bool EventLoop::isListenerFd(int fd) const
+bool EventLoop::_isListenerFd(int fd) const
 {
     return (_listeners.find(fd) != _listeners.end());
 }
 
-bool EventLoop::isClientFd(int fd) const
+bool EventLoop::_isClientFd(int fd) const
 {
     return (_clients.find(fd) != _clients.end());
 }
 
-void EventLoop::addClient(int clientFd)
+void EventLoop::_addClient(int clientFd)
 {
-    setNonBlocking(clientFd);
+    _setNonBlocking(clientFd);
     _clients[clientFd] = new ClientConnection(clientFd);
-    addPollFd(clientFd, POLLIN);
+    _addPollFd(clientFd, POLLIN);
     Logger::info("Client connected: fd " + toString(clientFd));
 }
 
-void EventLoop::removeClient(int clientFd)
+void EventLoop::_removeClient(int clientFd)
 {
     std::map<int, ClientConnection *>::iterator it = _clients.find(clientFd);
     if (it != _clients.end())
@@ -80,11 +80,11 @@ void EventLoop::removeClient(int clientFd)
         delete it->second;
         _clients.erase(it);
     }
-    removePollFd(clientFd);
+    _removePollFd(clientFd);
     Logger::info("Client closed: fd " + toString(clientFd));
 }
 
-void EventLoop::updateClientEvents(int fd)
+void EventLoop::_updateClientEvents(int fd)
 {
     std::map<int, ClientConnection *>::iterator clientIt = _clients.find(fd);
     if (clientIt == _clients.end())
@@ -107,7 +107,7 @@ void EventLoop::updateClientEvents(int fd)
     }
 }
 
-void EventLoop::handleListenerEvent(int fd)
+void EventLoop::_handleListenerEvent(int fd)
 {
     Logger::debug("Listener fd " + toString(fd) + " is readable");
 
@@ -121,11 +121,11 @@ void EventLoop::handleListenerEvent(int fd)
         int clientFd = listener->acceptClient();
         if (clientFd == -1)
             return;
-        addClient(clientFd);
+        _addClient(clientFd);
     }
 }
 
-void EventLoop::handleClientEvent(int fd, short revents)
+void EventLoop::_handleClientEvent(int fd, short revents)
 {
     Logger::debug("Client fd " + toString(fd) + " event: " + toString(revents));
 
@@ -136,24 +136,24 @@ void EventLoop::handleClientEvent(int fd, short revents)
     ClientConnection *client = it->second;
     if (revents & (POLLERR | POLLHUP | POLLNVAL))
     {
-        removeClient(fd);
+        _removeClient(fd);
         return;
     }
     if ((revents & POLLIN) && client->wantsRead())
         client->readFromSocket();
     if (client->isDone())
     {
-        removeClient(fd);
+        _removeClient(fd);
         return;
     }
     if ((revents & POLLOUT) && client->wantsWrite())
         client->writeToSocket();
     if (client->isDone())
     {
-        removeClient(fd);
+        _removeClient(fd);
         return;
     }
-    updateClientEvents(fd);
+    _updateClientEvents(fd);
 }
 
 void EventLoop::run()
@@ -167,7 +167,7 @@ void EventLoop::run()
         int ready = poll(&_pollFds[0], _pollFds.size(), 1000);
         if (ready == -1)
             throw std::runtime_error("poll() failed");
-        removeTimedOutClients();
+        _removeTimedOutClients();
         if (ready == 0)
             continue;
 
@@ -181,15 +181,15 @@ void EventLoop::run()
 
             if (revents == 0)
                 continue;
-            if (isListenerFd(fd))
-                handleListenerEvent(fd);
-            else if (isClientFd(fd))
-                handleClientEvent(fd, revents);
+            if (_isListenerFd(fd))
+                _handleListenerEvent(fd);
+            else if (_isClientFd(fd))
+                _handleClientEvent(fd, revents);
         }
     }
 }
 
-void EventLoop::removeTimedOutClients()
+void EventLoop::_removeTimedOutClients()
 {
     std::time_t now = std::time(NULL);
     std::vector<int> timedOutFds;
@@ -203,6 +203,6 @@ void EventLoop::removeTimedOutClients()
     for (std::size_t i = 0; i < timedOutFds.size(); i++)
     {
         Logger::warn("Client timed out: fd " + toString(timedOutFds[i]));
-        removeClient(timedOutFds[i]);
+        _removeClient(timedOutFds[i]);
     }
 }

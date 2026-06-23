@@ -12,7 +12,7 @@ WebServer::~WebServer()
 		delete _listeners[i];
 }
 
-void	WebServer::createListeners()
+void	WebServer::_createListeners()
 {
 	if (_configs.empty())
 		throw std::runtime_error("No server configuration provided");
@@ -35,7 +35,7 @@ void	WebServer::createListeners()
 
 void WebServer::setup()
 {
-	createListeners();
+	_createListeners();
 }
 
 void WebServer::run()
