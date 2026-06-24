@@ -3,6 +3,7 @@
 #include "core/RequestHandler.hpp"
 #include "http/HttpRequestParser.hpp"
 #include "http/HttpResponseBuilder.hpp"
+#include "http/HttpResponse.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -135,6 +136,7 @@ void ClientConnection::_processReadBuffer()
     status = parser.parse(_readBuffer);
     if (status == HttpRequestParser::PARSE_INCOMPLETE)
         return;
+        
     if (status == HttpRequestParser::PARSE_ERROR)
     {
         Logger::error("Client fd " + toString(_fd) + " malformed request");
@@ -144,8 +146,13 @@ void ClientConnection::_processReadBuffer()
     }
 
     _state = CLIENT_PROCESSING;
-    _writeBuffer = RequestHandler::handleRawRequest(_readBuffer);
+
+    RequestContext context;
+    HttpResponse response = RequestHandler::handle(parser.getRequest(), context);
+
+    _writeBuffer = HttpResponseBuilder::build(response);
     _state = CLIENT_WRITING;
+
     Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
 }
 

@@ -13,7 +13,7 @@ public:
     static HttpResponse handle(const HttpRequest& request, const RequestContext& context);
     // Temporary compatibility function.
     // Remove later when ClientConnection passes parsed HttpRequest directly.
-    static std::string handleRawRequest(const std::string &rawRequest);
+    //static std::string handleRawRequest(const std::string &rawRequest);
 
 };
 

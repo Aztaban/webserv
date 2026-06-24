@@ -40,7 +40,7 @@ public:
     void    setRoot(const std::string& root);
     void    setIndex(const std::string& index);
     void    setClientMaxBodySize(std::size_t size);
-    void    addErrorpage(int statusCode, const std::string& path);
+    void    addErrorPage(int statusCode, const std::string& path);
     void    addLocation(const LocationConfig& location);
 
 };

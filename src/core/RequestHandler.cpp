@@ -3,52 +3,50 @@
 #include "http/HttpRequestHandler.hpp"
 #include "http/HttpResponseBuilder.hpp"
 #include "routing/Router.hpp"
+#include "core/RequestContext.hpp"
 
 HttpResponse	RequestHandler::handle(const HttpRequest& request, const RequestContext& context)
 {
-	(void)context;
-	/*
-		TEMPORARY:
-		Direct handler with hardcoded root.
+	std::string	root = "./www/site1";
 
-		Later:
-		- choose ServerConfig from context.serverCandidates
-		- match LocationConfig with Router
-		- check methods
-		- call static/upload/delete/cgi handler
-	*/
-	HttpRequestHandler handler("./www");
+	if (context.serverCandidates && !context.serverCandidates->empty())
+		root = (*context.serverCandidates)[0].getRoot();
+	
+	HttpRequestHandler handler(root);
 	return handler.handle(request);
 }
 
-std::string RequestHandler::handleRawRequest(const std::string& rawRequest)
-{
-	HttpRequestParser parser;
+//TEMPORARY COMPATIBILITY.
+// // Do not use in ClientConnection.
+// // Remove after tests are updated to use RequestHandler::handle().
+// std::string RequestHandler::handleRawRequest(const std::string& rawRequest)
+// {
+// 	HttpRequestParser parser;
 
-	HttpRequestParser::ParseStatus status = parser.parse(rawRequest);
+// 	HttpRequestParser::ParseStatus status = parser.parse(rawRequest);
 
-	// ---------------- ERROR: incomplete request ----------------
-	if (status == HttpRequestParser::PARSE_INCOMPLETE)
-	{
-		return HttpResponseBuilder::buildSimpleResponse(
-			400,
-			"Bad Request",
-			"Incomplete request");
-	}
+// 	// ---------------- ERROR: incomplete request ----------------
+// 	if (status == HttpRequestParser::PARSE_INCOMPLETE)
+// 	{
+// 		return HttpResponseBuilder::buildSimpleResponse(
+// 			400,
+// 			"Bad Request",
+// 			"Incomplete request");
+// 	}
 
-	// ---------------- ERROR: invalid request ----------------
-	if (status == HttpRequestParser::PARSE_ERROR)
-	{
-		return HttpResponseBuilder::buildSimpleResponse(
-			parser.getErrorStatusCode(),
-			"Error",
-			"Malformed HTTP request");
-	}
+// 	// ---------------- ERROR: invalid request ----------------
+// 	if (status == HttpRequestParser::PARSE_ERROR)
+// 	{
+// 		return HttpResponseBuilder::buildSimpleResponse(
+// 			parser.getErrorStatusCode(),
+// 			"Error",
+// 			"Malformed HTTP request");
+// 	}
 
-	// ---------------- VALID REQUEST ----------------
-	RequestContext	context;
-	HttpResponse	response = RequestHandler::handle(parser.getRequest(), context);
+// 	// ---------------- VALID REQUEST ----------------
+// 	RequestContext	context;
+// 	HttpResponse	response = RequestHandler::handle(parser.getRequest(), context);
 
-	return HttpResponseBuilder::build(response);
-}
+// 	return HttpResponseBuilder::build(response);
+// }
 
