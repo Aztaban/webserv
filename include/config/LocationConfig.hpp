@@ -17,7 +17,7 @@ struct LocationConfig
 
     bool        hasRedirect;
     int         redirectCode;
-    std::string redurectUrl;
+    std::string redirectUrl;
 
     bool        uploadEnabled;
     std::string uploadPath;
@@ -33,6 +33,7 @@ struct LocationConfig
           autoindex(false),
           hasRedirect(false),
           redirectCode(0),
+          redirectUrl(),
           uploadEnabled(false),
           uploadPath(),
           cgiEnabled(false),

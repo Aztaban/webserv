@@ -4,6 +4,23 @@
 #include "http/HttpResponseBuilder.hpp"
 #include "routing/Router.hpp"
 
+HttpResponse	RequestHandler::handle(const HttpRequest& request, const RequestContext& context)
+{
+	(void)context;
+	/*
+		TEMPORARY:
+		Direct handler with hardcoded root.
+
+		Later:
+		- choose ServerConfig from context.serverCandidates
+		- match LocationConfig with Router
+		- check methods
+		- call static/upload/delete/cgi handler
+	*/
+	HttpRequestHandler handler("./www");
+	return handler.handle(request);
+}
+
 std::string RequestHandler::handleRawRequest(const std::string& rawRequest)
 {
 	HttpRequestParser parser;
@@ -29,17 +46,9 @@ std::string RequestHandler::handleRawRequest(const std::string& rawRequest)
 	}
 
 	// ---------------- VALID REQUEST ----------------
-	const HttpRequest& req = parser.getRequest();
+	RequestContext	context;
+	HttpResponse	response = RequestHandler::handle(parser.getRequest(), context);
 
-	// TEMPORARY: direct handler (router comes later)
-	HttpRequestHandler handler("./www");
-
-	HttpResponse res = handler.handle(req);
-
-	// ---------------- BUILD RESPONSE ----------------
-	return HttpResponseBuilder::buildSimpleResponse(
-		res.statusCode,
-		res.reasonPhrase,
-		res.body);
+	return HttpResponseBuilder::build(response);
 }
 

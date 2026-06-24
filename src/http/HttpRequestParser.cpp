@@ -1,9 +1,9 @@
 #include "http/HttpRequestParser.hpp"
 
-HttpRequestParser::HttpRequestParser(): _errorStatusCode(0) {}
+HttpRequestParser::HttpRequestParser(): _request(), _errorStatusCode(0), _consumedBytes(0) {}
 
 HttpRequestParser::HttpRequestParser(const HttpRequestParser& other)
-: _request(other._request), _errorStatusCode(other._errorStatusCode) {}
+: _request(other._request), _errorStatusCode(other._errorStatusCode), _consumedBytes(other._consumedBytes) {}
 
 HttpRequestParser& HttpRequestParser::operator=(const HttpRequestParser& other)
 {
@@ -11,6 +11,7 @@ HttpRequestParser& HttpRequestParser::operator=(const HttpRequestParser& other)
 	{
 		_request = other._request;
 		_errorStatusCode = other._errorStatusCode;
+		_consumedBytes = other._consumedBytes;
 	}
 	return *this;
 }
@@ -26,6 +27,19 @@ static std::string trim(const std::string& str)
 
 	size_t end = str.find_last_not_of(" \t");
 	return str.substr(start, end - start + 1);
+}
+
+static bool isDigits(const std::string& str)
+{
+	if (str.empty())
+		return false;
+
+	for (std::size_t i = 0; i < str.size(); i++)
+	{
+		if (str[i] < '0' || str[i] > '9' )
+			return false;
+	}
+	return true;
 }
 
 // -------------- PARSING ------------
@@ -78,6 +92,18 @@ HttpRequestParser::parseRequestLine(const std::string& requestLine)
 	_request.target = requestLine.substr(firstSpace + 1, secondSpace - firstSpace - 1);
 	_request.version = requestLine.substr(secondSpace + 1);
 
+	std::size_t queryPos = _request.target.find('?');
+	if (queryPos == std::string::npos)
+	{
+		_request.path = _request.target;
+		_request.query = "";
+	}
+	else
+	{
+		_request.path = _request.target.substr(0, queryPos);
+		_request.query = _request.target.substr(queryPos + 1);
+	}
+
 	return PARSE_COMPLETE;
 }
 
@@ -118,8 +144,7 @@ HttpRequestParser::validateRequest()
 HttpRequestParser::ParseStatus
 HttpRequestParser::parse(const std::string& rawRequest)
 {
-	_request = HttpRequest();
-	_errorStatusCode = 0;
+	reset();
 
 	// 1. Find end of headers block
 	size_t headerEnd = rawRequest.find("\r\n\r\n");
@@ -150,16 +175,29 @@ HttpRequestParser::parse(const std::string& rawRequest)
 
 	if (it != _request.headers.end())
 	{
+		if (!isDigits(it->second))
+		{
+			_errorStatusCode = 400;
+			return PARSE_ERROR;
+		}
+
 		size_t contentLength = static_cast<size_t>(std::atoi(it->second.c_str()));
+
+		_request.hasBody = (contentLength > 0);
+		_request.contentLength = contentLength;
 
 		if (bodyPart.size() < contentLength)
 			return PARSE_INCOMPLETE;
 
 		_request.body = bodyPart.substr(0, contentLength);
+		_consumedBytes = headerEnd + 4 + contentLength;
 	}
 	else
 	{
-		_request.body = bodyPart; // optional requests
+		_request.hasBody = false;
+		_request.contentLength = 0;
+		_request.body = "";
+		_consumedBytes = headerEnd + 4;
 	}
 
 	status = validateRequest();
@@ -177,4 +215,16 @@ const HttpRequest&  HttpRequestParser::getRequest() const
 int HttpRequestParser::getErrorStatusCode() const
 {
 	return _errorStatusCode;
+}
+
+std::size_t	HttpRequestParser::getConsumedBytes() const
+{
+	return _consumedBytes;
+}
+
+void HttpRequestParser::reset()
+{
+	_request = HttpRequest();
+	_errorStatusCode = 0;
+	_consumedBytes = 0;
 }

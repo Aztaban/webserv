@@ -16,12 +16,13 @@ class HttpRequestParser
 		};
 
 	private:
-		HttpRequest _request;
-		int _errorStatusCode;
+		HttpRequest	_request;
+		int			_errorStatusCode;
+		std::size_t	_consumedBytes;
 
-		ParseStatus parseRequestLine(const std::string& requestLine);
-		ParseStatus parseHeaders(const std::string& rawRequest, size_t startPos);
-		ParseStatus validateRequest();
+		ParseStatus	parseRequestLine(const std::string& requestLine);
+		ParseStatus	parseHeaders(const std::string& rawRequest, size_t startPos);
+		ParseStatus	validateRequest();
 
 	public:
 		HttpRequestParser();
@@ -31,8 +32,10 @@ class HttpRequestParser
 
 		ParseStatus parse(const std::string& rawRequest);
 
-		const HttpRequest& getRequest() const;
-		int getErrorStatusCode() const;
+		const HttpRequest&	getRequest() const;
+		int					getErrorStatusCode() const;
+		std::size_t			getConsumedBytes() const;
+		void 				reset();
 	};
 
 #endif

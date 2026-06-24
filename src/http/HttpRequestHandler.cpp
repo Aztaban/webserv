@@ -51,7 +51,8 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 {
 	HttpResponse res;
 
-	std::string path = _resolvePath(request.target);
+	std::string target = request.path.empty() ? request.target : request.path;
+	std::string path = _resolvePath(target);
 	std::string content = readFile(path);
 
 	if (content.empty())
