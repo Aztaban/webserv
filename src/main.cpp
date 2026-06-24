@@ -39,8 +39,13 @@ int main(int argc, char **argv)
 
         std::vector<ServerConfig> configs;
 
-        configs.push_back(ServerConfig("127.0.0.1", 8000));
-        configs.push_back(ServerConfig("127.0.0.1", 8001));
+        ServerConfig server1("127.0.0.1", 8000);
+        server1.setRoot("./www/site1");
+        ServerConfig server2("127.0.0.1", 8001);
+        server2.setRoot("./www/site2");
+
+        configs.push_back(server1);
+        configs.push_back(server2);
 
         WebServer server(configs);
         server.setup();
