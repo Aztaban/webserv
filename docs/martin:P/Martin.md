@@ -442,7 +442,7 @@ Dependency: parser + response interface.
 
 ---
 
-### TODO 3 — Move HTTP limits out of `ClientConnection`
+### TODO 3 — Move HTTP limits out of `ClientConnection` - FINISHED
 
 Current temporary constants:
 
