@@ -335,7 +335,7 @@ HttpResponseBuilder
 
 ## 6. Ordered TODO list to finish your network/core part
 
-### TODO 1 — Freeze the interfaces with partners - DONE
+### TODO 1 — Freeze the interfaces with partners - FINISHED
 
 Do this before rewriting too much.
 
@@ -397,7 +397,7 @@ This can be simple at first. The goal is to prevent every teammate from inventin
 
 ---
 
-### TODO 2 — Remove duplicate parsing - DONE
+### TODO 2 — Remove duplicate parsing - FINISHED
 
 Current problem:
 
@@ -491,7 +491,7 @@ Current code is mostly okay here.
 
 ---
 
-### TODO 5 — Add listener/context connection
+### TODO 5 — Add listener/context connection - FINISHED
 
 Currently:
 
@@ -547,7 +547,7 @@ Dependency: final `ServerConfig` data model.
 
 ---
 
-### TODO 7 — Replace hardcoded config and root
+### TODO 7 — Replace hardcoded config and root - FINISHED for temporary config stage
 
 Temporary code to remove later:
 
@@ -575,7 +575,7 @@ Dependency: config parser and router.
 
 ---
 
-### TODO 8 — Prepare RequestHandler as the integration point - DONE
+### TODO 8 — Prepare RequestHandler as the integration point - FINISHED
 
 Final `RequestHandler` should be the place where partner code connects.
 

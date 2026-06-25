@@ -8,9 +8,13 @@
 #include <unistd.h>
 #include <sys/socket.h>
 
-ClientConnection::ClientConnection(int fd) : _fd(fd),
-                                             _state(CLIENT_READING_HEADERS),
-                                             _lastActivity(std::time(NULL))
+ClientConnection::ClientConnection(int fd, const RequestContext& context)
+    : _fd(fd),
+      _state(CLIENT_READING_HEADERS),
+      _readBuffer(),
+      _writeBuffer(),
+      _lastActivity(std::time(NULL)),
+      _context(context)
 {
 }
 
@@ -147,8 +151,7 @@ void ClientConnection::_processReadBuffer()
 
     _state = CLIENT_PROCESSING;
 
-    RequestContext context;
-    HttpResponse response = RequestHandler::handle(parser.getRequest(), context);
+    HttpResponse response = RequestHandler::handle(parser.getRequest(), _context);
 
     _writeBuffer = HttpResponseBuilder::build(response);
     _state = CLIENT_WRITING;

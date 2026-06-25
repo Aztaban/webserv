@@ -26,7 +26,7 @@ private:
     void    _updateClientEvents(int fd);
     void    _handleListenerEvent(int fd);
     void    _handleClientEvent(int fd, short revents);
-    void    _addClient(int clientFd);
+    void    _addClient(int clientFd, Listener* listener);
     void    _removeClient(int clientFd);
     void    _setNonBlocking(int fd);
     void    _removeTimedOutClients();

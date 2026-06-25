@@ -19,7 +19,15 @@ void	WebServer::_createListeners()
 
 	for (std::size_t i = 0; i < _configs.size(); i++)
 	{
-		Listener *listener = new Listener(_configs[i].getHost(), _configs[i].getPort());
+		std::vector<ServerConfig>	candidates;
+
+		candidates.push_back(_configs[i]);
+
+		Listener *listener = new Listener(
+			_configs[i].getHost(),
+			_configs[i].getPort(),
+			candidates
+		);
 
 		try {
 			listener->setup();

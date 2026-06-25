@@ -1,6 +1,8 @@
 #ifndef CLIENTCONNECTION_HPP
 # define CLIENTCONNECTION_HPP
 
+# include "core/RequestContext.hpp"
+
 # include <string>
 # include <ctime>
 
@@ -20,20 +22,21 @@ private:
 	static const std::size_t MAX_HEADER_SIZE = 8192; // TEMP: later probably move header/body limits to config/parser
 	static const std::size_t MAX_BODY_SIZE = 1000000;
 
-    int         _fd;
-    ClientState _state;
-    std::string _readBuffer;
-    std::string _writeBuffer;
-    std::time_t _lastActivity;
+	int				_fd;
+	ClientState		_state;
+	std::string		_readBuffer;
+	std::string		_writeBuffer;
+	std::time_t		_lastActivity;
+	RequestContext	_context;
 
 	ClientConnection(const ClientConnection &other);
 	ClientConnection &operator=(const ClientConnection &other);
 
-    void        _processReadBuffer();
-    void        _prepareErrorResponse(int code);
+	void		_processReadBuffer();
+	void		_prepareErrorResponse(int code);
 
 public:
-	ClientConnection(int fd);
+	ClientConnection(int fd, const RequestContext& context);
 	~ClientConnection();
 
 	int			getFd() const;

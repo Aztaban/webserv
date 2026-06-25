@@ -1,5 +1,6 @@
 #include "network/EventLoop.hpp"
 #include "utils/Logger.hpp"
+#include "core/RequestContext.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -64,11 +65,18 @@ bool EventLoop::_isClientFd(int fd) const
     return (_clients.find(fd) != _clients.end());
 }
 
-void EventLoop::_addClient(int clientFd)
+void EventLoop::_addClient(int clientFd, Listener* listener)
 {
+    RequestContext context(
+        &(listener->getServerCandidates()),
+        listener->getHost(),
+        listener->getPort()
+    );
+
     _setNonBlocking(clientFd);
-    _clients[clientFd] = new ClientConnection(clientFd);
+    _clients[clientFd] = new ClientConnection(clientFd, context);
     _addPollFd(clientFd, POLLIN);
+
     Logger::info("Client connected: fd " + toString(clientFd));
 }
 
@@ -121,7 +129,7 @@ void EventLoop::_handleListenerEvent(int fd)
         int clientFd = listener->acceptClient();
         if (clientFd == -1)
             return;
-        _addClient(clientFd);
+        _addClient(clientFd, listener);
     }
 }
 

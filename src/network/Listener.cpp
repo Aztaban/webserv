@@ -10,7 +10,21 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-Listener::Listener(const std::string& host, int port) : _host(host), _port(port) , _fd(-1) {}
+Listener::Listener(const std::string& host, int port) 
+    : _host(host),
+      _port(port) ,
+      _fd(-1),
+      _serverCandidates()
+{
+}
+
+Listener::Listener(const std::string& host, int port, const std::vector<ServerConfig>& serverCandidates)
+    : _host(host),
+      _port(port) ,
+      _fd(-1),
+      _serverCandidates(serverCandidates)
+{
+}
 
 Listener::~Listener()
 {
@@ -65,12 +79,22 @@ void    Listener::setup()
 
 int Listener::getFd() const
 {
-    return (_fd);
+    return _fd;
 }
 
 int Listener::getPort() const
 {
-    return (_port);
+    return _port;
+}
+
+const std::string&  Listener::getHost() const
+{
+    return _host;
+}
+
+const std::vector<ServerConfig>&    Listener::getServerCandidates() const
+{
+    return _serverCandidates;
 }
 
 int Listener::acceptClient() const
