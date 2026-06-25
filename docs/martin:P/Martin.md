@@ -467,7 +467,7 @@ Dependency: config parser must expose `client_max_body_size`.
 
 ---
 
-### TODO 4 — Keep subject-safe socket I/O behavior
+### TODO 4 — Keep subject-safe socket I/O behavior - FINISHED
 
 Your rule for socket I/O should be:
 
@@ -524,7 +524,7 @@ Dependency: final config/listener grouping.
 
 ---
 
-### TODO 6 — Group listeners by unique host:port
+### TODO 6 — Group listeners by unique host:port - FINISHED
 
 Current:
 
@@ -659,7 +659,7 @@ Dependency: CGI process representation.
 
 ---
 
-### TODO 11 — Keep simple close-after-response first
+### TODO 11 — Keep simple close-after-response first - FINISHED
 
 You do not need keep-alive immediately.
 

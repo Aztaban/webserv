@@ -18,6 +18,8 @@ ClientConnection::ClientConnection(int fd, const RequestContext& context)
 {
 }
 
+static const std::size_t DEFAULT_CLIENT_MAX_BODY_SIZE = 1000000;
+
 static std::string reasonPhrase(int code)
 {
     if (code == 400)
@@ -26,6 +28,8 @@ static std::string reasonPhrase(int code)
         return ("Method Not Allowed");
     if (code == 413)
         return ("Payload Too Large");
+    if (code == 431)
+        return ("Request Header Fields Too Large");
     if (code == 505)
         return ("HTTP Version Not Supported");
     return ("Internal Server Error");
@@ -83,11 +87,11 @@ void ClientConnection::readFromSocket()
         && _readBuffer.size() > MAX_HEADER_SIZE)
     {
         Logger::error("Client fd " + toString(_fd) + " header too large");
-        _prepareErrorResponse(400);
+        _prepareErrorResponse(431);
         _state = CLIENT_WRITING;
         return;
     }
-    if (_readBuffer.size() > MAX_HEADER_SIZE + MAX_BODY_SIZE)
+    if (_bodyExceedsLimit())
     {
         Logger::error("Client fd " + toString(_fd) + " request too large");
         _prepareErrorResponse(413);
@@ -158,6 +162,30 @@ void ClientConnection::_processReadBuffer()
 
     Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
 }
+
+std::size_t ClientConnection::_getClientMaxBodySize() const
+{
+    if (_context.serverCandidates && !_context.serverCandidates->empty())
+        return ((*_context.serverCandidates)[0].getClientMaxBodySize());
+
+    return (DEFAULT_CLIENT_MAX_BODY_SIZE);
+}
+
+bool    ClientConnection::_bodyExceedsLimit() const
+{
+    std::size_t headerEnd;
+    std::size_t bodyStart;
+
+    headerEnd = _readBuffer.find("\r\n\r\n");
+    if (headerEnd == std::string::npos)
+        return false;
+    bodyStart = headerEnd + 4;
+    if (_readBuffer.size() <= bodyStart)
+        return false;
+    
+    return ((_readBuffer.size() - bodyStart) > _getClientMaxBodySize());
+}
+
 
 void ClientConnection::_prepareErrorResponse(int code)
 {
