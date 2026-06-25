@@ -43,6 +43,9 @@ int main(int argc, char **argv)
         server1.setRoot("./www/site1");
         ServerConfig server2("127.0.0.1", 8001);
         server2.setRoot("./www/site2");
+        ServerConfig server3("127.0.0.1", 8000);
+        server3.setRoot("./www/site1");
+        configs.push_back(server3);
 
         configs.push_back(server1);
         configs.push_back(server2);

@@ -3,6 +3,15 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <map>
+
+static std::string	makeListenKey(const std::string& host, int port)
+{
+	std::ostringstream	ss;
+
+	ss << host << ":" << port;
+	return ss.str();
+}
 
 WebServer::WebServer(const std::vector<ServerConfig>& configs) : _configs(configs) {}
 
@@ -17,15 +26,22 @@ void	WebServer::_createListeners()
 	if (_configs.empty())
 		throw std::runtime_error("No server configuration provided");
 
+	std::map<std::string, std::vector<ServerConfig> > groupedConfigs;
+
 	for (std::size_t i = 0; i < _configs.size(); i++)
 	{
-		std::vector<ServerConfig>	candidates;
+		std::string	key = makeListenKey(_configs[i].getHost(), _configs[i].getPort());
+		groupedConfigs[key].push_back(_configs[i]);
+	}
 
-		candidates.push_back(_configs[i]);
+	for (std::map<std::string, std::vector<ServerConfig> >::iterator it = groupedConfigs.begin();
+		it != groupedConfigs.end(); it++)
+	{
+		const std::vector<ServerConfig>& candidates = it->second;
 
 		Listener *listener = new Listener(
-			_configs[i].getHost(),
-			_configs[i].getPort(),
+			candidates[0].getHost(),
+			candidates[0].getPort(),
 			candidates
 		);
 
