@@ -4,6 +4,7 @@
 #include "http/HttpRequest.hpp"
 #include <string>
 #include <cstdlib>
+#include <cstdlib>
 
 class HttpRequestParser
 {

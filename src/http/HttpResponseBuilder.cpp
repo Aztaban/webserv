@@ -1,18 +1,32 @@
 #include "http/HttpResponseBuilder.hpp"
 #include <sstream>
 
-std::string HttpResponseBuilder::buildSimpleResponse(int statusCode, const std::string& reasonPhrase, const std::string& body)
+std::string HttpResponseBuilder::buildSimpleResponse(const HttpResponse& res)
 {
 	std::ostringstream response;
 
-	response << "HTTP/1.1 " << statusCode << " " << reasonPhrase << "\r\n";
+	// Status line
+	response << "HTTP/1.1 "
+	         << res.statusCode << " "
+	         << res.reasonPhrase << "\r\n";
 
-	response << "Content-Type: text/plain\r\n";
-	response << "Content-Length: " << body.size() << "\r\n";
+	// Headers from response object
+	for (std::map<std::string, std::string>::const_iterator it = res.headers.begin();
+	     it != res.headers.end();
+	     ++it)
+	{
+		response << it->first << ": " << it->second << "\r\n";
+	}
+
+	// Ensure required headers exist
+	response << "Content-Length: " << res.body.size() << "\r\n";
 	response << "Connection: close\r\n";
 
+	// End of headers
 	response << "\r\n";
-	response << body;
+
+	// Body
+	response << res.body;
 
 	return response.str();
 }

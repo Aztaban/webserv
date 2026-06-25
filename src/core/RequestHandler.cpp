@@ -10,36 +10,31 @@ std::string RequestHandler::handleRawRequest(const std::string& rawRequest)
 
 	HttpRequestParser::ParseStatus status = parser.parse(rawRequest);
 
-	// ---------------- ERROR: incomplete request ----------------
 	if (status == HttpRequestParser::PARSE_INCOMPLETE)
 	{
-		return HttpResponseBuilder::buildSimpleResponse(
-			400,
-			"Bad Request",
-			"Incomplete request");
+		HttpResponse res;
+		res.statusCode = 400;
+		res.reasonPhrase = "Bad Request";
+		res.body = "Incomplete request";
+		res.headers["Content-Type"] = "text/plain";
+		return HttpResponseBuilder::buildSimpleResponse(res);
 	}
 
-	// ---------------- ERROR: invalid request ----------------
 	if (status == HttpRequestParser::PARSE_ERROR)
 	{
-		return HttpResponseBuilder::buildSimpleResponse(
-			parser.getErrorStatusCode(),
-			"Error",
-			"Malformed HTTP request");
+		HttpResponse res;
+		res.statusCode = parser.getErrorStatusCode();
+		res.reasonPhrase = "Error";
+		res.body = "Malformed HTTP request";
+		res.headers["Content-Type"] = "text/plain";
+		return HttpResponseBuilder::buildSimpleResponse(res);
 	}
 
-	// ---------------- VALID REQUEST ----------------
 	const HttpRequest& req = parser.getRequest();
 
-	// TEMPORARY: direct handler (router comes later)
 	HttpRequestHandler handler("./www");
-
 	HttpResponse res = handler.handle(req);
 
-	// ---------------- BUILD RESPONSE ----------------
-	return HttpResponseBuilder::buildSimpleResponse(
-		res.statusCode,
-		res.reasonPhrase,
-		res.body);
+	return HttpResponseBuilder::buildSimpleResponse(res);
 }
 

@@ -1,13 +1,16 @@
 #ifndef HTTPRESPONSEBUILDER_HPP
 #define HTTPRESPONSEBUILDER_HPP
 
-# include <string>
+#include "HttpResponse.hpp"
+#include <sstream>
+#include <map>
+#include <string>
 
 //Converts response object -> raw HTTP string
 class HttpResponseBuilder
 {
 	public:
-		static std::string  buildSimpleResponse(int statusCode, const std::string& reasonPhrase, const std::string& body);
+		static std::string  buildSimpleResponse(const HttpResponse& res);
 };
 
 #endif

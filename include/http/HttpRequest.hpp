@@ -13,6 +13,10 @@ class HttpRequest
 		std::string method;
 		std::string target;
 		std::string version;
+		std::string transferEncoding;
+		bool isChunked;
+
+		HttpRequest() : isChunked(false) {}
 };
 
 #endif

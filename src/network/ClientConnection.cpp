@@ -151,7 +151,12 @@ void ClientConnection::processReadBuffer()
 
 void ClientConnection::prepareErrorResponse(int code)
 {
-    std::string reason = reasonPhrase(code);
+	HttpResponse res;
 
-    _writeBuffer = HttpResponseBuilder::buildSimpleResponse(code, reason, reason);
+	res.statusCode = code;
+	res.reasonPhrase = reasonPhrase(code);
+	res.body = reasonPhrase(code);
+	res.headers["Content-Type"] = "text/plain";
+
+	_writeBuffer = HttpResponseBuilder::buildSimpleResponse(res);
 }
