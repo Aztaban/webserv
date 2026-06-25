@@ -1,19 +1,41 @@
 #include "core/RequestHandler.hpp"
-#include "http/HttpRequestParser.hpp"
 #include "http/HttpRequestHandler.hpp"
-#include "http/HttpResponseBuilder.hpp"
-#include "routing/Router.hpp"
-#include "core/RequestContext.hpp"
 
-HttpResponse	RequestHandler::handle(const HttpRequest& request, const RequestContext& context)
+static std::string selectRootFromContext(const RequestContext& context)
 {
-	std::string	root = "./www/site1";
+    if (context.serverCandidates && !context.serverCandidates->empty())
+        return ((*context.serverCandidates)[0].getRoot());
 
-	if (context.serverCandidates && !context.serverCandidates->empty())
-		root = (*context.serverCandidates)[0].getRoot();
-	
-	HttpRequestHandler handler(root);
-	return handler.handle(request);
+    /*
+        TEMPORARY FALLBACK:
+        Used until EventLoop/ClientConnection pass real RequestContext.
+        Remove after TODO 5 / TODO 7 are finished.
+    */
+    return ("./www/site1");
+}
+
+HttpResponse RequestHandler::handle(const HttpRequest& request,
+                                    const RequestContext& context)
+{
+    /*
+        RequestHandler is the integration point.
+
+        Current temporary flow:
+        - choose root
+        - call HttpRequestHandler directly
+
+        Later final flow:
+        - choose ServerConfig from context.serverCandidates
+        - match LocationConfig with Router
+        - check allowed methods
+        - handle redirect/static/upload/delete/CGI
+        - return HttpResponse
+    */
+
+    std::string root = selectRootFromContext(context);
+
+    HttpRequestHandler handler(root);
+    return (handler.handle(request));
 }
 
 //TEMPORARY COMPATIBILITY.

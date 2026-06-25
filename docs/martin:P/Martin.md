@@ -335,7 +335,7 @@ HttpResponseBuilder
 
 ## 6. Ordered TODO list to finish your network/core part
 
-### TODO 1 — Freeze the interfaces with partners
+### TODO 1 — Freeze the interfaces with partners - DONE
 
 Do this before rewriting too much.
 
@@ -397,7 +397,7 @@ This can be simple at first. The goal is to prevent every teammate from inventin
 
 ---
 
-### TODO 2 — Remove duplicate parsing
+### TODO 2 — Remove duplicate parsing - DONE
 
 Current problem:
 
@@ -575,7 +575,7 @@ Dependency: config parser and router.
 
 ---
 
-### TODO 8 — Prepare RequestHandler as the integration point
+### TODO 8 — Prepare RequestHandler as the integration point - DONE
 
 Final `RequestHandler` should be the place where partner code connects.
 
