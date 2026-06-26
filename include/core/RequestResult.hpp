@@ -15,6 +15,12 @@ public:
     Type            type;
     HttpResponse    response;
     CgiRequest      cgiRequest;
+
+    RequestResult();
+
+    static RequestResult    fromResponse(const HttpResponse& response);
+    static RequestResult    fromCgiRequest(const CgiRequest& cgiRequest);
+
 };
 
 #endif

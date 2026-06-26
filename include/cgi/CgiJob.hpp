@@ -6,6 +6,7 @@
 
 # include <string>
 # include <ctime>
+# include <cstddef>
 
 # include <sys/types.h>
 
@@ -17,7 +18,7 @@ private:
     int         _stdoutFd;  // The EventLoop should own CGI jobs because it owns the poll() set.
 
     std::string _inputBuffer;
-    std::string _inputOffset;
+    std::size_t _inputOffset;
     std::string _outputBuffer;
 
     bool        _stdinClosed;

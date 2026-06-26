@@ -16,8 +16,11 @@ RM := rm -rf
 # -------- Sources (SERVER) --------
 SRCS := \
 	$(SRC_DIR)/main.cpp \
+	$(SRC_DIR)/cgi/CgiJob.cpp \
+	$(SRC_DIR)/cgi/CgiRequest.cpp \
 	$(SRC_DIR)/config/ServerConfig.cpp \
 	$(SRC_DIR)/core/RequestHandler.cpp \
+	$(SRC_DIR)/core/RequestResult.cpp \
 	$(SRC_DIR)/core/WebServer.cpp \
 	$(SRC_DIR)/network/Listener.cpp \
 	$(SRC_DIR)/network/ClientConnection.cpp \
