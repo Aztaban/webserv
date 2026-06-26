@@ -57,12 +57,12 @@ void	WebServer::_createListeners()
 	}
 }
 
-void WebServer::setup()
+void	WebServer::setup()
 {
 	_createListeners();
 }
 
-void WebServer::run()
+void	WebServer::run()
 {
 	Logger::info("Starting server event loop");
 	_eventLoop.run();

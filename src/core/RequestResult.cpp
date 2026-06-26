@@ -4,20 +4,20 @@ RequestResult::RequestResult() : type(RESPONSE_READY), response(), cgiRequest()
 {
 }
 
-RequestResult   RequestResult::fromResponse(const HttpResponse& response)
+RequestResult	RequestResult::fromResponse(const HttpResponse& response)
 {
-    RequestResult   result;
+	RequestResult	result;
 
-    result.type = RESPONSE_READY;
-    result.response = response;
-    return result;
+	result.type = RESPONSE_READY;
+	result.response = response;
+	return result;
 }
 
-RequestResult   RequestResult::fromCgiRequest(const CgiRequest& cgiRequest)
+RequestResult	RequestResult::fromCgiRequest(const CgiRequest& cgiRequest)
 {
-    RequestResult   result;
+	RequestResult	result;
 
-    result.type = CGI_REQUIRED;
-    result.cgiRequest = cgiRequest;
-    return result;
+	result.type = CGI_REQUIRED;
+	result.cgiRequest = cgiRequest;
+	return result;
 }

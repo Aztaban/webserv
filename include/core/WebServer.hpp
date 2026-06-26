@@ -7,6 +7,14 @@
 
 # include <vector>
 
+/**
+ * @brief Top-level server coordinator.
+ *
+ * WebServer owns the loaded ServerConfig objects, creates the listening
+ * sockets, registers them in the EventLoop, and starts the main loop.
+ *
+ * It does not handle individual client I/O directly.
+ */
 class WebServer {
 
 private:
