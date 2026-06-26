@@ -2,6 +2,7 @@
 # define CLIENTCONNECTION_HPP
 
 # include "core/RequestContext.hpp"
+#include "http/HttpResponse.hpp"
 
 # include <string>
 # include <ctime>
@@ -47,6 +48,8 @@ public:
 	bool		isDone() const;
 	void		readFromSocket();
 	void		writeToSocket();
+
+	void		prepareResponse(const HttpResponse& response);
 	void		touch();
 	bool		isTimedOut(std::time_t now, int timeoutSeconds) const;
 

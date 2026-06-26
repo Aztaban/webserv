@@ -3,7 +3,6 @@
 #include "core/RequestHandler.hpp"
 #include "http/HttpRequestParser.hpp"
 #include "http/HttpResponseBuilder.hpp"
-#include "http/HttpResponse.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -126,6 +125,15 @@ void ClientConnection::writeToSocket()
 		_state = CLIENT_DONE; // Later: reset to READING_HEADERS here if keep-alive is supported
 }
 
+void	ClientConnection::prepareResponse(const HttpResponse& response)
+{
+	_writeBuffer = HttpResponseBuilder::build(response);
+	_state = CLIENT_WRITING;
+	touch();
+
+	Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
+}
+
 void ClientConnection::touch()
 {
 	_lastActivity = std::time(NULL);
@@ -156,11 +164,7 @@ void ClientConnection::_processReadBuffer()
     _state = CLIENT_PROCESSING;
 
     HttpResponse response = RequestHandler::handle(parser.getRequest(), _context);
-
-    _writeBuffer = HttpResponseBuilder::build(response);
-    _state = CLIENT_WRITING;
-
-    Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
+    prepareResponse(response);
 }
 
 std::size_t ClientConnection::_getClientMaxBodySize() const
@@ -190,6 +194,7 @@ bool    ClientConnection::_bodyExceedsLimit() const
 void ClientConnection::_prepareErrorResponse(int code)
 {
     std::string reason = reasonPhrase(code);
+    HttpResponse	response(code, reason, reason);
 
-    _writeBuffer = HttpResponseBuilder::buildSimpleResponse(code, reason, reason);
+    prepareResponse(response);
 }

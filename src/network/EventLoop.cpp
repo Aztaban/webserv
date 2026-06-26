@@ -83,12 +83,12 @@ void EventLoop::_addClient(int clientFd, Listener* listener)
 void EventLoop::_removeClient(int clientFd)
 {
     std::map<int, ClientConnection *>::iterator it = _clients.find(clientFd);
+    _removePollFd(clientFd);
     if (it != _clients.end())
     {
         delete it->second;
         _clients.erase(it);
     }
-    _removePollFd(clientFd);
     Logger::info("Client closed: fd " + toString(clientFd));
 }
 

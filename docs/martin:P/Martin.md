@@ -640,7 +640,7 @@ Dependency: CGI partner. This is one of the biggest “do not leave until the en
 
 ---
 
-### TODO 10 — Add final cleanup paths
+### TODO 10 — Add final cleanup paths - FINISHED (CGI cleanup later)
 
 Every client must be removed safely on:
 
