@@ -6,6 +6,8 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <iostream>
+#include <dirent.h>
+#include <vector>
 
 #include "http/HttpRequest.hpp"
 #include "http/HttpResponse.hpp"
@@ -24,8 +26,10 @@ class HttpRequestHandler
 		HttpResponse _handleDELETE(const HttpRequest& request);
 
 		std::string _resolvePath(const std::string& target);
-
+		
 		HttpResponse _generateAutoIndex(const std::string& dirPath, const std::string& uri);
+
+		std::string _getFileName(const std::string& target);
 
 	public:
 		HttpRequestHandler(const std::string& root);
