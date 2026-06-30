@@ -111,7 +111,7 @@ static HttpRequestParser::ParseStatus	parseChunkedBody(
 		if (lineEnd == std::string::npos)
 			return HttpRequestParser::PARSE_INCOMPLETE;
 
-		sizeLine = bodyPart.substr(i, lineEnd - 1);
+		sizeLine = bodyPart.substr(i, lineEnd - i);
 
 		semiColon = sizeLine.find(";");
 		if (semiColon != std::string::npos)
