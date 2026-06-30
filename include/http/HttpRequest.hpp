@@ -1,8 +1,9 @@
 #ifndef HTTPREQUEST_HPP
 #define HTTPREQUEST_HPP
 
-# include <string>
-# include <map>
+#include <string>
+#include <map>
+#include "utils/FileUtils.hpp"
 
 class HttpRequest
 {

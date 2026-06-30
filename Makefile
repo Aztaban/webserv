@@ -26,7 +26,9 @@ SRCS := \
 	$(SRC_DIR)/utils/Logger.cpp \
 	$(SRC_DIR)/http/HttpRequestParser.cpp \
 	$(SRC_DIR)/http/HttpResponseBuilder.cpp \
-	$(SRC_DIR)/http/HttpRequestHandler.cpp
+	$(SRC_DIR)/http/HttpRequestHandler.cpp \
+	$(SRC_DIR)/http/HttpRequestHandlerErrors.cpp \
+	$(SRC_DIR)/utils/FileUtils.cpp
 
 OBJS := $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)

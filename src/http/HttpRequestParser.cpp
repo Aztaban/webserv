@@ -1,6 +1,6 @@
 #include "http/HttpRequestParser.hpp"
 
-//-------------------------------------- CONSTRUCTORS -----------------------------
+//-------------------------- CONSTRUCTORS ---------------------------
 HttpRequestParser::HttpRequestParser()
 	: _errorStatusCode(0) {}
 
@@ -19,7 +19,7 @@ HttpRequestParser& HttpRequestParser::operator=(const HttpRequestParser& other)
 
 HttpRequestParser::~HttpRequestParser() {}
 
-//-------------------------------------- HELPERS -----------------------------------
+//----------------------- HELPERS ---------------------------
 static std::string trim(const std::string& str)
 {
 	size_t start = str.find_first_not_of(" \t");
@@ -59,7 +59,7 @@ static std::string parseChunkedBody(const std::string& body)
 	return result;
 }
 
-//-------------------------------------- HEADERS -----------------------------------
+//------------------------ HEADERS --------------------------
 HttpRequestParser::ParseStatus
 HttpRequestParser::parseHeaders(const std::string& rawRequest, size_t pos)
 {
@@ -99,7 +99,7 @@ HttpRequestParser::parseHeaders(const std::string& rawRequest, size_t pos)
 	return PARSE_COMPLETE;
 }
 
-//-------------------------------------- REQUEST LINE -----------------------------
+//------------------------ REQUEST LINE -----------------------------
 HttpRequestParser::ParseStatus
 HttpRequestParser::parseRequestLine(const std::string& requestLine)
 {
@@ -152,7 +152,7 @@ HttpRequestParser::validateRequest()
 	return PARSE_COMPLETE;
 }
 
-//-------------------------------------- PARSE ENTRY ------------------------------
+//------------------------ PARSE ENTRY ------------------
 HttpRequestParser::ParseStatus
 HttpRequestParser::parse(const std::string& rawRequest)
 {
@@ -210,7 +210,7 @@ HttpRequestParser::parse(const std::string& rawRequest)
 	return PARSE_COMPLETE;
 }
 
-//-------------------------------------- GETTERS ----------------------------------
+//-------------------------- GETTERS ----------------------------------
 const HttpRequest& HttpRequestParser::getRequest() const
 {
 	return _request;

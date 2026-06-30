@@ -8,9 +8,11 @@
 #include <iostream>
 #include <dirent.h>
 #include <vector>
+#include <cstdio>
 
 #include "http/HttpRequest.hpp"
 #include "http/HttpResponse.hpp"
+#include "utils/FileUtils.hpp"
 
 class HttpRequestHandler
 {
@@ -18,8 +20,19 @@ class HttpRequestHandler
 		std::string _root;
 		bool _autoindexEnabled;
 
+		HttpResponse _buildErrorResponse(
+		int statusCode,
+		const std::string& reason,
+		const std::string& fileName,
+		const std::string& fallbackMessage);
+		
+		HttpResponse _error400();
+		HttpResponse _error403();
 		HttpResponse _error404();
 		HttpResponse _error405();
+		HttpResponse _error413();
+		HttpResponse _error500();
+		HttpResponse _error502();
 
 		HttpResponse _handleGET(const HttpRequest& request);
 		HttpResponse _handlePOST(const HttpRequest& request);
