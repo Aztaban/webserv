@@ -2,3 +2,6 @@ build
 *.d
 *.o
 webserv
+__pycache__
+report.html
+server_test.log

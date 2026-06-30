@@ -1,32 +1,49 @@
 #include "http/HttpResponseBuilder.hpp"
+
 #include <sstream>
 
-std::string HttpResponseBuilder::buildSimpleResponse(const HttpResponse& res)
+std::string HttpResponseBuilder::build(const HttpResponse& response)
 {
-	std::ostringstream response;
+	std::ostringstream	raw;
 
-	// Status line
-	response << "HTTP/1.1 "
-	         << res.statusCode << " "
-	         << res.reasonPhrase << "\r\n";
+	raw	<< "HTTP/1.1 "
+		<< response.statusCode
+		<< " "
+		<< response.reasonPhrase
+		<< "\r\n";
 
-	// Headers from response object
-	for (std::map<std::string, std::string>::const_iterator it = res.headers.begin();
-	     it != res.headers.end();
-	     ++it)
+	std::map<std::string, std::string>::const_iterator it;
+	for (it = response.headers.begin(); it != response.headers.end(); it++)
 	{
-		response << it->first << ": " << it->second << "\r\n";
+		if (it->first != "Content-Length"
+			&& it->first != "Connection")
+		{
+			raw << it->first << ": " << it->second << "\r\n";
+		}
 	}
 
-	// Ensure required headers exist
-	response << "Content-Length: " << res.body.size() << "\r\n";
-	response << "Connection: close\r\n";
+	raw << "Content-Length: " << response.body.size() << "\r\n";
 
-	// End of headers
-	response << "\r\n";
+	if (response.closeConnection)
+		raw << "Connection: close\r\n";
+	else
+		raw << "Connection: keep-alive\r\n";
+	
+	if (response.headers.find("Content-Type") == response.headers.end())
+		raw << "Content-Type: text/plain\r\n";
 
-	// Body
-	response << res.body;
+	raw << "\r\n";
+	raw << response.body;
 
-	return response.str();
+	return (raw.str());
+}
+
+std::string HttpResponseBuilder::buildSimpleResponse(int statusCode, const std::string& reasonPhrase, const std::string& body)
+{
+	HttpResponse response(statusCode, reasonPhrase, body);
+	
+	response.headers["Content-Type"] = "text/plain";
+	response.closeConnection = true;
+
+	return (HttpResponseBuilder::build(response));
 }

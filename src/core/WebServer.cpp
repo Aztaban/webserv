@@ -1,34 +1,69 @@
 #include "core/WebServer.hpp"
+#include "utils/Logger.hpp"
 
-WebServer::WebServer(const ServerConfig& config) : _config(config) {}
+#include <stdexcept>
+#include <sstream>
+#include <map>
+
+static std::string	makeListenKey(const std::string& host, int port)
+{
+	std::ostringstream	ss;
+
+	ss << host << ":" << port;
+	return ss.str();
+}
+
+WebServer::WebServer(const std::vector<ServerConfig>& configs) : _configs(configs) {}
 
 WebServer::~WebServer()
 {
-    for (std::size_t i = 0; i < _listeners.size(); i++)
-        delete _listeners[i];
+	for (std::size_t i = 0; i < _listeners.size(); i++)
+		delete _listeners[i];
 }
 
-// TEMP: later loop over std::vector<ServerConfig>
-void    WebServer::createListeners()
+void	WebServer::_createListeners()
 {
-    // TEMP: later create listeners from parsed config server blocks
-    Listener *listener1 = new Listener(_config.getHost(), _config.getPort());
-    listener1->setup();
-    _listeners.push_back(listener1);
-    _eventLoop.addListener(listener1);
+	if (_configs.empty())
+		throw std::runtime_error("No server configuration provided");
 
-    Listener    *listener2 = new Listener("127.0.0.1", 8001);
-    listener2->setup();
-    _listeners.push_back(listener2);
-    _eventLoop.addListener(listener2);
+	std::map<std::string, std::vector<ServerConfig> > groupedConfigs;
+
+	for (std::size_t i = 0; i < _configs.size(); i++)
+	{
+		std::string	key = makeListenKey(_configs[i].getHost(), _configs[i].getPort());
+		groupedConfigs[key].push_back(_configs[i]);
+	}
+
+	for (std::map<std::string, std::vector<ServerConfig> >::iterator it = groupedConfigs.begin();
+		it != groupedConfigs.end(); it++)
+	{
+		const std::vector<ServerConfig>& candidates = it->second;
+
+		Listener *listener = new Listener(
+			candidates[0].getHost(),
+			candidates[0].getPort(),
+			candidates
+		);
+
+		try {
+			listener->setup();
+			_eventLoop.addListener(listener);
+			_listeners.push_back(listener);
+		}
+		catch (...){
+			delete listener;
+			throw;
+		}
+	}
 }
 
-void WebServer::setup()
+void	WebServer::setup()
 {
-    createListeners();
+	_createListeners();
 }
 
-void WebServer::run()
+void	WebServer::run()
 {
-    _eventLoop.run();
+	Logger::info("Starting server event loop");
+	_eventLoop.run();
 }

@@ -1,23 +1,41 @@
 #ifndef HTTPREQUEST_HPP
-#define HTTPREQUEST_HPP
+# define HTTPREQUEST_HPP
 
-#include <string>
-#include <map>
-#include "utils/FileUtils.hpp"
+# include <string>
+# include <map>
+# include <cstddef>
 
-class HttpRequest
+struct HttpRequest
 {
 	public:
-		std::map<std::string, std::string> headers;
-		std::string body;
-	
-		std::string method;
-		std::string target;
-		std::string version;
-		std::string transferEncoding;
-		bool isChunked;
+		std::string	method;
+		std::string	target;	// Full target from request line, e.g. /path?x=1
+		std::string	path;	// Clean path without query, e.g. /path
+		std::string	query;	// Query string without '?'
+		std::string	version;
 
-		HttpRequest() : isChunked(false) {}
+		std::map<std::string, std::string>	headers;
+		std::string	body;
+		std::string	transferEncoding;
+
+		bool		isChunked;
+		bool		hasBody;
+		std::size_t	contentLength;
+
+		HttpRequest()
+			: method(),
+			  target(),
+			  path(),
+			  query(),
+			  version(),
+			  headers(),
+			  body(),
+			  transferEncoding(),
+			  isChunked(false),
+			  hasBody(false),
+			  contentLength(0)
+		{
+		}
 };
 
 #endif

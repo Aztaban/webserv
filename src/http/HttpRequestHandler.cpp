@@ -3,7 +3,7 @@
 // ----------------- CONSTRUCTORS ----------------
 
 HttpRequestHandler::HttpRequestHandler(const std::string& root)
-	: _root(root), _autoindexEnabled(true) {}
+	: _root(root), _autoindexEnabled(true) {} // TEMP: later comes from LocationConfig
 
 HttpRequestHandler::HttpRequestHandler(const HttpRequestHandler& other)
 	: _root(other._root), _autoindexEnabled(other._autoindexEnabled) {}
@@ -40,19 +40,23 @@ HttpResponse HttpRequestHandler::handle(const HttpRequest& request)
 
 HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 {
-	HttpResponse res;
+	HttpResponse	res;
+	std::string		target;
+	std::string		path;
+	struct stat		st;
+	
 
 	// SECURITY: basic path traversal protection
 	if (request.target.find("..") != std::string::npos)
 		return _error404();
 
-	std::string path = _resolvePath(request.target);
+	path = _resolvePath(request.target);
 
 	// NOTE: if empty -> invalid route or blocked path
 	if (path.empty())
 		return _error404();
 
-	struct stat st;
+	
 	if (stat(path.c_str(), &st) != 0)
 		return _error404();
 

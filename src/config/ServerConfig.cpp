@@ -1,12 +1,49 @@
 #include "config/ServerConfig.hpp"
 
-ServerConfig::ServerConfig() : _host("127.0.0.1"), _port(8000) {}
-ServerConfig::ServerConfig(const std::string &host, int port) : _host(host), _port(port) {}
+ServerConfig::ServerConfig()
+    : _host("127.0.0.1"),
+      _port(8000),
+      _root("./www/site1"),
+      _index("index.html"),
+      _clientMaxBodySize(1000000),
+      _errorPages(),
+      _locations()
+{
+}
 
-const std::string& ServerConfig::getHost() const {
+ServerConfig::ServerConfig(const std::string& host, int port)
+	: _host(host),
+	  _port(port),
+	  _root("./www/site1"),
+	  _index("index.html"),
+	  _clientMaxBodySize(1000000),
+	  _errorPages(),
+	  _locations()
+{
+}
+
+const   std::string& ServerConfig::getHost() const {
     return _host;
 }
 
 int ServerConfig::getPort() const {
     return _port;
+}
+
+const   std::string&  ServerConfig::getRoot() const {
+    return _root;
+}
+
+void    ServerConfig::setRoot(const std::string& root) {
+    _root = root;
+}
+
+std::size_t ServerConfig::getClientMaxBodySize() const
+{
+    return _clientMaxBodySize;
+}
+
+void    ServerConfig::setClientMaxBodySize(std::size_t size)
+{
+    _clientMaxBodySize = size;
 }

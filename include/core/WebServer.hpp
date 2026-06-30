@@ -7,21 +7,29 @@
 
 # include <vector>
 
+/**
+ * @brief Top-level server coordinator.
+ *
+ * WebServer owns the loaded ServerConfig objects, creates the listening
+ * sockets, registers them in the EventLoop, and starts the main loop.
+ *
+ * It does not handle individual client I/O directly.
+ */
 class WebServer {
 
 private:
-    ServerConfig            _config;
-    std::vector<Listener *> _listeners;
-    EventLoop               _eventLoop;
+	std::vector<ServerConfig>	_configs;
+	std::vector<Listener *>		_listeners;
+	EventLoop					_eventLoop;
 
-    void    createListeners();
+	void	_createListeners();
 
 public:
-    WebServer(const ServerConfig& config);
-    ~WebServer();
+	WebServer(const std::vector<ServerConfig>& configs);
+	~WebServer();
 
-    void    setup();
-    void    run();
+	void	setup();
+	void	run();
 
 };
 
