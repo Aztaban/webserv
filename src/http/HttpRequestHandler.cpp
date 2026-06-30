@@ -45,9 +45,13 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 	std::string		path;
 	struct stat		st;
 	
+	if (request.path.empty())
+		target = request.target;
+	else
+		target = request.path;
 
 	// SECURITY: basic path traversal protection
-	if (request.target.find("..") != std::string::npos)
+	if (target.find("..") != std::string::npos)
 		return _error404();
 
 	path = _resolvePath(request.target);
@@ -56,7 +60,6 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 	if (path.empty())
 		return _error404();
 
-	
 	if (stat(path.c_str(), &st) != 0)
 		return _error404();
 
@@ -81,8 +84,6 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 	res.body = FileUtils::read(path);
 	res.headers["Content-Type"] = FileUtils::mimeType(path);
 
-	std::cout << "GET path: " << path << std::endl;
-
 	return res;
 }
 
@@ -91,23 +92,28 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 
 HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 {
-	HttpResponse res;
-
+	HttpResponse	res;
+	std::string		target;
 	
+	if (request.path.empty())
+		target = request.target;
+	else
+		target = request.path;
+
 	// TEMPORARY DESIGN DECISION (NOT FINAL ARCHITECTURE)
 	// Upload directory is hardcoded here, but SHOULD come from:
 	//   - config file (Lada, will do it:))
 	//   - route/location block
 	//   - or Router resolution layer
 	
-	std::string uploadDir = _root + "/site1/uploads/";
+	std::string uploadDir = _root + "/uploads/";
 
-	std::string fileName = _getFileName(request.target);
+	std::string fileName = _getFileName(target);
 
 	// SECURITY CHECKS (from mine part:))
-	if (fileName.empty() ||
-		fileName.find('/') != std::string::npos ||
-		fileName.find("..") != std::string::npos)
+	if (fileName.empty()
+		|| fileName.find('/') != std::string::npos
+		|| fileName.find("..") != std::string::npos)
 		return _error400();
 
 	if (request.body.empty())
@@ -120,6 +126,7 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 		return _error500();
 
 	out.write(request.body.c_str(), request.body.size());
+	out.close();
 
 	res.statusCode = 201;
 	res.reasonPhrase = "Created";
@@ -134,14 +141,23 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 
 HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
 {
-	if (request.target.find("..") != std::string::npos)
+	HttpResponse	res;
+	std::string		target;
+	std::string		path;
+	struct stat		st;
+
+	if (request.path.empty())
+		target = request.target;
+	else
+		target = request.path;
+
+	if (target.find("..") != std::string::npos)
 		return _error404();
 
-	std::string path = _resolvePath(request.target);
+	path = _resolvePath(target);
 	if (path.empty())
 		return _error404();
 
-	struct stat st;
 	if (stat(path.c_str(), &st) != 0)
 		return _error404();
 
@@ -151,11 +167,10 @@ HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
 	if (std::remove(path.c_str()) != 0)
 		return _error500();
 
-	HttpResponse res;
 	res.statusCode = 204;
 	res.reasonPhrase = "No Content";
-
-	std::cout << "DELETE path: " << path << std::endl;
+	res.body = "";
+	res.headers["Content-Type"] = "text/plain";
 
 	return res;
 }
@@ -167,13 +182,13 @@ HttpResponse HttpRequestHandler::_generateAutoIndex(
 	const std::string& dirPath,
 	const std::string& uri)
 {
-	HttpResponse res;
+	HttpResponse		res;
+	std::ostringstream	html;
 
 	DIR* dir = opendir(dirPath.c_str());
 	if (!dir)
 		return _error404();
 
-	std::ostringstream html;
 
 	html << "<html><body><h1>Index of " << uri << "</h1><ul>";
 

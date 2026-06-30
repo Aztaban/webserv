@@ -302,7 +302,7 @@ HttpRequestParser::parse(const std::string& rawRequest)
 
 	bodyPart = rawRequest.substr(headerEnd + 4);
 
-	if (_request.chunked)
+	if (_request.isChunked)
 	{
 		std::string	decodedBody;
 		std::size_t	chunkedConsumed;
