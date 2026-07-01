@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import List
 
-from tests.lib.http_client import send_raw_request
+from tests.lib.http_client import send_raw_request, send_raw_request_allow_reset
 
 
 class TestContext:
@@ -145,3 +145,17 @@ class TestContext:
                     return True
 
         return False
+
+    def post_allow_reset(self, path: str, body: str, timeout: float = 5.0) -> str:
+        """Send POST request but tolerate early server close/reset."""
+        return send_raw_request_allow_reset(
+            self.host,
+            self.port,
+            "POST {} HTTP/1.1\r\n"
+            "Host: localhost\r\n"
+            "Content-Length: {}\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+            "{}".format(path, len(body), body),
+            timeout=timeout,
+        )

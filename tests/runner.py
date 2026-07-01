@@ -276,11 +276,16 @@ def main() -> int:
     if selected_group not in ["all", "network", "e2e", "unit"]:
         print_usage()
         return 1
-    
+
     tests: List[Tuple[str, str, TestFunction]] = discover_python_tests(selected_group)
     run_units: bool = (selected_group == "all" or selected_group == "unit")
 
-    if not tests:
+    total_test_count: int = len(tests)
+
+    if run_units:
+        total_test_count += len(CPP_UNIT_TESTS)
+
+    if total_test_count == 0:
         print("No tests found for group: {}".format(selected_group))
         return 1
 
@@ -296,25 +301,24 @@ def main() -> int:
     results: List[TestResult] = []
 
     try:
-        if tests:
-            print("[INFO] Building project")
-            build_project()
+        print("[INFO] Running {} test(s)".format(total_test_count))
 
+        print("[INFO] Building project")
+        build_project()
+
+        if tests:
             print("[INFO] Starting server")
             server = start_server()
 
-            print("[INFO] Running {} test(s)".format(len(tests)))
-
-            for group, name, function in tests:
-                result: TestResult = run_one_test(group, name, function, context)
-                results.append(result)
-
         if run_units:
-            print("[INFO] Running C++ unit tests")
             unit_results: List[TestResult] = run_cpp_unit_tests()
 
             for result in unit_results:
                 results.append(result)
+
+        for group, name, function in tests:
+            result: TestResult = run_one_test(group, name, function, context)
+            results.append(result)
 
         generate_html_report(results, TEMPLATE_PATH, REPORT_PATH)
 
@@ -327,7 +331,7 @@ def main() -> int:
 
         if passed != total:
             return 1
-        
+
         return 0
 
     except Exception as error:
