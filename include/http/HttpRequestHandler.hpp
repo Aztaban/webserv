@@ -20,24 +20,11 @@ class HttpRequestHandler
 		std::string _root;
 		bool _autoindexEnabled;
 
-		HttpResponse _buildErrorResponse(
-		int statusCode,
-		const std::string& reason,
-		const std::string& fileName,
-		const std::string& fallbackMessage);
+		HttpResponse	_error(int code);
+		HttpResponse	_handleGET(const HttpRequest& request);
+		HttpResponse	_handlePOST(const HttpRequest& request);
+		HttpResponse	_handleDELETE(const HttpRequest& request);
 		
-		HttpResponse _error400();
-		HttpResponse _error403();
-		HttpResponse _error404();
-		HttpResponse _error405();
-		HttpResponse _error413();
-		HttpResponse _error500();
-		HttpResponse _error502();
-
-		HttpResponse _handleGET(const HttpRequest& request);
-		HttpResponse _handlePOST(const HttpRequest& request);
-		HttpResponse _handleDELETE(const HttpRequest& request);
-
 		std::string _resolvePath(const std::string& target);
 		
 		HttpResponse _generateAutoIndex(const std::string& dirPath, const std::string& uri);
@@ -50,7 +37,8 @@ class HttpRequestHandler
 		HttpRequestHandler& operator=(const HttpRequestHandler& other);
 		~HttpRequestHandler();
 
-		HttpResponse handle(const HttpRequest& request);
+		HttpResponse	handle(const HttpRequest& request);
+
 };
 
 #endif

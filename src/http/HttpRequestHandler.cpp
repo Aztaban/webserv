@@ -1,4 +1,5 @@
 #include "http/HttpRequestHandler.hpp"
+#include "core/ErrorResponseFactory.hpp"
 
 // ----------------- CONSTRUCTORS ----------------
 
@@ -20,6 +21,11 @@ HttpRequestHandler& HttpRequestHandler::operator=(const HttpRequestHandler& othe
 
 HttpRequestHandler::~HttpRequestHandler() {}
 
+// ----------------- ERROR WRAPPER --------------------
+HttpResponse	HttpRequestHandler::_error(int code)
+{
+	return (ErrorResponseFactory::create(code, _root));
+}
 
 // ----------------- MAIN DISPATCH --------------------
 
@@ -32,7 +38,7 @@ HttpResponse HttpRequestHandler::handle(const HttpRequest& request)
 	if (request.method == "DELETE")
 		return _handleDELETE(request);
 
-	return _error405();
+	return _error(405);
 }
 
 
@@ -52,16 +58,16 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 
 	// SECURITY: basic path traversal protection
 	if (target.find("..") != std::string::npos)
-		return _error404();
+		return _error(404);
 
 	path = _resolvePath(request.target);
 
 	// NOTE: if empty -> invalid route or blocked path
 	if (path.empty())
-		return _error404();
+		return _error(404);
 
 	if (stat(path.c_str(), &st) != 0)
-		return _error404();
+		return _error(404);
 
 	// DIRECTORY HANDLING (Diana responsibility)
 	if (S_ISDIR(st.st_mode))
@@ -76,7 +82,7 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 		else if (_autoindexEnabled)
 			return _generateAutoIndex(path, request.target);
 		else
-			return _error404();
+			return _error(404);
 	}
 
 	res.statusCode = 200;
@@ -114,16 +120,16 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 	if (fileName.empty()
 		|| fileName.find('/') != std::string::npos
 		|| fileName.find("..") != std::string::npos)
-		return _error400();
+		return _error(400);
 
 	if (request.body.empty())
-		return _error400();
+		return _error(400);
 
 	std::string fullPath = uploadDir + fileName;
 
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
 	if (!out.is_open())
-		return _error500();
+		return _error(500);
 
 	out.write(request.body.c_str(), request.body.size());
 	out.close();
@@ -152,20 +158,20 @@ HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
 		target = request.path;
 
 	if (target.find("..") != std::string::npos)
-		return _error404();
+		return _error(404);
 
 	path = _resolvePath(target);
 	if (path.empty())
-		return _error404();
+		return _error(404);
 
 	if (stat(path.c_str(), &st) != 0)
-		return _error404();
+		return _error(404);
 
 	if (!S_ISREG(st.st_mode))
-		return _error403();
+		return _error(403);
 
 	if (std::remove(path.c_str()) != 0)
-		return _error500();
+		return _error(500);
 
 	res.statusCode = 204;
 	res.reasonPhrase = "No Content";
@@ -187,7 +193,7 @@ HttpResponse HttpRequestHandler::_generateAutoIndex(
 
 	DIR* dir = opendir(dirPath.c_str());
 	if (!dir)
-		return _error404();
+		return _error(404);
 
 
 	html << "<html><body><h1>Index of " << uri << "</h1><ul>";
