@@ -35,6 +35,23 @@ TEST_DIRS: List[str] = [
     "e2e"
 ]
 
+CPP_UNIT_TESTS: List[Tuple[str, List[str]]] = [
+    (
+        "parser_tests",
+        [
+            "tests/unit/parser_tests.cpp",
+            "src/http/HttpRequestParser.cpp"
+        ],
+    ),
+    (
+        "response_builder_tests",
+        [
+            "tests/unit/response_builder_tests.cpp",
+            "src/http/HttpResponseBuilder.cpp",
+        ],
+    )
+]
+
 TestFunction = Callable[[TestContext], None]
 RegisteredTest = Tuple[str, TestFunction]
 
@@ -152,6 +169,71 @@ def discover_python_tests(selected_group: str) -> List[Tuple[str, str, TestFunct
     return discovered
 
 
+def _run_command(command: List[str], cwd: str) -> subprocess.CompletedProcess:
+    """Run a command and keep stdout/stderr for test failure messages."""
+    return subprocess.run(
+        command,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+    )
+
+
+def _command_output(result: subprocess.CompletedProcess) -> str:
+    output: str = (result.stdout or "") + (result.stderr or "")
+    return output.strip()
+
+
+def run_cpp_unit_test(name: str, sources: List[str]) -> TestResult:
+    """Compile and run one C++ unit test binary."""
+    start: float = time.time()
+    bin_dir: str = os.path.join(ROOT_DIR, "tests", "bin")
+    binary_path: str = os.path.join(bin_dir, name)
+
+    if not os.path.isdir(bin_dir):
+        os.makedirs(bin_dir)
+
+    compile_command: List[str] = [
+        "c++",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-std=c++98",
+        "-Iinclude",
+    ]
+    compile_command.extend(sources)
+    compile_command.extend(["-o", binary_path])
+
+    compile_result: subprocess.CompletedProcess = _run_command(compile_command, ROOT_DIR)
+
+    if compile_result.returncode != 0:
+        duration: float = time.time() - start
+        message: str = "compile failed\n{}".format(_command_output(compile_result))
+        print("[FAIL] unit / {} -> compile failed".format(name))
+        return TestResult("unit", name, False, message, duration)
+
+    run_result: subprocess.CompletedProcess = _run_command([binary_path], ROOT_DIR)
+    duration: float = time.time() - start
+
+    if run_result.returncode != 0:
+        message = "test failed\n{}".format(_command_output(run_result))
+        print("[FAIL] unit / {} -> test failed".format(name))
+        return TestResult("unit", name, False, message, duration)
+
+    print("[PASS] unit / {}".format(name))
+    return TestResult("unit", name, True, "", duration)
+
+
+def run_cpp_unit_tests() -> List[TestResult]:
+    results: List[TestResult] = []
+
+    for name, sources in CPP_UNIT_TESTS:
+        results.append(run_cpp_unit_test(name, sources))
+
+    return results
+
+
 def run_one_test(
     group: str,
     name: str,
@@ -178,6 +260,7 @@ def print_usage() -> None:
     print("  python3 tests/runner.py")
     print("  python3 tests/runner.py network")
     print("  python3 tests/runner.py e2e")
+    print("  python3 tests/runner.py unit")
 
 
 def main() -> int:
@@ -190,7 +273,12 @@ def main() -> int:
     if len(sys.argv) == 2:
         selected_group = sys.argv[1]
 
+    if selected_group not in ["all", "network", "e2e", "unit"]:
+        print_usage()
+        return 1
+    
     tests: List[Tuple[str, str, TestFunction]] = discover_python_tests(selected_group)
+    run_units: bool = (selected_group == "all" or selected_group == "unit")
 
     if not tests:
         print("No tests found for group: {}".format(selected_group))
@@ -208,17 +296,25 @@ def main() -> int:
     results: List[TestResult] = []
 
     try:
-        print("[INFO] Building project")
-        build_project()
+        if tests:
+            print("[INFO] Building project")
+            build_project()
 
-        print("[INFO] Starting server")
-        server = start_server()
+            print("[INFO] Starting server")
+            server = start_server()
 
-        print("[INFO] Running {} test(s)".format(len(tests)))
+            print("[INFO] Running {} test(s)".format(len(tests)))
 
-        for group, name, function in tests:
-            result: TestResult = run_one_test(group, name, function, context)
-            results.append(result)
+            for group, name, function in tests:
+                result: TestResult = run_one_test(group, name, function, context)
+                results.append(result)
+
+        if run_units:
+            print("[INFO] Running C++ unit tests")
+            unit_results: List[TestResult] = run_cpp_unit_tests()
+
+            for result in unit_results:
+                results.append(result)
 
         generate_html_report(results, TEMPLATE_PATH, REPORT_PATH)
 
