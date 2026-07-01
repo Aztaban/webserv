@@ -136,15 +136,34 @@ void ClientConnection::_processReadBuffer()
 	HttpRequestParser::ParseStatus	status;
 
 	status = parser.parse(_readBuffer);
-	if (status == HttpRequestParser::PARSE_INCOMPLETE)
-		return;
-		
+
 	if (status == HttpRequestParser::PARSE_ERROR)
 	{
 		Logger::error("Client fd " + toString(_fd) + " malformed request");
 		_prepareErrorResponse(parser.getErrorStatusCode());
 		return;
 	}
+
+	if (parser.headersComplete())
+	{
+		const HttpRequest& request = parser.getRequest();
+
+		if (request.hasBody && request.contentLength > _getClientMaxBodySize())
+		{
+			Logger::error("Client fd " + toString(_fd) + " request body too large");
+			_prepareErrorResponse(413);
+			return;
+		}
+
+		if (status == HttpRequestParser::PARSE_INCOMPLETE)
+		{
+			_state = CLIENT_READING_BODY;
+			return;
+		}
+	}
+
+	if (status == HttpRequestParser::PARSE_INCOMPLETE)
+		return;
 
 	_state = CLIENT_PROCESSING;
 

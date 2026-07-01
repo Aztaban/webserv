@@ -20,6 +20,7 @@ class HttpRequestParser
 		HttpRequest	_request;
 		int			_errorStatusCode;
 		std::size_t	_consumedBytes;
+		bool		_headersComplete;
 
 		ParseStatus	parseRequestLine(const std::string& requestLine);
 		ParseStatus	parseHeaders(const std::string& rawRequest, size_t startPos);
@@ -35,6 +36,7 @@ class HttpRequestParser
 
 		const HttpRequest&	getRequest() const;
 		int					getErrorStatusCode() const;
+		bool				headersComplete() const;
 		std::size_t			getConsumedBytes() const;
 		void 				reset();
 	};
