@@ -2,25 +2,50 @@
 
 // ----------------- CONSTRUCTORS ----------------
 
-HttpRequestHandler::HttpRequestHandler(const std::string& root)
-	: _root(root), _autoindexEnabled(true) {} // TEMP: later comes from LocationConfig
+HttpRequestHandler::HttpRequestHandler(
+	const std::string& root,
+	const std::string& uploadDirectory,
+	const std::string& errorDirectory,
+	bool autoindexEnabled,
+	size_t maxBodySize)
+	:
+	_root(root),
+	_uploadDirectory(uploadDirectory),
+	_errorDirectory(errorDirectory),
+	_autoindexEnabled(autoindexEnabled),
+	_maxBodySize(maxBodySize)
+{
+}
 
-HttpRequestHandler::HttpRequestHandler(const HttpRequestHandler& other)
-	: _root(other._root), _autoindexEnabled(other._autoindexEnabled) {}
+HttpRequestHandler::HttpRequestHandler(
+	const HttpRequestHandler& other)
+	:
+	_root(other._root),
+	_uploadDirectory(other._uploadDirectory),
+	_errorDirectory(other._errorDirectory),
+	_autoindexEnabled(other._autoindexEnabled),
+	_maxBodySize(other._maxBodySize)
+{
+}
 
-HttpRequestHandler& HttpRequestHandler::operator=(const HttpRequestHandler& other)
+HttpRequestHandler& HttpRequestHandler::operator=(
+	const HttpRequestHandler& other)
 {
 	if (this != &other)
 	{
 		_root = other._root;
+		_uploadDirectory = other._uploadDirectory;
+		_errorDirectory = other._errorDirectory;
 		_autoindexEnabled = other._autoindexEnabled;
+		_maxBodySize = other._maxBodySize;
 	}
+
 	return *this;
 }
 
-HttpRequestHandler::~HttpRequestHandler() {}
-
-
+HttpRequestHandler::~HttpRequestHandler()
+{
+}
 // ----------------- MAIN DISPATCH --------------------
 
 HttpResponse HttpRequestHandler::handle(const HttpRequest& request)
@@ -90,27 +115,43 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 
 // --------------------- POST -------------------------
 
-HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
+HttpResponse HttpRequestHandler::_handlePOST(
+	const HttpRequest& request)
 {
-	HttpResponse	res;
-	std::string		target;
-	
+	HttpResponse res;
+
+	std::string target;
+
 	if (request.path.empty())
 		target = request.target;
 	else
 		target = request.path;
 
-	// TEMPORARY DESIGN DECISION (NOT FINAL ARCHITECTURE)
-	// Upload directory is hardcoded here, but SHOULD come from:
-	//   - config file (Lada, will do it:))
-	//   - route/location block
-	//   - or Router resolution layer
-	
-	std::string uploadDir = _root + "/uploads/";
+	/*
+	 * TODO LADA:
+	 *
+	 * Upload directory should come from config.
+	 *
+	 * Example:
+	 *
+	 * location /uploads {
+	 *      upload_path ./uploads;
+	 * }
+	 *
+	 */
+
+	std::string uploadDir = _uploadDirectory;
+
+	// Temporary fallback to keep tests working
+	if (uploadDir.empty())
+		uploadDir = _root + "/uploads/";
+
+	if (_maxBodySize > 0
+		&& request.contentLength > _maxBodySize)
+		return _error413();
 
 	std::string fileName = _getFileName(target);
 
-	// SECURITY CHECKS (from mine part:))
 	if (fileName.empty()
 		|| fileName.find('/') != std::string::npos
 		|| fileName.find("..") != std::string::npos)
@@ -121,11 +162,17 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 
 	std::string fullPath = uploadDir + fileName;
 
-	std::ofstream out(fullPath.c_str(), std::ios::binary);
+	std::ofstream out(
+		fullPath.c_str(),
+		std::ios::binary);
+
 	if (!out.is_open())
 		return _error500();
 
-	out.write(request.body.c_str(), request.body.size());
+	out.write(
+		request.body.c_str(),
+		request.body.size());
+
 	out.close();
 
 	res.statusCode = 201;
@@ -135,7 +182,6 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 
 	return res;
 }
-
 
 // --------------------- DELETE --------------------
 
@@ -239,32 +285,33 @@ so the final thing should be =
 YO Diana = asks Router/Config for resolved path
 and Lada = provides mapping rules */
 
-std::string HttpRequestHandler::_resolvePath(const std::string& target)
+std::string HttpRequestHandler::_resolvePath(
+	const std::string& target)
 {
 	if (target.empty() || target[0] != '/')
 		return "";
 
 	std::string cleanTarget = target;
-
-	// Remove query string (OK = mine part)
 	size_t q = cleanTarget.find('?');
+
 	if (q != std::string::npos)
 		cleanTarget = cleanTarget.substr(0, q);
 
-	// Basic security check (OK but not sufficient alone)
 	if (cleanTarget.find("..") != std::string::npos)
 		return "";
 
-	// TEMPORARY ROUTING HACK
-	// This bypasses proper config-based routing.
-	// Should be removed once Lada implements:
-	//   - location blocks
-	//   - root directives
-	//   - alias rules
-	// loking forwardssssss:)
-
-	if (cleanTarget.find("/uploads/") == 0)
-		return _root + "/site1" + cleanTarget;
+	/*
+	 * TODO LADA:
+	 *
+	 * Remove this function after Router integration.
+	 *
+	 * Router should decide:
+	 *
+	 * /        -> site root
+	 * /uploads -> upload location
+	 * /cgi-bin -> CGI execution
+	 *
+	 */
 
 	return _root + cleanTarget;
 }

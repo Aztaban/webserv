@@ -20,13 +20,14 @@
 - Serving static files
 - Directory listing
 - File uploads (POST)
+- DELETE method
 
 ## Lada — Config Parser & CGI
 - Config file parser (server blocks, location blocks, all directives)
 - Route matching logic (which location block applies to a given URL)
 - CGI execution (fork() + execve(), env variables, stdin/stdout piping)
 - HTTP redirects
-- DELETE method
+
 
 # Integration Points to Watch
 The moments where your work connects are the riskiest — plan for them explicitly:

@@ -9,11 +9,27 @@ HttpResponse HttpRequestHandler::_buildErrorResponse(
 	const std::string& fallback)
 {
 	HttpResponse res;
-
 	res.statusCode = statusCode;
 	res.reasonPhrase = reason;
 
-	std::string path = _root + "/site1/errors/" + fileName;
+	/*
+	 * TODO LADA:
+	 *
+	 * Error pages should come from config.
+	 *
+	 * Example:
+	 *
+	 * error_page 404 /errors/404.html;
+	 *
+	 */
+
+	std::string path;
+
+	if (!_errorDirectory.empty())
+		path = _errorDirectory + "/" + fileName;
+	else
+		path = _root + "/site1/errors/" + fileName;
+
 	std::string body = FileUtils::read(path);
 
 	if (body.empty())
