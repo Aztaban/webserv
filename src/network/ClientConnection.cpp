@@ -3,6 +3,7 @@
 #include "core/RequestHandler.hpp"
 #include "http/HttpRequestParser.hpp"
 #include "http/HttpResponseBuilder.hpp"
+#include "core/ErrorResponseFactory.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -18,23 +19,6 @@ ClientConnection::ClientConnection(int fd, const RequestContext& context)
 }
 
 static const std::size_t DEFAULT_CLIENT_MAX_BODY_SIZE = 1000000;
-
-static std::string reasonPhrase(int code)
-{
-	if (code == 400)
-		return ("Bad Request");
-	if (code == 405)
-		return ("Method Not Allowed");
-	if (code == 413)
-		return ("Payload Too Large");
-	if (code == 431)
-		return ("Request Header Fields Too Large");
-	if (code == 501)
-		return ("Not Implemented");
-	if (code == 505)
-		return ("HTTP Version Not Supported");
-	return ("Internal Server Error");
-}
 
 ClientConnection::~ClientConnection()
 {
@@ -152,15 +136,34 @@ void ClientConnection::_processReadBuffer()
 	HttpRequestParser::ParseStatus	status;
 
 	status = parser.parse(_readBuffer);
-	if (status == HttpRequestParser::PARSE_INCOMPLETE)
-		return;
-		
+
 	if (status == HttpRequestParser::PARSE_ERROR)
 	{
 		Logger::error("Client fd " + toString(_fd) + " malformed request");
 		_prepareErrorResponse(parser.getErrorStatusCode());
 		return;
 	}
+
+	if (parser.headersComplete())
+	{
+		const HttpRequest& request = parser.getRequest();
+
+		if (request.hasBody && request.contentLength > _getClientMaxBodySize())
+		{
+			Logger::error("Client fd " + toString(_fd) + " request body too large");
+			_prepareErrorResponse(413);
+			return;
+		}
+
+		if (status == HttpRequestParser::PARSE_INCOMPLETE)
+		{
+			_state = CLIENT_READING_BODY;
+			return;
+		}
+	}
+
+	if (status == HttpRequestParser::PARSE_INCOMPLETE)
+		return;
 
 	_state = CLIENT_PROCESSING;
 
@@ -194,14 +197,9 @@ bool	ClientConnection::_bodyExceedsLimit() const
 
 void ClientConnection::_prepareErrorResponse(int code)
 {
-	std::string		reason = reasonPhrase(code);
 	HttpResponse	response;
 
-	response.statusCode = code;
-	response.reasonPhrase = reason;
-	response.body = reason;
-	response.headers["Content-Type"] = "text/plain";
-	response.closeConnection = true;
+	response = ErrorResponseFactory::create(code, _context);
 
 	prepareResponse(response);
 }

@@ -19,6 +19,7 @@ SRCS := \
 	$(SRC_DIR)/cgi/CgiJob.cpp \
 	$(SRC_DIR)/cgi/CgiRequest.cpp \
 	$(SRC_DIR)/config/ServerConfig.cpp \
+	$(SRC_DIR)/core/ErrorResponseFactory.cpp \
 	$(SRC_DIR)/core/RequestHandler.cpp \
 	$(SRC_DIR)/core/RequestResult.cpp \
 	$(SRC_DIR)/core/WebServer.cpp \
@@ -30,7 +31,6 @@ SRCS := \
 	$(SRC_DIR)/http/HttpRequestParser.cpp \
 	$(SRC_DIR)/http/HttpResponseBuilder.cpp \
 	$(SRC_DIR)/http/HttpRequestHandler.cpp \
-	$(SRC_DIR)/http/HttpRequestHandlerErrors.cpp \
 	$(SRC_DIR)/utils/FileUtils.cpp
 
 OBJS := $(SRCS:%.cpp=$(OBJ_DIR)/%.o)

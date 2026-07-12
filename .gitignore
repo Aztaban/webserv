@@ -5,3 +5,4 @@ webserv
 __pycache__
 report.html
 server_test.log
+tests/bin

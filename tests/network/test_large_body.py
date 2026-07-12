@@ -15,16 +15,28 @@ def test_large_body_does_not_crash_server(ctx: TestContext) -> None:
     assert_http_response(response)
 
 
-def test_oversized_body_returns_413(ctx: TestContext) -> None:
+def test_oversized_content_length_returns_413(ctx: TestContext) -> None:
     """
     Send a body larger than the current temporary body limit.
-
-    With your current temporary ClientConnection limit, this should return 413.
-    Later this limit should come from config.
     """
+    request: str = (
+        "POST / HTTP/1.1\r\n"
+        "Host: localhost\r\n"
+        "Content-Length: 1100000\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+    )
+
+    response: str = ctx.send_raw_request(request, timeout=5)
+
+    assert_http_response(response)
+    assert_status(response, 413)
+
+
+def test_oversized_body_upload_returns_413_or_closes_early(ctx: TestContext) -> None:
     body: str = "A" * 1100000
 
-    response: str = ctx.post("/", body, timeout=5)
+    response: str = ctx.post_allow_reset("/", body, timeout=5)
 
     assert_http_response(response)
     assert_status(response, 413)
@@ -33,5 +45,6 @@ def test_oversized_body_returns_413(ctx: TestContext) -> None:
 def register_tests():
     return [
         ("large body does not crash server", test_large_body_does_not_crash_server),
-        ("oversized body returns 413", test_oversized_body_returns_413)
+        ("oversized content length returns 413", test_oversized_content_length_returns_413),
+        ("oversized body upload returns 413 or closes early", test_oversized_body_upload_returns_413_or_closes_early)
     ]
