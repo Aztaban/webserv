@@ -18,6 +18,9 @@ SRCS := \
 	$(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/cgi/CgiJob.cpp \
 	$(SRC_DIR)/cgi/CgiRequest.cpp \
+	$(SRC_DIR)/config/ConfigParser.cpp \
+	$(SRC_DIR)/config/ConfigParserBlocks.cpp \
+	$(SRC_DIR)/config/ConfigParserUtils.cpp \
 	$(SRC_DIR)/config/ServerConfig.cpp \
 	$(SRC_DIR)/core/ErrorResponseFactory.cpp \
 	$(SRC_DIR)/core/RequestHandler.cpp \

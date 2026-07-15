@@ -12,7 +12,7 @@
 - Client connection lifecycle (connect → read → write → disconnect)
 - Stress testing / keeping server alive
 
-## Diana — HTTP Parsing & Response Building
+## Diana — HTTP Parsing & Response Building, Config Parser 
 - Parsing raw bytes into structured requests (request line, headers, body)
 - Chunked transfer encoding / Content-Length handling
 - Building HTTP responses (status codes, headers, body)
@@ -21,12 +21,25 @@
 - Directory listing
 - File uploads (POST)
 - DELETE method
-
-## Lada — Config Parser & CGI
 - Config file parser (server blocks, location blocks, all directives)
 - Route matching logic (which location block applies to a given URL)
+
+## Lada — CGI
 - CGI execution (fork() + execve(), env variables, stdin/stdout piping)
 - HTTP redirects
+
+
+## Current Status
+
+## Diana:
+- Done: HTTP request parsing, HTTP response building, config file parsing, basic static GET, autoindex, POST upload, DELETE, and config unit tests.
+- Done: `ServerConfig` / `LocationConfig` storage and the first parser helpers split into smaller files.
+  
+- Missing: route matching wired into request handling, host/server selection, custom error pages from config, and full config-driven behavior in `HttpRequestHandler`.
+- Missing: final edge cases for config validation, duplicate directives, and location inheritance rules.
+
+# Lada:
+- Missing: CGI execution, CGI env setup, stdin/stdout piping, CGI response parsing, and redirect handling.
 
 
 # Integration Points to Watch
