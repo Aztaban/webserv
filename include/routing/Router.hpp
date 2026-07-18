@@ -1,18 +1,51 @@
 #ifndef ROUTER_HPP
 # define ROUTER_HPP
 
+# include <string>
+
 # include "http/HttpRequest.hpp"
+# include "core/RequestContext.hpp"
 # include "config/ServerConfig.hpp"
 # include "config/LocationConfig.hpp"
 
-class Router {
+// Result of server and location selection.
+struct RouteResult
+{
+	const ServerConfig* server;
+	const LocationConfig* location;
 
-public:
-    Router();
-    ~Router();
+	std::string root;
 
-    const LocationConfig* matchLocation(const HttpRequest& request, const ServerConfig& server) const;
-
+	RouteResult()
+		: server(NULL),
+		  location(NULL),
+		  root()
+	{}
 };
+
+class Router
+{
+	public:
+
+		// Finds the server and location for a request.
+		static RouteResult route(
+			const HttpRequest& request,
+			const RequestContext& context);
+
+
+	private:
+
+		// Selects matching server configuration.
+		static const ServerConfig* selectServer(
+			const HttpRequest& request,
+			const RequestContext& context);
+
+
+		// Selects the longest matching location.
+		static const LocationConfig* selectLocation(
+			const HttpRequest& request,
+			const ServerConfig& server);
+};
+
 
 #endif

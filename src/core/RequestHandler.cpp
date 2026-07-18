@@ -1,38 +1,56 @@
 #include "core/RequestHandler.hpp"
-#include "http/HttpRequestHandler.hpp"
-#include "utils/Logger.hpp"
+#include <iostream>
 
-static std::string selectRootFromContext(const RequestContext& context)
+// Creates the HTTP handler using the selected route.
+static HttpRequestHandler createHttpHandler(const RouteResult& route)
 {
-	if (!context.serverCandidates || context.serverCandidates->empty())
-		return ("");
+	std::string root;
+	std::string uploadDirectory;
+	bool autoindex = false;
+	size_t maxBodySize = 0;
 
-	return ((*context.serverCandidates)[0].getRoot());
+	if (route.location)
+	{
+		root = route.location->root;
+		uploadDirectory = route.location->uploadPath;
+		autoindex = route.location->autoindex;
+	}
+
+	if (route.server)
+	{
+		if (root.empty())
+			root = route.server->getRoot();
+
+		maxBodySize = route.server->getClientMaxBodySize();
+	}
+
+	//std::cout << "DEBUG handler root: " << root << std::endl;
+
+	return HttpRequestHandler(
+		root,
+		uploadDirectory,
+		"",
+		autoindex,
+		maxBodySize);
 }
 
-
+// Main request entry point.
 HttpResponse RequestHandler::handle(
 	const HttpRequest& request,
 	const RequestContext& context)
 {
-	std::string root = selectRootFromContext(context);
+	RouteResult route = Router::route(request, context);
 
-	if (root.empty())
+	if (!route.server)
 	{
-		Logger::error("RequestHandler received empty RequestContext");
-		return (HttpResponse(
+		Logger::error("RequestHandler: no matching server");
+		return HttpResponse(
 			500,
 			"Internal Server Error",
-			"No server configuration"));
+			"No server configuration");
 	}
 
+	HttpRequestHandler handler = createHttpHandler(route);
 
-	HttpRequestHandler handler(
-		root,
-		"",
-		"",
-		false,
-		0);
-
-	return (handler.handle(request));
+	return handler.handle(request);
 }

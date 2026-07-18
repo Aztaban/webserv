@@ -5,7 +5,6 @@
 #include <fstream>
 #include <sstream>
 #include <sys/stat.h>
-#include <iostream>
 #include <dirent.h>
 #include <vector>
 #include <cstdio>
@@ -14,55 +13,27 @@
 #include "http/HttpResponse.hpp"
 #include "utils/FileUtils.hpp"
 
+
 class HttpRequestHandler
 {
 	private:
-		/*
-		* Current responsibility:
-		* -----------------------
-		* - HTTP method dispatch
-		* - GET/POST/DELETE execution
-		* - static file serving
-		* - autoindex generation
-		* - uploads
-		*
-		* Future:
-		* -----------------------
-		* Values should come from:
-		* ConfigParser -> ServerConfig -> LocationConfig
-		*/
 
 		std::string _root;
-
-		// Comes from location/root configuration.
 		std::string _uploadDirectory;
-
-		// Comes from error_page configuration.
 		std::string _errorDirectory;
 
-		// Comes from:
-		// autoindex on/off;
 		bool _autoindexEnabled;
-
-		// Comes from:
-		// client_max_body_size
 		size_t _maxBodySize;
 
-
-		// ---------- ERROR HANDLING ----------
-
+		// Creates error response.
 		HttpResponse _error(int code);
 
-
-		// ---------- HTTP METHODS ----------
-
+		// HTTP method handlers.
 		HttpResponse _handleGET(const HttpRequest& request);
 		HttpResponse _handlePOST(const HttpRequest& request);
 		HttpResponse _handleDELETE(const HttpRequest& request);
 
-
-		// ---------- HELPERS ----------
-
+		// Helper functions.
 		HttpResponse _generateAutoIndex(
 			const std::string& dirPath,
 			const std::string& uri);
@@ -72,7 +43,6 @@ class HttpRequestHandler
 
 		std::string _resolvePath(
 			const std::string& target);
-
 
 	public:
 
@@ -91,7 +61,7 @@ class HttpRequestHandler
 
 		~HttpRequestHandler();
 
-
+		// Executes request handling.
 		HttpResponse handle(
 			const HttpRequest& request);
 };

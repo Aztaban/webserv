@@ -1,8 +1,8 @@
 #include "http/HttpRequestHandler.hpp"
 #include "core/ErrorResponseFactory.hpp"
+#include <iostream>
 
 // ----------------- CONSTRUCTORS ----------------
-
 HttpRequestHandler::HttpRequestHandler(
 	const std::string& root,
 	const std::string& uploadDirectory,
@@ -15,8 +15,7 @@ HttpRequestHandler::HttpRequestHandler(
 	_errorDirectory(errorDirectory),
 	_autoindexEnabled(autoindexEnabled),
 	_maxBodySize(maxBodySize)
-{
-}
+{}
 
 HttpRequestHandler::HttpRequestHandler(
 	const HttpRequestHandler& other)
@@ -26,8 +25,7 @@ HttpRequestHandler::HttpRequestHandler(
 	_errorDirectory(other._errorDirectory),
 	_autoindexEnabled(other._autoindexEnabled),
 	_maxBodySize(other._maxBodySize)
-{
-}
+{}
 
 HttpRequestHandler& HttpRequestHandler::operator=(
 	const HttpRequestHandler& other)
@@ -45,60 +43,55 @@ HttpRequestHandler& HttpRequestHandler::operator=(
 }
 
 HttpRequestHandler::~HttpRequestHandler()
-{
-}
+{}
 
-// ----------------- ERROR WRAPPER --------------------
-
+// Creates error responses using configured error handling.
 HttpResponse HttpRequestHandler::_error(int code)
 {
 	return (ErrorResponseFactory::create(code, _root));
 }
 
-
-// ----------------- MAIN DISPATCH --------------------
-
-HttpResponse HttpRequestHandler::handle(const HttpRequest& request)
+// Dispatches request to the correct HTTP method handler.
+HttpResponse HttpRequestHandler::handle(
+	const HttpRequest& request)
 {
 	if (request.method == "GET")
 		return _handleGET(request);
+
 	if (request.method == "POST")
 		return _handlePOST(request);
+
 	if (request.method == "DELETE")
 		return _handleDELETE(request);
 
 	return _error(405);
 }
 
-
-// ------------------ GET ----------------------
-
-HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
+// Handles static file GET requests.
+HttpResponse HttpRequestHandler::_handleGET(
+	const HttpRequest& request)
 {
 	HttpResponse	res;
 	std::string		target;
 	std::string		path;
 	struct stat		st;
-	
+
 	if (request.path.empty())
 		target = request.target;
 	else
 		target = request.path;
 
-	// SECURITY: basic path traversal protection
 	if (target.find("..") != std::string::npos)
 		return _error(404);
 
-	path = _resolvePath(request.target);
+	path = _resolvePath(target);
 
-	// NOTE: if empty -> invalid route or blocked path
 	if (path.empty())
 		return _error(404);
 
 	if (stat(path.c_str(), &st) != 0)
 		return _error(404);
 
-	// DIRECTORY HANDLING (Diana responsibility)
 	if (S_ISDIR(st.st_mode))
 	{
 		if (!path.empty() && path[path.size() - 1] != '/')
@@ -108,8 +101,12 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 
 		if (FileUtils::exists(indexPath))
 			path = indexPath;
+
 		else if (_autoindexEnabled)
-			return _generateAutoIndex(path, request.target);
+			return _generateAutoIndex(
+				path,
+				request.target);
+
 		else
 			return _error(404);
 	}
@@ -122,9 +119,7 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 	return res;
 }
 
-
-// --------------------- POST -------------------------
-
+// Handles file uploads.
 HttpResponse HttpRequestHandler::_handlePOST(
 	const HttpRequest& request)
 {
@@ -137,22 +132,8 @@ HttpResponse HttpRequestHandler::_handlePOST(
 	else
 		target = request.path;
 
-	/*
-	 * TODO LADA:
-	 *
-	 * Upload directory should come from config.
-	 *
-	 * Example:
-	 *
-	 * location /uploads {
-	 *      upload_path ./uploads;
-	 * }
-	 *
-	 */
-
 	std::string uploadDir = _uploadDirectory;
 
-	// Temporary fallback to keep tests working
 	if (uploadDir.empty())
 		uploadDir = _root + "/uploads/";
 
@@ -193,9 +174,9 @@ HttpResponse HttpRequestHandler::_handlePOST(
 	return res;
 }
 
-// --------------------- DELETE --------------------
-
-HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
+// Handles DELETE requests.
+HttpResponse HttpRequestHandler::_handleDELETE(
+	const HttpRequest& request)
 {
 	HttpResponse	res;
 	std::string		target;
@@ -211,6 +192,7 @@ HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
 		return _error(404);
 
 	path = _resolvePath(target);
+
 	if (path.empty())
 		return _error(404);
 
@@ -231,36 +213,41 @@ HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
 	return res;
 }
 
-
-// -------------- AUTOINDEX -----------------
-
+// Generates directory listing when autoindex is enabled.
 HttpResponse HttpRequestHandler::_generateAutoIndex(
 	const std::string& dirPath,
 	const std::string& uri)
 {
-	HttpResponse		res;
-	std::ostringstream	html;
+	HttpResponse res;
+	std::ostringstream html;
 
 	DIR* dir = opendir(dirPath.c_str());
+
 	if (!dir)
 		return _error(404);
 
-
-	html << "<html><body><h1>Index of " << uri << "</h1><ul>";
+	html << "<html><body><h1>Index of "
+		 << uri
+		 << "</h1><ul>";
 
 	struct dirent* entry;
+
 	while ((entry = readdir(dir)) != NULL)
 	{
 		std::string name = entry->d_name;
+
 		if (name == "." || name == "..")
 			continue;
 
-		html << "<li><a href=\"" << name;
+		html << "<li><a href=\""
+			 << name;
 
 		if (entry->d_type == DT_DIR)
 			html << "/";
 
-		html << "\">" << name << "</a></li>";
+		html << "\">"
+			 << name
+			 << "</a></li>";
 	}
 
 	closedir(dir);
@@ -275,26 +262,22 @@ HttpResponse HttpRequestHandler::_generateAutoIndex(
 	return res;
 }
 
-
-// ------------------- HELPERS ----------------------
-
-std::string HttpRequestHandler::_getFileName(const std::string& target)
+// Extracts filename from request target.
+std::string HttpRequestHandler::_getFileName(
+	const std::string& target)
 {
 	size_t pos = target.find_last_of('/');
+
 	if (pos == std::string::npos)
 		return target;
+
 	return target.substr(pos + 1);
 }
 
-
-// ---------------- PATH RESOLUTION (TEMPORARY IMPLEMENTATION) ----------------
-
-/* for now is just = basic URI -> filesystem mapping and has minimal sanitization
-the isues: hardcoded routes (/uploads, site1), no config awareness, no location block support
-so the final thing should be =
-YO Diana = asks Router/Config for resolved path
-and Lada = provides mapping rules */
-
+// Converts URI path into filesystem path.
+//
+// Temporary implementation.
+// Location-specific path mapping will move here later.
 std::string HttpRequestHandler::_resolvePath(
 	const std::string& target)
 {
@@ -302,6 +285,7 @@ std::string HttpRequestHandler::_resolvePath(
 		return "";
 
 	std::string cleanTarget = target;
+
 	size_t q = cleanTarget.find('?');
 
 	if (q != std::string::npos)
@@ -310,18 +294,8 @@ std::string HttpRequestHandler::_resolvePath(
 	if (cleanTarget.find("..") != std::string::npos)
 		return "";
 
-	/*
-	 * TODO LADA:
-	 *
-	 * Remove this function after Router integration.
-	 *
-	 * Router should decide:
-	 *
-	 * /        -> site root
-	 * /uploads -> upload location
-	 * /cgi-bin -> CGI execution
-	 *
-	 */
-
+	// std::cout << "DEBUG _root: " << _root << std::endl;
+	// std::cout << "DEBUG target: " << cleanTarget << std::endl;
+	// std::cout << "DEBUG final path: " << _root + cleanTarget << std::endl;
 	return _root + cleanTarget;
 }

@@ -5,16 +5,14 @@ HttpRequestParser::HttpRequestParser()
 	  _errorStatusCode(0),
 	  _consumedBytes(0),
 	  _headersComplete(false)
-{
-}
+{}
 
 HttpRequestParser::HttpRequestParser(const HttpRequestParser& other)
 	: _request(other._request),
 	  _errorStatusCode(other._errorStatusCode),
 	  _consumedBytes(other._consumedBytes),
 	  _headersComplete(other._headersComplete)
-{
-}
+{}
 
 HttpRequestParser& HttpRequestParser::operator=(const HttpRequestParser& other)
 {
