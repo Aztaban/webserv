@@ -1,5 +1,6 @@
 #include "core/WebServer.hpp"
 #include "config/ServerConfig.hpp"
+#include "config/ConfigParser.hpp"
 #include "utils/Logger.hpp"
 
 #include <iostream>
@@ -11,13 +12,14 @@
 int main(int argc, char **argv)
 {
 	signal(SIGPIPE, SIG_IGN);
+
 	if (argc > 2)
 	{
 		Logger::error("Usage: ./webserv [configuration file]");
 		return 1;
 	}
 
-	std::string	configPath;
+	std::string configPath;
 
 	if (argc == 2)
 		configPath = argv[1];
@@ -29,34 +31,21 @@ int main(int argc, char **argv)
 
 	try
 	{
-		/*
-			Temporary:
-			We accept configPath so the program interface is correct,
-			but we do not parse it yet.
+		ConfigParser parser(configPath);
+		std::vector<ServerConfig> configs = parser.parse();
 
-			Later:
-			ConfigParser parser(configPath);
-			std::vector<ServerConfig> configs = parser.parse();
-		*/
-		(void)configPath;
+		std::cout << "SERVERS: " << configs.size() << std::endl;
 
-		std::vector<ServerConfig>	configs;
+		for (std::size_t i = 0; i < configs.size(); i++)
+		{
+			std::cout
+				<< "Server " << i
+				<< " locations: "
+				<< configs[i].getLocations().size()
+				<< std::endl;
+		}
 
-		ServerConfig server1("127.0.0.1", 8000);
-		server1.setRoot("./www/site1");
-		server1.setClientMaxBodySize(1000000);
-		ServerConfig server2("127.0.0.1", 8001);
-		server2.setRoot("./www/site2");
-		server2.setClientMaxBodySize(10);
-		ServerConfig server3("127.0.0.1", 8000);
-		server3.setRoot("./www/site1");
-		server3.setClientMaxBodySize(1000000);
-		configs.push_back(server3);
-
-		configs.push_back(server1);
-		configs.push_back(server2);
-
-		WebServer	server(configs);
+		WebServer server(configs);
 		server.setup();
 		server.run();
 	}

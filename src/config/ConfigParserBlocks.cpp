@@ -1,4 +1,5 @@
 #include "config/ConfigParserBlocks.hpp"
+#include "iostream"
 
 namespace {
 
@@ -187,6 +188,10 @@ static void closeBlock(
 {
 	if (inLocation)
 	{
+		std::cout << "DEBUG ADD LOCATION: "
+				<< currentLocation.path
+				<< std::endl;
+
 		currentServer.addLocation(currentLocation);
 		currentLocation = LocationConfig();
 		inLocation = false;
@@ -270,6 +275,6 @@ void ConfigParserBlocks::parseConfigLine(
 		beginLocationBlock(line, inLocation, currentLocation);
 		return;
 	}
-
+	
 	dispatchDirectiveLine(line, inLocation, currentServer, currentLocation);
 }

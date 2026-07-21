@@ -6,11 +6,9 @@
 #include "routing/Router.hpp"
 #include "utils/Logger.hpp"
 
-
 class RequestHandler
 {
 	public:
-
 		// Handles one parsed request.
 		static HttpResponse handle(
 			const HttpRequest& request,
