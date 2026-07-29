@@ -1,5 +1,5 @@
 #include "routing/Router.hpp"
-#include <iostream>
+#include "utils/Logger.hpp"
 
 // Select the server handling this request.
 const ServerConfig* Router::selectServer(const HttpRequest& request, const RequestContext& context)
@@ -32,9 +32,7 @@ const LocationConfig* Router::selectLocation(const HttpRequest& request, const S
 
 	const std::string& path = request.path;
 
-	std::cout << "DEBUG request path: "
-			  << path
-			  << std::endl;
+	Logger::debug("DEBUG request path: " + path);
 
 	for (size_t i = 0; i < server.getLocations().size(); i++)
 	{
@@ -44,9 +42,7 @@ const LocationConfig* Router::selectLocation(const HttpRequest& request, const S
 		const std::string& locationPath =
 			location.path;
 
-		std::cout << "DEBUG checking location: "
-				  << locationPath
-				  << std::endl;
+		Logger::debug("DEBUG checking location: " + locationPath);
 
 		bool matches = false;
 
@@ -65,9 +61,7 @@ const LocationConfig* Router::selectLocation(const HttpRequest& request, const S
 
 		if (matches)
 		{
-			std::cout << "DEBUG MATCH: "
-					  << locationPath
-					  << std::endl;
+			Logger::debug("DEBUG MATCH: " + locationPath);
 
 			if (locationPath.size() >= bestLength)
 			{
@@ -78,20 +72,9 @@ const LocationConfig* Router::selectLocation(const HttpRequest& request, const S
 	}
 
 	if (best)
-	{
-		std::cout << "DEBUG SELECTED LOCATION: "
-				  << best->path
-				  << std::endl;
-
-		std::cout << "DEBUG SELECTED ROOT: "
-				  << best->root
-				  << std::endl;
-	}
+		Logger::debug("Router: selected location " + best->path + " for " + path);
 	else
-	{
-		std::cout << "DEBUG NO LOCATION FOUND"
-				  << std::endl;
-	}
+		Logger::debug("Router: no location matched " + path);
 
 	return best;
 }

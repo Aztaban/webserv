@@ -5,7 +5,6 @@ HttpRequestHandler::HttpRequestHandler(
 	const std::string& root,
 	const std::string& locationPath,
 	const std::string& uploadDirectory,
-	const std::string& errorDirectory,
 	const std::string& index,
 	const std::vector<std::string>& methods,
 	const std::map<int, std::string>& errorPages,
@@ -14,7 +13,6 @@ HttpRequestHandler::HttpRequestHandler(
 	_root(root),
 	_locationPath(locationPath),
 	_uploadDirectory(uploadDirectory),
-	_errorDirectory(errorDirectory),
 	_index(index),
 	_allowedMethods(methods),
 	_errorPages(errorPages),
@@ -26,7 +24,6 @@ HttpRequestHandler::HttpRequestHandler(const HttpRequestHandler& other):
 	_root(other._root),
 	_locationPath(other._locationPath),
 	_uploadDirectory(other._uploadDirectory),
-	_errorDirectory(other._errorDirectory),
 	_index(other._index),
 	_allowedMethods(other._allowedMethods),
 	_errorPages(other._errorPages),
@@ -41,7 +38,6 @@ HttpRequestHandler& HttpRequestHandler::operator=(const HttpRequestHandler& othe
 		_root = other._root;
 		_locationPath = other._locationPath;
 		_uploadDirectory = other._uploadDirectory;
-		_errorDirectory = other._errorDirectory;
 		_index = other._index;
 		_allowedMethods = other._allowedMethods;
 		_errorPages = other._errorPages;

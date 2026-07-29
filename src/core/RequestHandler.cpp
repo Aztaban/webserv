@@ -1,5 +1,4 @@
 #include "core/RequestHandler.hpp"
-#include <iostream>
 
 
 // Creates the HTTP handler using the selected route.
@@ -9,7 +8,6 @@ static HttpRequestHandler createHttpHandler(const RouteResult& route)
 	std::string locationPath;
 	std::string uploadDirectory;
 	std::string index;
-	std::string errorDirectory;
 
 	std::vector<std::string> methods;
 	std::map<int, std::string> errorPages;
@@ -47,7 +45,6 @@ static HttpRequestHandler createHttpHandler(const RouteResult& route)
 		root,
 		locationPath,
 		uploadDirectory,
-		errorDirectory,
 		index,
 		methods,
 		errorPages,

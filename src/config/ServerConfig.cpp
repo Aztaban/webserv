@@ -4,7 +4,8 @@
 ServerConfig::ServerConfig()
 	: _host("127.0.0.1"),
 	_port(8000),
-	_root("./www/site1"),
+	_serverNames(),
+	_root(),
 	_index("index.html"),
 	_clientMaxBodySize(1000000),
 	_errorPages(),
@@ -15,7 +16,8 @@ ServerConfig::ServerConfig()
 ServerConfig::ServerConfig(const std::string& host, int port)
 	: _host(host),
 	_port(port),
-	_root("./www/site1"),
+	_serverNames(),
+	_root(),
 	_index("index.html"),
 	_clientMaxBodySize(1000000),
 	_errorPages(),
@@ -31,6 +33,12 @@ const std::string& ServerConfig::getHost() const {
 // Returns the port this server listens on.
 int ServerConfig::getPort() const {
 	return _port;
+}
+
+// Returns all names that may select this virtual server.
+const std::vector<std::string>& ServerConfig::getServerNames() const
+{
+	return _serverNames;
 }
 
 // Returns the server root used as the base filesystem path.
@@ -54,6 +62,19 @@ const std::map<int, std::string>& ServerConfig::getErrorpages() const
 const std::vector<LocationConfig>& ServerConfig::getLocations() const
 {
 	return _locations;
+}
+
+// Updates the listener without resetting any other parsed server values.
+void ServerConfig::setListen(const std::string& host, int port)
+{
+	_host = host;
+	_port = port;
+}
+
+// Adds one name that may select this virtual server.
+void ServerConfig::addServerName(const std::string& serverName)
+{
+	_serverNames.push_back(serverName);
 }
 
 // Updates the default index file name.

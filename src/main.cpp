@@ -3,7 +3,6 @@
 #include "config/ConfigParser.hpp"
 #include "utils/Logger.hpp"
 
-#include <iostream>
 #include <string>
 #include <exception>
 
@@ -34,16 +33,7 @@ int main(int argc, char **argv)
 		ConfigParser parser(configPath);
 		std::vector<ServerConfig> configs = parser.parse();
 
-		std::cout << "SERVERS: " << configs.size() << std::endl;
-
-		for (std::size_t i = 0; i < configs.size(); i++)
-		{
-			std::cout
-				<< "Server " << i
-				<< " locations: "
-				<< configs[i].getLocations().size()
-				<< std::endl;
-		}
+		Logger::debug("Loaded " + toString(configs.size()) + " server configuration(s)");
 
 		WebServer server(configs);
 		server.setup();
