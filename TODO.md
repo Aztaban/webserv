@@ -168,36 +168,38 @@ server {
 
 ### Select the virtual server
 
-- [ ] **P0:** Implement `Router::selectServer()` using the request `Host` header.
-- [ ] Retrieve headers case-insensitively or reuse a shared case-insensitive header helper.
-- [ ] Normalize the `Host` value:
-  - [ ] trim whitespace
-  - [ ] remove an optional `:port`
-  - [ ] compare host names case-insensitively
-- [ ] Match the normalized host against every configured `server_name` on the current listener.
-- [ ] If there is no matching name, use the first server on that listener as the default server.
-- [ ] Define behavior for a malformed `Host` value and return `400` where appropriate.
+- [x] **P0:** Implement `Router::selectServer()` using the request `Host` header.
+- [x] Retrieve headers case-insensitively or reuse a shared case-insensitive header helper.
+- [x] Normalize the `Host` value:
+  - [x] trim whitespace
+  - [x] remove an optional `:port`
+  - [x] compare host names case-insensitively
+- [x] Match the normalized host against every configured `server_name` on the current listener.
+- [x] If there is no matching name, use the first server on that listener as the default server.
+- [x] Define behavior for a malformed `Host` value and return `400` where appropriate.
 
 ### Select the location
 
-- [ ] Keep longest-prefix matching.
-- [ ] Match only complete URI path segments:
-  - [ ] `/images` matches `/images/a.png`
-  - [ ] `/images` does not match `/images2`
-- [ ] Make normalized `/foo/` and `/foo` behavior consistent.
-- [ ] Use `>` instead of `>=` after duplicate locations are rejected, so an equal-length later entry cannot silently replace the first.
-- [ ] Decide the fallback when no location matches:
-  - [ ] use server-level configuration, or
+- [x] Keep longest-prefix matching.
+- [x] Match only complete URI path segments:
+  - [x] `/images` matches `/images/a.png`
+  - [x] `/images` does not match `/images2`
+- [x] Make normalized `/foo/` and `/foo` behavior consistent.
+- [x] Use `>` instead of `>=` after duplicate locations are rejected, so an equal-length later entry cannot silently replace the first.
+- [x] Decide the fallback when no location matches:
+  - [x] use server-level configuration, or
   - [ ] require/configure `/`
-- [ ] Remove router debug prints.
+- [x] Remove router debug prints.
 
 ### Routing API cleanup
 
-- [ ] Add a small reusable helper for selecting a server from `Host` so early body-limit/error handling can use the same logic.
-- [ ] Keep one source of truth for virtual-server selection; do not duplicate Host matching in multiple classes.
-- [ ] Ensure `RouteResult` contains only data actually used by later stages.
+- [x] Add a small reusable helper for selecting a server from `Host` so early body-limit/error handling can use the same logic.
+- [x] Keep one source of truth for virtual-server selection; do not duplicate Host matching in multiple classes.
+- [x] Ensure `RouteResult` contains only data actually used by later stages.
 
 **DoD:** Two servers on the same host/port return different content according to `Host`, and location matching always chooses the most specific valid location.
+
+Implemented behavior: malformed or missing `Host` produces `400`; an unknown but valid host falls back to the first server on the listener. When no location matches, request handling uses server-level configuration.
 
 ---
 

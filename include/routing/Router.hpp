@@ -11,14 +11,15 @@
 // Result of server and location selection.
 struct RouteResult
 {
-	const ServerConfig *server;
-	const LocationConfig *location;
+	const	ServerConfig *server;
+	const	LocationConfig *location;
+	int		errorStatusCode;
 
 	RouteResult()
 			: server(NULL),
-				location(NULL)
-	{
-	}
+				location(NULL),
+				errorStatusCode(0)
+	{}
 };
 
 class Router
@@ -29,11 +30,19 @@ public:
 			const HttpRequest &request,
 			const RequestContext &context);
 
+	// Shared Host-based virtual-server selection for request handling and
+	// early body-limit/error paths. A malformed Host sets errorStatusCode=400.
+	static const ServerConfig* selectServerFromHost(
+		const std::string& hostHeader,
+		const RequestContext& context,
+		int& errorStatusCode);
+
 private:
 	// Selects matching server configuration.
 	static const ServerConfig *selectServer(
 			const HttpRequest &request,
-			const RequestContext &context);
+			const RequestContext &context,
+			int& errorStatusCode);
 
 	// Selects the longest matching location.
 	static const LocationConfig *selectLocation(

@@ -1,5 +1,5 @@
 #include "core/RequestHandler.hpp"
-
+#include "core/ErrorResponseFactory.hpp"
 
 // Creates the HTTP handler using the selected route.
 static HttpRequestHandler createHttpHandler(const RouteResult& route)
@@ -56,6 +56,12 @@ static HttpRequestHandler createHttpHandler(const RouteResult& route)
 HttpResponse RequestHandler::handle(const HttpRequest& request,const RequestContext& context)
 {
 	RouteResult route = Router::route(request, context);
+
+	if (route.errorStatusCode != 0)
+	{
+		const std::string root = route.server ? route.server->getRoot() : "";
+		return ErrorResponseFactory::create(route.errorStatusCode, root);
+	}
 
 	if (!route.server)
 	{
