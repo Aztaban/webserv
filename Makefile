@@ -1,6 +1,5 @@
 # -------- Project --------
 NAME      = webserv
-TEST_NAME = http_test
 
 SRC_DIR := src
 OBJ_DIR := build
@@ -66,17 +65,9 @@ $(NAME): $(OBJS)
 		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
 		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
 
-# -------- Test --------
-test: $(TEST_NAME)
-
-$(TEST_NAME): $(TEST_OBJS)
-	@printf "$(BLU)Link$(RESET)   $(TEST_NAME)... "
-	@$(CXX) $(CXXFLAGS) $(TEST_OBJS) -o $(TEST_NAME) && \
-		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
-		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
-
-runtest: $(TEST_NAME)
-	@./$(TEST_NAME)
+# -------- Tester --------
+test: 
+	./tests/runner.py
 
 # -------- Compile --------
 $(OBJ_DIR)/%.o: %.cpp
@@ -102,4 +93,4 @@ fclean: clean
 re: fclean all
 
 # -------- PHONY --------
-.PHONY: all clean fclean re run test runtest
+.PHONY: all clean fclean re run test

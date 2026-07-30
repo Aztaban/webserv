@@ -189,7 +189,12 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 	if (request.body.empty())
 		return _error(400);
 
-	std::string fullPath = uploadDir + fileName;
+	std::string fullPath = uploadDir;
+
+	if (!fullPath.empty() && fullPath[fullPath.size() - 1] != '/')
+		fullPath += "/";
+
+	fullPath += fileName;
 
 	std::ofstream out(fullPath.c_str(), std::ios::binary);
 

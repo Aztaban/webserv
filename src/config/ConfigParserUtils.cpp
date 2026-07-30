@@ -1,5 +1,7 @@
 #include "config/ConfigParserUtils.hpp"
 
+#include <stdexcept>
+
 namespace ConfigParserUtils {
 
 // Removes leading and trailing whitespace from one config line.
@@ -15,20 +17,28 @@ std::string trim(const std::string& value)
 	return value.substr(begin, end - begin);
 }
 
-// Checks whether a string contains only digits.
-bool isNumber(const std::string& value)
+// Parses a non-negative decimal value and rejects invalid input or overflow.
+std::size_t parseUnsignedDecimal(
+	const std::string& value,
+	std::size_t maxValue,
+	const std::string& fieldName)
 {
-	std::size_t i = 0;
+	std::size_t	result = 0;
 
 	if (value.empty())
-		return false;
-	while (i < value.size())
+		throw std::runtime_error(fieldName + " must not be empty");
+	if (value[0] == '-')
+		throw std::runtime_error(fieldName + " must not be negative");
+	for (std::size_t i = 0; i < value.size(); i++)
 	{
 		if (!std::isdigit(static_cast<unsigned char>(value[i])))
-			return false;
-		i++;
+			throw std::runtime_error(fieldName + " must contain only decimal digits");
+		std::size_t	digit = static_cast<std::size_t>(value[i] - '0');
+		if (result > maxValue / 10 || (result == maxValue / 10 && digit > maxValue % 10))
+			throw std::runtime_error(fieldName + " is out of range");
+		result = result * 10 + digit;
 	}
-	return true;
+	return result;
 }
 
 // Splits one directive line into whitespace-separated tokens.

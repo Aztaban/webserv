@@ -1,9 +1,22 @@
 #include "config/ConfigParser.hpp"
 
+#include <sstream>
+
 // Stores the config file path that will be parsed later.
 ConfigParser::ConfigParser(const std::string& path)
 	: _path(path)
 {
+}
+
+static std::runtime_error makeLineError(
+	const std::string& path,
+	std::size_t lineNumber,
+	const std::string& message)
+{
+	std::ostringstream stream;
+
+	stream << path << ":" << lineNumber << ": " << message;
+	return std::runtime_error(stream.str());
 }
 
 // Reads the config file, builds server blocks, and fills the config objects.
@@ -14,13 +27,14 @@ std::vector<ServerConfig> ConfigParser::parse() const
 	std::vector<ServerConfig> servers;
 	ServerConfig currentServer;
 	LocationConfig currentLocation;
-	bool inServer = false;
-	bool inLocation = false;
+	ConfigParserBlocks::ParseState state;
+	std::size_t lineNumber = 0;
 
 	if (!input.is_open())
 		throw std::runtime_error("cannot open config file: " + _path);
 	while (std::getline(input, rawLine))
 	{
+		lineNumber++;
 		std::string line = ConfigParserUtils::trim(rawLine);
 		std::size_t comment = line.find('#');
 
@@ -28,11 +42,20 @@ std::vector<ServerConfig> ConfigParser::parse() const
 			line = ConfigParserUtils::trim(line.substr(0, comment));
 		if (line.empty())
 			continue;
-		ConfigParserBlocks::parseConfigLine(line, inServer, inLocation, currentServer, currentLocation, servers);
+		try
+		{
+			ConfigParserBlocks::parseConfigLine(line, state, currentServer, currentLocation, servers);
+		}
+		catch(const std::exception& e)
+		{
+			throw makeLineError(_path, lineNumber, e.what());
+		}
+		
+		
 	}
-	if (inServer || inLocation)
-		throw std::runtime_error("unclosed server or location block");
+	if (state.inServer || state.inLocation)
+		throw makeLineError(_path, lineNumber, "unclosed server or location block");
 	if (servers.empty())
-		throw std::runtime_error("no server blocks found in config file");
+		throw std::runtime_error("no server blocks found in config file: " + _path);
 	return servers;
 }

@@ -89,15 +89,79 @@ Location values follow this contract:
 - `root` and `index` inherit from the selected server when omitted.
 - Omitting `methods` allows all methods currently supported by the project:
   `GET`, `POST`, and `DELETE`. Writing `methods;` with no values is invalid.
-- `autoindex` defaults to `off` and does not inherit.
-- uploads default to disabled and do not inherit; `upload_path` is used only
-  when upload handling is enabled for that location.
-- redirects default to disabled and do not inherit.
-- CGI extension/interpreter mappings stay stored on the location as metadata
-  for the partner-owned CGI integration.
+- Duplicate methods in one `methods` directive are invalid. Only `GET`,
+  `POST`, and `DELETE` are supported.
+- `autoindex` accepts exactly `on` or `off`, defaults to `off`, and does not
+  inherit.
+- `upload` accepts exactly `on` or `off`; uploads default to disabled and do
+  not inherit. `upload_path` requires a non-empty path argument.
+- redirects default to disabled and do not inherit. `return` requires both a
+  supported status code and a non-empty destination URL.
+- `cgi_extension` requires one or more extension/interpreter pairs, for example
+  `.py /usr/bin/python3`. Extensions start with `.`. The mappings are stored on
+  the location as metadata for the partner-owned CGI integration; interpreter
+  existence or runtime availability is not checked by the parser.
 - location paths must start with `/`. Trailing slashes are removed except for
   `/`; query strings, fragments, backslashes, whitespace, repeated internal
   slashes, and `.` or `..` path segments are rejected.
+
+## Duplicate and consistency rules
+
+Single-value directives are intentionally strict: repeating one in the same
+block is an error rather than an implicit “last value wins” override.
+
+Server single-value directives:
+
+```text
+listen
+root
+index
+client_max_body_size
+```
+
+Location single-value directives:
+
+```text
+methods
+root
+index
+autoindex
+upload
+upload_path
+return
+```
+
+Repeatable directives are additive only while their keys remain unique:
+
+- `server_name` may appear more than once, but names must be unique when
+  compared case-insensitively.
+- `error_page` may appear more than once for different status codes.
+- `cgi_extension` may appear more than once for different extensions.
+- normalized location paths must be unique within one server, so `/files` and
+  `/files/` are duplicates.
+
+Validation stays close to the directive that creates each value. Numeric ranges,
+redirect arguments, and CGI extension/interpreter pairs are checked while the
+directive is parsed. When a location closes, the parser only performs checks
+that require the complete block: its normalized path must be unique and
+`upload on` must have an `upload_path`. Listener address usability is checked
+later when the socket is created. The parser does not require a root, inspect
+filesystem paths, or check whether a CGI interpreter exists.
+
+Parser errors include the configuration path and source line number where
+practical, followed by the relevant directive or structural error.
+
+## Numeric value rules
+
+Numeric directive arguments use unsigned decimal digits only. Empty values,
+negative signs, suffixes, overflow, and values outside the destination range are
+rejected.
+
+- `listen` accepts ports from `1` through `65535`.
+- `client_max_body_size` accepts values from `0` through the platform's
+  `std::size_t` maximum.
+- `error_page` accepts HTTP error status codes from `400` through `599`.
+- `return` currently accepts redirect status `301` or `302` only.
 
 ## Supported fixture directives
 

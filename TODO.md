@@ -33,24 +33,24 @@ This checklist is based on the current project archive. The order is intentional
 
 ### Remove temporary runtime scaffolding
 
-- [ ] **P1:** Keep `main.cpp` using only `ConfigParser`; do not restore hardcoded server configurations.
-- [ ] Remove temporary `std::cout` debug output from:
-  - [ ] `src/main.cpp`
-  - [ ] `src/config/ConfigParserBlocks.cpp`
-  - [ ] `src/routing/Router.cpp`
-- [ ] Use `Logger::debug()` for useful diagnostics that should remain available.
-- [ ] Remove obsolete comments describing temporary behavior after the real implementation replaces it.
-- [ ] Review and remove dead fields or parameters after confirming they are unused:
-  - [ ] `RouteResult::root`
-  - [ ] `HttpRequestHandler::_errorDirectory`
-  - [ ] related constructor arguments and local variables
+- [x] **P1:** Keep `main.cpp` using only `ConfigParser`; do not restore hardcoded server configurations.
+- [x] Remove temporary `std::cout` debug output from:
+  - [x] `src/main.cpp`
+  - [x] `src/config/ConfigParserBlocks.cpp`
+  - [x] `src/routing/Router.cpp`
+- [x] Use `Logger::debug()` for useful diagnostics that should remain available.
+- [x] Remove obsolete comments describing temporary behavior after the real implementation replaces it.
+- [x] Review and remove dead fields or parameters after confirming they are unused:
+  - [x] `RouteResult::root`
+  - [x] `HttpRequestHandler::_errorDirectory`
+  - [x] related constructor arguments and local variables
 
 ### Clean configuration fixtures
 
-- [ ] Fix syntax mistakes in the files under `conf/`.
-- [ ] Fix `127:0.0.1` to `127.0.0.1` where present.
-- [ ] Add missing semicolons to directives.
-- [ ] Make all example configs follow one documented grammar.
+- [x] Fix syntax mistakes in the files under `conf/`.
+- [x] Fix `127:0.0.1` to `127.0.0.1` where present.
+- [x] Add missing semicolons to directives.
+- [x] Make all example configs follow one documented grammar.
 
 **DoD:** A fresh clone builds with plain `make`, starts using a real config file, and produces no temporary parser/router `std::cout` output.
 
@@ -60,29 +60,30 @@ This checklist is based on the current project archive. The order is intentional
 
 ### `ServerConfig`
 
-- [ ] **P0:** Add storage for one or more `server_name` values.
-- [ ] Add a getter such as `getServerNames()`.
-- [ ] Add a method such as `addServerName()` or `setServerNames()`.
-- [ ] Add safe setters for listener values, for example:
-  - [ ] `setHost()`
-  - [ ] `setPort()`
-  - [ ] or one `setListen(host, port)` method
-- [ ] Do not replace the whole `ServerConfig` object when parsing `listen`.
-- [ ] Decide and document which values have defaults and which directives are required.
+- [x] **P0:** Add storage for one or more `server_name` values.
+- [x] Add `getServerNames()`.
+- [x] Add `addServerName()`.
+- [x] Add a safe listener update method:
+  - [x] `setListen(host, port)`
+- [x] Do not replace the whole `ServerConfig` object when parsing `listen`.
+- [x] Decide and document defaults and required directives.
+  - [x] Keep generic defaults only; do not hardcode a fixture-specific root.
+  - [x] Do not reject a server merely because its root is empty; resolve the effective root during routing/request handling.
 
 ### `LocationConfig`
 
-- [ ] Define the expected default behavior for an empty `methods` list.
-  - Recommended: either set explicit defaults during parsing or reject an empty `methods;` directive.
-- [ ] Define inheritance clearly:
-  - [ ] location `root` falls back to server `root`
-  - [ ] location `index` falls back to server `index`
-  - [ ] methods, autoindex, upload, and redirect behavior are explicit
-  - [ ] CGI mapping metadata remains available for the partner-owned integration
-- [ ] Normalize location paths during parsing:
-  - [ ] must start with `/`
-  - [ ] remove a trailing `/` except for `/`
-  - [ ] reject malformed paths
+- [x] Define the expected default behavior for an empty `methods` list.
+  - [x] Reject an explicit empty `methods;` directive.
+  - [x] Preserve the documented default behavior when the directive is absent.
+- [x] Define inheritance clearly:
+  - [x] location `root` falls back to server `root`
+  - [x] location `index` falls back to server `index`
+  - [x] methods, autoindex, upload, and redirect behavior are explicit
+  - [x] CGI mapping metadata remains available for the partner-owned integration
+- [x] Normalize location paths during parsing:
+  - [x] must start with `/`
+  - [x] remove a trailing `/` except for `/`
+  - [x] reject malformed paths
 
 **DoD:** The config objects contain every value needed by routing and request handling, including `server_name`, without relying on temporary assumptions.
 
@@ -92,11 +93,11 @@ This checklist is based on the current project archive. The order is intentional
 
 ### Correct directive handling
 
-- [ ] **P0:** Parse and store `server_name` at server level.
-- [ ] Accept multiple names if that is part of the chosen grammar.
-- [ ] Reject `server_name` inside a `location` block.
-- [ ] **P0:** Fix `listen` so it updates only host and port and does not erase previously parsed values.
-- [ ] Verify this works regardless of directive order:
+- [x] **P0:** Parse and store `server_name` at server level.
+- [x] Accept multiple names as part of the documented grammar.
+- [x] Reject `server_name` inside a `location` block.
+- [x] **P0:** Fix `listen` so it updates only host and port and does not erase previously parsed values.
+- [x] Verify this works regardless of directive order:
 
 ```nginx
 server {
@@ -105,53 +106,59 @@ server {
 }
 ```
 
-- [ ] Require a semicolon after every directive.
-- [ ] Reject unexpected text after `{` or `}`.
-- [ ] Reject directives outside a `server` block.
-- [ ] Reject nested `server` and nested `location` blocks.
-- [ ] Reject a `location` block outside a `server` block.
+- [x] Require a semicolon after every directive.
+- [x] Reject unexpected text after `{` or `}`.
+- [x] Reject directives outside a `server` block.
+- [x] Reject nested `server` and nested `location` blocks.
+- [x] Reject a `location` block outside a `server` block.
 
 ### Numeric validation
 
-- [ ] Replace unsafe `std::atoi` validation with a checked numeric parser.
-- [ ] Detect:
-  - [ ] empty values
-  - [ ] non-numeric characters
-  - [ ] negative values
-  - [ ] overflow
-  - [ ] values outside the destination type
-- [ ] Validate `listen` port range: `1–65535`.
-- [ ] Validate `client_max_body_size` against `std::size_t`.
-- [ ] Validate `error_page` status codes against the accepted project range.
-- [ ] Validate redirect codes; initially support the codes the team intends to implement, such as `301` and `302`.
+- [x] Replace unsafe `std::atoi` validation with a checked numeric parser.
+- [x] Detect:
+  - [x] empty values
+  - [x] non-numeric characters
+  - [x] negative values
+  - [x] overflow
+  - [x] values outside the destination type
+- [x] Validate `listen` port range: `1–65535`.
+- [x] Validate `client_max_body_size` against `std::size_t`.
+- [x] Validate `error_page` status codes against the accepted project range (`400–599`).
+- [x] Validate redirect codes against the currently supported implementation (`301` and `302`).
+  - Scope note: broaden this list only when the response layer intentionally supports additional redirect codes.
 
 ### Directive argument validation
 
-- [ ] Reject `methods;` with no methods.
-- [ ] Reject duplicate methods in the same directive.
-- [ ] Allow only supported methods: `GET`, `POST`, `DELETE`.
-- [ ] Keep `cgi_extension` parsing compatible with the agreed CGI handoff contract.
-- [ ] Store extension/interpreter mappings without executing or validating runtime availability in this scope.
-- [ ] Validate `autoindex` as exactly `on` or `off`.
-- [ ] Validate `upload` as exactly `on` or `off`.
-- [ ] Reject an empty `upload_path`.
-- [ ] Reject an empty redirect URL.
-- [ ] Reject unknown directives at the correct block level.
+- [x] Reject `methods;` with no methods.
+- [x] Reject duplicate methods in the same directive. *(Defensive validation; not an explicit subject requirement.)*
+- [x] Allow only supported methods: `GET`, `POST`, `DELETE`.
+- [x] Keep `cgi_extension` parsing compatible with the agreed CGI handoff contract.
+- [x] Store extension/interpreter mappings without executing or validating runtime availability in this scope.
+- [x] Validate `autoindex` as exactly `on` or `off`.
+- [x] Validate `upload` as exactly `on` or `off`.
+- [x] Reject an empty `upload_path`.
+- [x] Reject an empty redirect URL.
+- [x] Reject unknown directives at the correct block level. *(Strict grammar choice; recommended.)*
+
+**Implementation decision:** Keep the completed checks. No rollback is needed. They make configuration failures deterministic and do not conflict with the Webserv requirements. Do not add filesystem-existence or CGI-interpreter-availability checks to the parser.
 
 ### Structural and duplicate validation
 
-- [ ] Reject duplicate location paths in one server.
-- [ ] Decide how duplicate single-value directives are handled:
-  - [ ] reject them, or
+- [x] **P1:** Reject duplicate location paths in one server.
+- [x] **P2:** Decide how duplicate single-value directives are handled:
+  - [x] reject them
   - [ ] explicitly document that the last value wins
-- [ ] Check consistency after a server block closes:
-  - [ ] valid listener
-  - [ ] valid server names
-  - [ ] valid locations
-  - [ ] upload settings are coherent
-  - [ ] redirect settings are complete
-  - [ ] CGI mapping metadata is internally consistent for handoff
-- [ ] Include the line number and directive name in parser errors where possible.
+- [x] **P1:** Check internal consistency at the narrowest useful point:
+  - [x] listener port and required directive arguments are validated while parsing
+  - [x] normalized location paths remain unique when a location closes
+  - [x] when `upload on` is configured, an upload destination is available
+  - [x] redirect code and destination are parsed together
+  - [x] CGI mapping metadata is accepted only as complete extension/interpreter pairs
+- [x] **P2:** Include the line number and directive name in parser errors where practical.
+
+**Implemented duplicate policy:** Single-value directives are rejected when repeated in the same block. Repeatable directives remain additive only for unique keys: unique `server_name` values, unique `error_page` status codes, and unique CGI extensions. Redundant server-close revalidation is intentionally avoided.
+
+**Scope guard:** Do not require a server-level `root`, do not require configured files/directories to already exist, do not restrict listener hosts beyond a non-empty host token in `ConfigParser`, and do not check CGI interpreter availability there. Address usability belongs to listener setup; filesystem and CGI runtime checks belong to their respective request/runtime layers.
 
 **DoD:** Invalid configs fail immediately with a useful error, valid configs are independent of directive order, and no parsed value is silently discarded.
 
