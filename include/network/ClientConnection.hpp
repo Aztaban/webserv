@@ -2,6 +2,7 @@
 # define CLIENTCONNECTION_HPP
 
 # include "core/RequestContext.hpp"
+# include "http/HttpRequest.hpp"
 # include "http/HttpResponse.hpp"
 
 # include <string>
@@ -11,6 +12,7 @@ enum ClientState
 {
 	CLIENT_READING_HEADERS,
 	CLIENT_READING_BODY,
+	CLIENT_REJECTING_BODY,
 	CLIENT_PROCESSING,
 	CLIENT_WRITING,
 	CLIENT_WAITING_CGI,
@@ -32,20 +34,24 @@ class ClientConnection {
 private:
 	static const std::size_t MAX_HEADER_SIZE = 8192;
 
-	int				_fd;
-	ClientState		_state;
-	std::string		_readBuffer;
-	std::string		_writeBuffer;
-	std::time_t		_lastActivity;
-	RequestContext	_context;
+	int									_fd;
+	ClientState					_state;
+	std::string					_readBuffer;
+	std::string					_writeBuffer;
+	std::time_t					_lastActivity;
+	RequestContext			_context;
+	const ServerConfig*	_selectedServer;
+	std::size_t					_discardBodyBytesRemaining;
 
 	ClientConnection(const ClientConnection &other);
 	ClientConnection &operator=(const ClientConnection &other);
 
 	void		_processReadBuffer();
 	void		_prepareErrorResponse(int code);
+	const ServerConfig*	_selectServerForRequest(const HttpRequest& request, int& errorStatusCode);
 	std::size_t	_getClientMaxBodySize() const;
-	bool		_bodyExceedsLimit() const;
+	bool		_bodyExceedsLimit(std::size_t limit) const;
+	void		_rejectRequestBody(int code, std::size_t expectedBodySize, std::size_t receivedBodySize);
 
 public:
 	ClientConnection(int fd, const RequestContext& context);

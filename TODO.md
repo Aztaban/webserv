@@ -207,37 +207,42 @@ Implemented behavior: malformed or missing `Host` produces `400`; an unknown but
 
 ### Request body limit
 
-- [ ] **P0:** Replace `ClientConnection::_getClientMaxBodySize()` using `serverCandidates[0]` unconditionally.
-- [ ] Once request headers are available, select the server from `Host` before applying `client_max_body_size`.
-- [ ] Use the listener's first server only when Host-based selection is impossible, such as an error before a valid Host header exists.
-- [ ] Apply the same selected-server limit both while receiving the body and after parsing completes.
+- [x] **P0:** Replace `ClientConnection::_getClientMaxBodySize()` using `serverCandidates[0]` unconditionally.
+- [x] Once request headers are available, select the server from `Host` before applying `client_max_body_size`.
+- [x] Use the listener's first server only when Host-based selection is impossible, such as an error before a valid Host header exists.
+- [x] Apply the same selected-server limit both while receiving the body and after parsing completes.
 
 ### Error pages
 
-- [ ] Stop selecting the first server unconditionally in `ErrorResponseFactory` when a valid Host-selected server is known.
-- [ ] Make configured `error_page` mappings actually take effect.
-  - Current handler stores `_errorPages`, but `_error()` does not use them.
-- [ ] Define fallback order:
+- [x] Stop selecting the first server unconditionally in `ErrorResponseFactory` when a valid Host-selected server is known.
+- [x] Make configured `error_page` mappings actually take effect.
+  - Implemented: handler errors now use the selected server's configured map.
+- [x] Define fallback order:
   1. configured error page for the selected server
   2. generated built-in HTML error page
-- [ ] Do not assume every error page is under `<root>/errors/<code>.html` if an explicit path was configured.
-- [ ] Preserve correct status code even when the custom error file is missing.
+- [x] Do not assume every error page is under `<root>/errors/<code>.html` if an explicit path was configured.
+- [x] Preserve correct status code even when the custom error file is missing.
 
 ### Effective route configuration
 
-- [ ] Build one clear effective configuration from the selected server and location.
-- [ ] Apply location overrides only where configured.
-- [ ] Pass upload settings only when upload is enabled.
-- [ ] Reject POST upload behavior on a location where upload is disabled.
-- [ ] Confirm GET, POST, and DELETE all resolve paths relative to the selected location correctly.
-- [ ] Check upload path joining so the directory and filename always have exactly one `/` between them.
-- [ ] Review path traversal protection; do not rely only on searching for the substring `..`.
+- [x] Build one clear effective configuration from the selected server and location.
+- [x] Apply location overrides only where configured.
+- [x] Pass upload settings only when upload is enabled.
+- [x] Reject POST upload behavior on a location where upload is disabled.
+- [x] Confirm GET, POST, and DELETE all resolve paths relative to the selected location correctly.
+- [x] Check upload path joining so the directory and filename always have exactly one `/` between them.
+- [x] Review path traversal protection; do not rely only on searching for the substring `..`.
 
 **DoD:** No runtime path uses `serverCandidates[0]` except an intentional documented fallback, and all handlers use the same selected server/location.
 
+
+**Implementation note:** The listener's first server remains only as a documented fallback when a request fails before a usable `Host` value can select a virtual server. Once headers are available, body limits, request handling, and custom error pages all use the same Host-selected server.
+
 ---
 
-## Phase 5 — Implement redirects
+## Phase 5 — Partner-owned redirect integration
+
+**Ownership note:** Redirect implementation is assigned to another partner. Keep the parsed redirect metadata and selected route stable; do not duplicate redirect handling in this branch.
 
 - [ ] **P1:** Detect `route.location->hasRedirect` before static-file/upload/delete handling.
 - [ ] Return the configured status code.
@@ -266,7 +271,8 @@ CGI execution is owned by another partner. Do not implement process creation, pi
 - [ ] Do not hardcode CGI execution logic into `Router` or `ConfigParser`.
 - [ ] Avoid changing public config/routing APIs after the handoff contract is agreed.
 - [ ] Document ownership boundaries:
-  - [ ] this scope owns config parsing, virtual-server selection, location selection, redirects, and core integration
+  - [ ] this scope owns config parsing, virtual-server selection, location selection, and core integration
+  - [ ] the redirect partner owns redirect response handling and redirect tests
   - [ ] the CGI partner owns detection details, process lifecycle, environment creation, I/O, output parsing, errors, and CGI tests
 
 ### Integration safety

@@ -1,80 +1,92 @@
 #include "core/RequestHandler.hpp"
 #include "core/ErrorResponseFactory.hpp"
 
-// Creates the HTTP handler using the selected route.
-static HttpRequestHandler createHttpHandler(const RouteResult& route)
+namespace
 {
-	std::string root;
-	std::string locationPath;
-	std::string uploadDirectory;
-	std::string index;
-
-	std::vector<std::string> methods;
-	std::map<int, std::string> errorPages;
-
-	bool autoindex = false;
-	size_t maxBodySize = 0;
-
-	if (route.location)
+	struct EffectiveRouteConfig
 	{
-		root = route.location->root;
-		locationPath = route.location->path;
-		uploadDirectory = route.location->uploadPath;
-		index = route.location->index;
-		methods = route.location->methods;
-		autoindex = route.location->autoindex;
-	}
-	if (route.server)
+		std::string root;
+		std::string locationPath;
+		std::string uploadDirectory;
+		std::string index;
+		std::vector<std::string> methods;
+		std::map<int, std::string> errorPages;
+		bool autoindex;
+		bool uploadEnabled;
+		std::size_t maxBodySize;
+
+		EffectiveRouteConfig()
+			: root(),
+			  locationPath("/"),
+			  uploadDirectory(),
+			  index(),
+			  methods(),
+			  errorPages(),
+			  autoindex(false),
+			  uploadEnabled(false),
+			  maxBodySize(0)
+		{}
+	};
+
+	static EffectiveRouteConfig buildEffectiveConfig(const RouteResult& route)
 	{
-		if (root.empty())
-			root = route.server->getRoot();
+		EffectiveRouteConfig config;
 
-		if (index.empty())
-			index = route.server->getIndex();
-
-		maxBodySize =
-			route.server->getClientMaxBodySize();
-
-		errorPages =
-			route.server->getErrorpages();
+		if (route.server)
+		{
+			config.root = route.server->getRoot();
+			config.index = route.server->getIndex();
+			config.errorPages = route.server->getErrorpages();
+			config.maxBodySize = route.server->getClientMaxBodySize();
+		}
+		if (route.location)
+		{
+			config.locationPath = route.location->path;
+			if (!route.location->root.empty())
+				config.root = route.location->root;
+			if (!route.location->index.empty())
+				config.index = route.location->index;
+			config.methods = route.location->methods;
+			config.autoindex = route.location->autoindex;
+			config.uploadEnabled = route.location->uploadEnabled;
+			if (config.uploadEnabled)
+				config.uploadDirectory = route.location->uploadPath;
+		}
+		return config;
 	}
-	if (locationPath.empty())
-		locationPath = "/";
 
-	return HttpRequestHandler(
-		root,
-		locationPath,
-		uploadDirectory,
-		index,
-		methods,
-		errorPages,
-		autoindex,
-		maxBodySize);
+	static HttpRequestHandler createHttpHandler(const RouteResult& route)
+	{
+		const EffectiveRouteConfig config = buildEffectiveConfig(route);
+
+		return HttpRequestHandler(
+			config.root,
+			config.locationPath,
+			config.uploadDirectory,
+			config.index,
+			config.methods,
+			config.errorPages,
+			config.autoindex,
+			config.uploadEnabled,
+			config.maxBodySize);
+	}
 }
 
-// Main request entry point.
-HttpResponse RequestHandler::handle(const HttpRequest& request,const RequestContext& context)
+HttpResponse RequestHandler::handle(
+	const HttpRequest& request,
+	const RequestContext& context)
 {
 	RouteResult route = Router::route(request, context);
 
 	if (route.errorStatusCode != 0)
-	{
-		const std::string root = route.server ? route.server->getRoot() : "";
-		return ErrorResponseFactory::create(route.errorStatusCode, root);
-	}
+		return ErrorResponseFactory::create(route.errorStatusCode, route.server);
 
 	if (!route.server)
 	{
-		Logger::error(
-			"RequestHandler: no matching server");
-
-		return HttpResponse(
-			500,
-			"Internal Server Error",
-			"No server configuration");
+		Logger::error("RequestHandler: no matching server");
+		return ErrorResponseFactory::create(500, static_cast<const ServerConfig*>(NULL));
 	}
 
 	HttpRequestHandler handler = createHttpHandler(route);
-
 	return handler.handle(request);
 }
