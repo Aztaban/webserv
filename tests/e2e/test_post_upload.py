@@ -28,7 +28,7 @@ def test_post_upload_content_exact(ctx: TestContext) -> None:
 
     body: str = "exact upload content check\nline two\n"
 
-    response: str = ctx.post("/upload, body, timout=5")
+    response: str = ctx.post("/upload/test.txt", body, timeout=5)
 
     assert_http_response(response)
 
