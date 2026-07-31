@@ -1,9 +1,9 @@
 #include "network/EventLoop.hpp"
 #include "utils/Logger.hpp"
 #include "core/RequestContext.hpp"
+#include "utils/SignalState.hpp"
 
 #include <stdexcept>
-#include <iostream>
 #include <ctime>
 
 #include <fcntl.h>
@@ -168,13 +168,19 @@ void	EventLoop::run()
 {
 	Logger::info("Event loop started");
 
-	while (true)
+	while (!SignalState::shutdownRequested)
 	{
 		if (_pollFds.empty())
 			throw std::runtime_error("no file descriptors registered in event loop");
 		int ready = poll(&_pollFds[0], _pollFds.size(), 1000);
 		if (ready == -1)
+		{
+			if (SignalState::shutdownRequested)
+				break;
 			throw std::runtime_error("poll() failed");
+		}
+		if (SignalState::shutdownRequested)
+			break;
 		_removeTimedOutClients();
 		if (ready == 0)
 			continue;
@@ -195,6 +201,7 @@ void	EventLoop::run()
 				_handleClientEvent(fd, revents);
 		}
 	}
+	Logger::info("Event loop stopped");
 }
 
 void	EventLoop::_removeTimedOutClients()
