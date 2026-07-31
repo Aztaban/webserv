@@ -75,6 +75,18 @@ static void testTrailingSlashAndEqualLengthBehavior()
 	assert(route.location == &servers[0].getLocations()[0]);
 }
 
+
+static void testEmptyCandidateList()
+{
+	std::vector<ServerConfig> servers;
+	RequestContext context(&servers, "127.0.0.1", 8000);
+	RouteResult route = Router::route(makeRequest("/", "site.test"), context);
+
+	assert(route.server == NULL);
+	assert(route.location == NULL);
+	assert(route.errorStatusCode == 0);
+}
+
 static void testServerLevelFallback()
 {
 	std::vector<ServerConfig> servers(1);
@@ -91,5 +103,6 @@ int main()
 	testLocationSelection();
 	testTrailingSlashAndEqualLengthBehavior();
 	testServerLevelFallback();
+	testEmptyCandidateList();
 	return 0;
 }

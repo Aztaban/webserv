@@ -263,26 +263,28 @@ CGI execution is owned by another partner. Do not implement process creation, pi
 
 ### Stable configuration and routing contract
 
-- [ ] Keep parsed CGI extension/interpreter mappings accessible through `LocationConfig`.
-- [ ] Ensure `RouteResult` exposes the selected server and selected location without requiring the CGI module to repeat Host or location matching.
-- [ ] Ensure the normalized request path and query string remain available separately for the CGI module.
-- [ ] Preserve request method, headers, and body in a form the CGI module can consume.
-- [ ] Define one clear decision point where `RequestHandler` can hand a CGI-eligible request to the partner module before static-file handling.
-- [ ] Do not hardcode CGI execution logic into `Router` or `ConfigParser`.
-- [ ] Avoid changing public config/routing APIs after the handoff contract is agreed.
+- [x] Keep parsed CGI extension/interpreter mappings accessible through `LocationConfig`.
+- [x] Ensure `RouteResult` exposes the selected server and selected location without requiring the CGI module to repeat Host or location matching.
+- [x] Ensure the normalized request path and query string remain available separately for the CGI module.
+- [x] Preserve request method, headers, and body in a form the CGI module can consume.
+- [x] Define one clear decision point where `RequestHandler` can hand a CGI-eligible request to the partner module before static-file handling.
+- [x] Do not hardcode CGI execution logic into `Router` or `ConfigParser`.
+- [x] Avoid changing public config/routing APIs after the handoff contract is agreed.
 - [ ] Document ownership boundaries:
-  - [ ] this scope owns config parsing, virtual-server selection, location selection, and core integration
-  - [ ] the redirect partner owns redirect response handling and redirect tests
-  - [ ] the CGI partner owns detection details, process lifecycle, environment creation, I/O, output parsing, errors, and CGI tests
+  - [x] this scope owns config parsing, virtual-server selection, location selection, and core integration
+  - [x] the redirect partner owns redirect response handling and redirect tests
+  - [x] the CGI partner owns detection details, process lifecycle, environment creation, I/O, output parsing, errors, and CGI tests
 
 ### Integration safety
 
-- [ ] Keep non-CGI requests fully functional when the CGI module is absent or disabled.
+- [x] Keep non-CGI requests fully functional when the CGI module is absent or disabled.
 - [ ] Ensure a CGI-enabled location does not accidentally fall through to static-file execution once the partner hook is connected.
 - [ ] Agree on the return/result type for CGI handoff, including pending, completed, and failed states.
-- [ ] Agree on who owns file descriptors, child processes, timeouts, and response construction before merging CGI code.
+- [x] Agree on who owns file descriptors, child processes, timeouts, and response construction before merging CGI code.
 
 **DoD:** The CGI partner can plug the module into one documented handoff point using the selected server/location and parsed request data, without changing parser or router behavior.
+
+**Handoff note:** See `docs/Integration_contract.md` and `EffectiveRouteConfig`. The remaining unchecked items require the actual CGI module to be connected and therefore stay partner-owned.
 
 ---
 
@@ -313,7 +315,7 @@ Do this only after the implementation and cleanup phases above are stable, so te
 ### Fix the runner
 
 - [ ] Ensure `tests/runner.py` builds with plain `make`.
-- [ ] Add `router_tests.cpp` to `CPP_UNIT_TESTS` with all required source files.
+- [x] Add `router_tests.cpp` to `CPP_UNIT_TESTS` with all required source files.
 - [ ] Add real integration-test binaries to the runner.
 - [ ] Decide whether integration tests are a separate group:
   - [ ] `python3 tests/runner.py integration`
@@ -338,7 +340,7 @@ ctx.post("/upload, body, timout=5")
   - [ ] image
 - [ ] Ensure the test upload directory is created and reset reliably.
 - [ ] Add redirect locations to `tests/fixtures/test.conf` when redirects are implemented.
-- [ ] Add two virtual servers on the same port with different `server_name` values.
+- [x] Add two virtual servers on the same port with different `server_name` values.
 
 ### Expand config parser unit tests
 
@@ -362,23 +364,23 @@ ctx.post("/upload, body, timout=5")
 
 ### Replace router placeholder tests
 
-- [ ] Select matching server by exact `Host`.
-- [ ] Host comparison is case-insensitive.
-- [ ] Host with `:port` matches the server name.
-- [ ] Unknown Host falls back to the first server.
-- [ ] Exact location match.
-- [ ] Longest-prefix location match.
-- [ ] Segment-boundary case: `/images` does not match `/images2`.
-- [ ] Normalized trailing-slash location.
-- [ ] Root fallback.
-- [ ] Empty candidate list returns no route safely.
+- [x] Select matching server by exact `Host`.
+- [x] Host comparison is case-insensitive.
+- [x] Host with `:port` matches the server name.
+- [x] Unknown Host falls back to the first server.
+- [x] Exact location match.
+- [x] Longest-prefix location match.
+- [x] Segment-boundary case: `/images` does not match `/images2`.
+- [x] Normalized trailing-slash location.
+- [x] Root fallback.
+- [x] Empty candidate list returns no route safely.
 
 ### Add integration tests
 
-- [ ] Config parser → virtual server selection → location selection.
-- [ ] Selected location values reach `HttpRequestHandler`.
-- [ ] Per-server body-size limit follows Host selection.
-- [ ] Per-server custom error page follows Host selection.
+- [x] Config parser → virtual server selection → location selection.
+- [x] Selected location values reach `HttpRequestHandler`.
+- [x] Per-server body-size limit follows Host selection.
+- [x] Per-server custom error page follows Host selection.
 - [ ] Redirect config produces a redirect response.
 
 ### Expand end-to-end coverage
@@ -391,9 +393,9 @@ ctx.post("/upload, body, timout=5")
 - [ ] Oversized body.
 - [ ] DELETE existing/missing/forbidden target.
 - [ ] Redirect status and `Location` header.
-- [ ] Virtual hosts on one listener.
+- [x] Virtual hosts on one listener.
 - [ ] Multiple ports.
-- [ ] Custom error pages.
+- [x] Custom error pages.
 - [ ] Slow client and many simultaneous clients.
 
 ### Final test commands

@@ -59,7 +59,15 @@ CPP_UNIT_TESTS: List[Tuple[str, List[str]]] = [
             "tests/unit/response_builder_tests.cpp",
             "src/http/HttpResponseBuilder.cpp",
         ],
-    )
+    ),
+    (
+        "router_tests",
+        [
+            "tests/unit/router_tests.cpp",
+            "src/routing/Router.cpp",
+            "src/config/ServerConfig.cpp",
+        ],
+    ),
 ]
 
 TestFunction = Callable[[TestContext], None]

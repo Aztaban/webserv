@@ -1,64 +1,12 @@
 #include "core/RequestHandler.hpp"
 #include "core/ErrorResponseFactory.hpp"
+#include "http/HttpRequestHandler.hpp"
+#include "utils/Logger.hpp"
 
 namespace
 {
-	struct EffectiveRouteConfig
+	static HttpRequestHandler	createHttpHandler(const EffectiveRouteConfig& config)
 	{
-		std::string root;
-		std::string locationPath;
-		std::string uploadDirectory;
-		std::string index;
-		std::vector<std::string> methods;
-		std::map<int, std::string> errorPages;
-		bool autoindex;
-		bool uploadEnabled;
-		std::size_t maxBodySize;
-
-		EffectiveRouteConfig()
-			: root(),
-			  locationPath("/"),
-			  uploadDirectory(),
-			  index(),
-			  methods(),
-			  errorPages(),
-			  autoindex(false),
-			  uploadEnabled(false),
-			  maxBodySize(0)
-		{}
-	};
-
-	static EffectiveRouteConfig buildEffectiveConfig(const RouteResult& route)
-	{
-		EffectiveRouteConfig config;
-
-		if (route.server)
-		{
-			config.root = route.server->getRoot();
-			config.index = route.server->getIndex();
-			config.errorPages = route.server->getErrorpages();
-			config.maxBodySize = route.server->getClientMaxBodySize();
-		}
-		if (route.location)
-		{
-			config.locationPath = route.location->path;
-			if (!route.location->root.empty())
-				config.root = route.location->root;
-			if (!route.location->index.empty())
-				config.index = route.location->index;
-			config.methods = route.location->methods;
-			config.autoindex = route.location->autoindex;
-			config.uploadEnabled = route.location->uploadEnabled;
-			if (config.uploadEnabled)
-				config.uploadDirectory = route.location->uploadPath;
-		}
-		return config;
-	}
-
-	static HttpRequestHandler createHttpHandler(const RouteResult& route)
-	{
-		const EffectiveRouteConfig config = buildEffectiveConfig(route);
-
 		return HttpRequestHandler(
 			config.root,
 			config.locationPath,
@@ -68,15 +16,53 @@ namespace
 			config.errorPages,
 			config.autoindex,
 			config.uploadEnabled,
-			config.maxBodySize);
+			config.maxBodySize
+		);
 	}
+}
+
+EffectiveRouteConfig RequestHandler::buildEffectiveConfig(const RouteResult& route)
+{
+	EffectiveRouteConfig config;
+
+	config.server = route.server;
+	config.location = route.location;
+
+	if (route.server)
+	{
+		config.root = route.server->getRoot();
+		config.index = route.server->getIndex();
+		config.errorPages = route.server->getErrorpages();
+		config.maxBodySize = route.server->getClientMaxBodySize();
+	}
+	if (route.location)
+	{
+		config.locationPath = route.location->path;
+		if (!route.location->root.empty())
+			config.root = route.location->root;
+		if (!route.location->index.empty())
+			config.index = route.location->index;
+		config.methods = route.location->methods;
+		config.autoindex = route.location->autoindex;
+		config.uploadEnabled = route.location->uploadEnabled;
+		if (config.uploadEnabled)
+			config.uploadDirectory = route.location->uploadPath;
+
+		config.hasRedirect = route.location->hasRedirect;
+		config.redirectCode = route.location->redirectCode;
+		config.redirectUrl = route.location->redirectUrl;
+
+		config.cgiEnabled = route.location->cgiEnabled;
+		config.cgiExtensions = route.location->cgiExtensions;
+	}
+	return config;
 }
 
 HttpResponse RequestHandler::handle(
 	const HttpRequest& request,
 	const RequestContext& context)
 {
-	RouteResult route = Router::route(request, context);
+	const RouteResult route = Router::route(request, context);
 
 	if (route.errorStatusCode != 0)
 		return ErrorResponseFactory::create(route.errorStatusCode, route.server);
@@ -87,6 +73,12 @@ HttpResponse RequestHandler::handle(
 		return ErrorResponseFactory::create(500, static_cast<const ServerConfig*>(NULL));
 	}
 
-	HttpRequestHandler handler = createHttpHandler(route);
+	const EffectiveRouteConfig config = buildEffectiveConfig(route);
+
+	// Stable partner integration order:
+	// 1. redirect handler checks config.hasRedirect
+	// 2. CGI handler checks config.cgiEnabled and the request path extension
+	// 3. non-redirect/non-CGI requests continue to the static HTTP handler
+	HttpRequestHandler handler = createHttpHandler(config);
 	return handler.handle(request);
 }
