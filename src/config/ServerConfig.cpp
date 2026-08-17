@@ -47,3 +47,35 @@ void    ServerConfig::setClientMaxBodySize(std::size_t size)
 {
     _clientMaxBodySize = size;
 }
+
+const std::string&  ServerConfig::getIndex() const
+{
+	return _index;
+}
+
+const std::map<int, std::string>&   ServerConfig::getErrorpages() const
+{
+	return _errorPages;
+}
+
+const std::vector<LocationConfig>&  ServerConfig::getLocations() const
+{
+	return _locations;
+}
+
+void    ServerConfig::setIndex(const std::string& index)
+{
+	_index = index;
+}
+
+void    ServerConfig::addErrorPage(int statusCode, const std::string& path)
+{
+	_errorPages[statusCode] = path;
+}
+
+void    ServerConfig::addLocation(const LocationConfig& location)
+{
+	_locations.push_back(location);
+}
+
+

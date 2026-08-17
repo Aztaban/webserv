@@ -1,5 +1,6 @@
 #include "core/WebServer.hpp"
 #include "config/ServerConfig.hpp"
+#include "config/ConfigParser.hpp"
 #include "utils/Logger.hpp"
 
 #include <iostream>
@@ -38,7 +39,10 @@ int main(int argc, char **argv)
 			ConfigParser parser(configPath);
 			std::vector<ServerConfig> configs = parser.parse();
 		*/
-		(void)configPath;
+		ConfigParser configParser(configPath);
+		configParser.loadSource();
+		configParser.tokenize();
+		configParser.parse();
 
 		std::vector<ServerConfig>	configs;
 
