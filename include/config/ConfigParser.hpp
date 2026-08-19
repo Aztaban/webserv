@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 13:20:26 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/17 17:40:30 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/19 15:08:03 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include "config/ServerConfig.hpp"
 # include "config/Token.hpp"
+# include "config/TokenStream.hpp"
 
 # include <string>
 # include <vector>
@@ -38,6 +39,8 @@ class ConfigParser {
 		void loadSource();
 		void tokenize();
 		void parse();
+		void parseServer(TokenStream& tokenStream, ServerConfig& serverConfig);
+		void parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig);
 };
 
 

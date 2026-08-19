@@ -20,6 +20,7 @@ SRCS := \
 	$(SRC_DIR)/cgi/CgiRequest.cpp \
 	$(SRC_DIR)/config/ServerConfig.cpp \
 	$(SRC_DIR)/config/ConfigParser.cpp \
+	$(SRC_DIR)/config/TokenStream.cpp \
 	$(SRC_DIR)/core/ErrorResponseFactory.cpp \
 	$(SRC_DIR)/core/RequestHandler.cpp \
 	$(SRC_DIR)/core/RequestResult.cpp \

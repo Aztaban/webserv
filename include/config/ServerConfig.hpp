@@ -33,12 +33,14 @@ public:
     const std::map<int, std::string>&   getErrorpages() const;
     const std::vector<LocationConfig>&  getLocations() const;
 
+	
+    void	setHost(const std::string& host);
+	void	setPort(int host);
     void    setRoot(const std::string& root);
     void    setIndex(const std::string& index);
     void    setClientMaxBodySize(std::size_t size);
     void    addErrorPage(int statusCode, const std::string& path);
     void    addLocation(const LocationConfig& location);
-
 };
 
 #endif

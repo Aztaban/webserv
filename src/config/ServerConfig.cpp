@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ServerConfig.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/19 11:13:39 by lformank          #+#    #+#             */
+/*   Updated: 2026/08/19 11:13:39 by lformank         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "config/ServerConfig.hpp"
 
 ServerConfig::ServerConfig()
@@ -34,18 +46,9 @@ const   std::string&  ServerConfig::getRoot() const {
     return _root;
 }
 
-void    ServerConfig::setRoot(const std::string& root) {
-    _root = root;
-}
-
 std::size_t ServerConfig::getClientMaxBodySize() const
 {
     return _clientMaxBodySize;
-}
-
-void    ServerConfig::setClientMaxBodySize(std::size_t size)
-{
-    _clientMaxBodySize = size;
 }
 
 const std::string&  ServerConfig::getIndex() const
@@ -63,9 +66,28 @@ const std::vector<LocationConfig>&  ServerConfig::getLocations() const
 	return _locations;
 }
 
+void	ServerConfig::setHost(const std::string& host)
+{
+	this->_host = host;
+}
+
+void	ServerConfig::setPort(int port)
+{
+	this->_port = port;
+}
+
+void    ServerConfig::setRoot(const std::string& root) {
+    _root = root;
+}
+
 void    ServerConfig::setIndex(const std::string& index)
 {
 	_index = index;
+}
+
+void    ServerConfig::setClientMaxBodySize(std::size_t size)
+{
+    _clientMaxBodySize = size;
 }
 
 void    ServerConfig::addErrorPage(int statusCode, const std::string& path)

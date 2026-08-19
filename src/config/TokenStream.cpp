@@ -6,7 +6,62 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 17:36:57 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/17 17:36:57 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/19 15:55:32 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "config/TokenStream.hpp"
+#include "config/Token.hpp"
+#include <vector>
+#include <iostream>
+
+TokenStream::TokenStream(std::vector<Token>& tokens) : _pos(0), _tokens(tokens)
+{}
+
+TokenStream::TokenStream(const TokenStream& other)
+{
+	this->_tokens.clear();
+	this->_tokens.insert(this->_tokens.begin(), other._tokens.begin(), other._tokens.end());
+	this->_pos = other._pos;
+}
+
+TokenStream::~TokenStream() {}
+
+bool TokenStream::atEnd() const
+{
+	return _pos >= _tokens.size();
+}
+
+const Token& TokenStream::peek() const
+{
+	if (!atEnd())
+		return _tokens[_pos];
+	else
+		throw std::runtime_error("Out of _tokens' bounds");
+}
+
+const Token& TokenStream::advance()
+{
+	if (!atEnd())
+		return _tokens[_pos++];
+	else
+		throw std::runtime_error("Out of _tokens' bounds");
+}
+
+bool TokenStream::match(TokenType t)
+{
+	if (peek().type == t)
+	{
+		advance();
+		return true;
+	}
+	return false;
+}
+
+const Token& TokenStream::expect(TokenType t)
+{
+	if (peek().type == t)
+		return advance();
+	else
+		throw std::runtime_error("Wrong syntax of config file");
+}
