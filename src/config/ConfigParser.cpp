@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 13:21:53 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/19 21:00:49 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/21 17:34:36 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <cstdlib>
 #include "config/Token.hpp"
 #include "config/TokenStream.hpp"
 
@@ -120,14 +121,82 @@ void ConfigParser::tokenize()
 			pushWord(word);
 	}
 	pushWord(word);
-	for (size_t i = 0; i < _tokens.size(); i++)
+}
+
+bool validBool(TokenStream& tokenStream)
+{
+	Token token = tokenStream.expect(T_WORD);
+
+	tokenStream.expect(T_SEMICOLON);
+	if (token.value == "true")
+		return true;
+	else if (token.value != "false")
+		throw std::runtime_error("Invalid bool value: " + token.value);
+	return false;
+}
+
+std::string checkRedirectUrl(TokenStream& tokenStream)
+{
+	std::string str;
+
+	if (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING)
 	{
-		std::cout << "Type: " << _tokens[i].type << "\tValue: " << _tokens[i].value << std::endl;
+		str = tokenStream.advance().value;
+		tokenStream.expect(T_SEMICOLON);
+		return str;
 	}
+	throw std::runtime_error("Missing redirectUrl value");
+}
+
+const std::vector<std::string>& checkMethods(TokenStream& tokenStream)
+{
+	Token token = tokenStream.advance();
+	std::vector<std::string>* vector = new std::vector<std::string>;
+
+	while (token.type != T_SEMICOLON || token.type != T_RBRACE)
+	{
+		if (token.value == "GET" || token.value == "POST" || token.value == "DELETE")
+		{
+			vector->push_back(token.value);
+			token = tokenStream.advance();
+		}
+		else
+			throw std::runtime_error("Invalid method: " + token.value);
+	}
+	tokenStream.expect(T_SEMICOLON);
+	return *vector;
+}
+
+const std::map<std::string, std::string>& checkCgiExtensions(TokenStream& tokenStream)
+{
+	std::map<std::string, std::string>* map = new std::map<std::string, std::string>;
+	Token token;
+	std::string extension;
+	std::string path;
+	
+	while (token.type != T_SEMICOLON || token.type != T_RBRACE)
+	{
+		if (token.value[0] == '.')
+		{
+			extension = token.value;
+			token = tokenStream.advance();
+		}
+		if (token.value[0] == '/' || token.value.find("https://", 0) != std::string::npos  || token.value.find("http://", 0) != std::string::npos )
+		{
+			path = token.value;
+			token = tokenStream.expect(T_SEMICOLON);
+			token = tokenStream.advance();
+		}
+		else
+			throw std::runtime_error("Invalid extension: " + token.value);
+	}
+	tokenStream.expect(T_SEMICOLON);
+	return *map;
 }
 
 void parseLocation(TokenStream& tokenStream, ServerConfig& serverConfig)
 {
+	std::cout << "Entering parse location! " << tokenStream.peek().value << std::endl;
 	Token token = tokenStream.expect(T_WORD);
 	LocationConfig locationConfig;
 
@@ -136,57 +205,45 @@ void parseLocation(TokenStream& tokenStream, ServerConfig& serverConfig)
 	locationConfig.path = token.value;
 	tokenStream.expect(T_LBRACE);
 	token = tokenStream.expect(T_WORD);
-	if (token.value == "root")
+	while (token.type != T_RBRACE)
 	{
-		locationConfig.root = token.value;
+		if (token.value == "root" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+		{
+			locationConfig.root = tokenStream.advance().value;
+			tokenStream.expect(T_SEMICOLON);
+		}
+		else if (token.value == "index" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+		{
+			locationConfig.index = tokenStream.advance().value;
+			tokenStream.expect(T_SEMICOLON);
+		}
+		else if (token.value == "methods")
+			locationConfig.methods = checkMethods(tokenStream);
+		else if (token.value == "autoindex")
+			locationConfig.autoindex = validBool(tokenStream);
+		else if (token.value == "hasRedirect")
+			locationConfig.hasRedirect = validBool(tokenStream);
+		else if (token.value == "redirectCode")
+			locationConfig.redirectCode = validBool(tokenStream);
+		else if (token.value == "redirectUrl" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+			locationConfig.redirectUrl = checkRedirectUrl(tokenStream);
+		else if (token.value == "uploadEnabled" )
+			locationConfig.uploadEnabled = validBool(tokenStream);
+		else if (token.value == "uploadPath" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+		{
+			locationConfig.uploadPath = tokenStream.advance().value;
+			tokenStream.expect(T_SEMICOLON);
+		}
+		else if (token.value == "cgiEnabled")
+			locationConfig.cgiEnabled = validBool(tokenStream);
+		else if (token.value == "cgiExtensions" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+			locationConfig.cgiExtensions = checkCgiExtensions(tokenStream); // MAP OF EXTENTIONS AND ITS ?PATHS?
+		else
+			throw std::runtime_error("Invalid property of location: " + token.value);
+		token = tokenStream.advance();
+		std::cout << "New token: " + token.value << std::endl;
 	}
-	else if (token.value == "index")
-	{
-		locationConfig.index = token.value;
-	}
-	else if (token.value == "methods")
-	{
-		locationConfig.methods = token.value; // VECTOR OF METHODS
-	}
-	else if (token.value == "autoindex")
-	{
-		if (tokenStream.expect(T_WORD).value == "true")
-			locationConfig.autoindex = true;
-	}
-	else if (token.value == "hasRedirect")
-	{
-		if (tokenStream.expect(T_WORD).value == "true")
-			locationConfig.hasRedirect = true;
-	}
-	else if (token.value == "redirectCode")
-	{
-		if (tokenStream.expect(T_WORD).value == "true")
-			locationConfig.redirectCode = true;
-	}
-	else if (token.value == "redirectUrl")
-	{
-		locationConfig.redirectUrl = token.value;
-	}
-	else if (token.value == "uploadEnabled")
-	{
-		if (tokenStream.expect(T_WORD).value == "true")
-			locationConfig.uploadEnabled = true;
-	}
-	else if (token.value == "uploadPath")
-	{
-		locationConfig.uploadPath = token.value;
-	}
-	else if (token.value == "cgiEnabled")
-	{
-		if (tokenStream.expect(T_WORD).value == "true")
-			locationConfig.cgiEnabled = true;	
-	}
-	else if (token.value == "cgiExtensions")
-	{
-		locationConfig.cgiExtensions = token.value; // MAP OF EXTENTIONS AND ITS ?PATHS?
-	}
-	else
-		throw std::runtime_error("Invalid property of location: " + token.value);
+	tokenStream.expect(T_RBRACE);
 	serverConfig.addLocation(locationConfig);
 }
 
@@ -204,20 +261,22 @@ bool	checkPort(std::string port)
 
 void parseIP(TokenStream& tokenStream, ServerConfig& serverConfig)
 {
+	std::cout << "Entering parse IP! " << tokenStream.peek().value << std::endl;
 	const Token& IP = tokenStream.expect(T_WORD);
 	std::string host;
 	std::string port;
-	size_t posSemicolon = IP.value.find_first_of(':');
+	size_t posColon = IP.value.find_first_of(':');
 
-	if (posSemicolon != std::string::npos)
+	if (posColon != std::string::npos)
 	{
-		host = IP.value.substr(0, posSemicolon);
-		port = IP.value.substr(posSemicolon + 1 , IP.value.size() - 2);
+		host = IP.value.substr(0, posColon);
+		port = IP.value.substr(posColon + 1 , IP.value.size() - 2);
 		serverConfig.setHost(host);
 		if (checkPort(port))
 		{
-			int numPort = atoi(port.c_str());
+			int numPort = std::atoi(port.c_str());
 			serverConfig.setPort(numPort);
+			tokenStream.expect(T_SEMICOLON);
 		}
 		else
 			throw std::runtime_error("Invalid port: " + port);
@@ -226,25 +285,39 @@ void parseIP(TokenStream& tokenStream, ServerConfig& serverConfig)
 		throw std::runtime_error("Invalid IP address: " + IP.value);
 }
 
+// void parseRoot(TokenStream& tokenStream, ServerConfig& serverConfig)
+// {
+// 	Token root = tokenStream.expect(T_WORD);
+// 	serverConfig.setRoot(root.value);
+// 	tokenStream.expect(T_SEMICOLON);	
+// }
+
 void ConfigParser::parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig)
 {
 	const Token& token = tokenStream.advance();
 
+	std::cout << "Entering parse directive! " << tokenStream.peek().value << std::endl;
 	if (token.value == "listen")
 	{
 		parseIP(tokenStream, serverConfig);
 	}
-	else if (token.value == "server_name")
+	else if (token.value == "root")
 	{
-	
+		Token root = tokenStream.expect(T_WORD);
+		serverConfig.setRoot(root.value);
+		tokenStream.expect(T_SEMICOLON);
 	}
 	else if (token.value == "index")
 	{
-		
+		Token index = tokenStream.expect(T_WORD);
+		serverConfig.setIndex(index.value);
+		tokenStream.expect(T_SEMICOLON);
 	}
 	else if (token.value == "client_max_body")
 	{
-		
+		Token token = tokenStream.expect(T_WORD);
+		// serverConfig.setClientMaxBodySize(token.value);
+		tokenStream.expect(T_SEMICOLON);		
 	}
 	else if (token.value == "error_page")
 	{
@@ -258,10 +331,56 @@ void ConfigParser::parseDirective(TokenStream& tokenStream, ServerConfig& server
 
 void ConfigParser::parseServer(TokenStream& tokenStream, ServerConfig& serverConfig)
 {
-	tokenStream.expect(T_LBRACE);
-	if (tokenStream.peek().type == T_WORD)
+	Token token = tokenStream.expect(T_LBRACE);
+	while (token.type != T_RBRACE || tokenStream.atEnd())
 	{
+		std::cout << "Entering parse server!" << std::endl;
 		parseDirective(tokenStream, serverConfig);
+		token = tokenStream.peek();
+	}
+}
+
+void printServerConfig(const ServerConfig& serverConfig)
+{
+	std::cout << "host: " << serverConfig.getHost() << std::endl;
+	std::cout << "port: " << serverConfig.getPort() << std::endl;
+	std::cout << "root: " << serverConfig.getRoot() << std::endl;
+	std::cout << "index: " << serverConfig.getIndex() << std::endl;
+	std::cout << "clientMaxBodySize: " << serverConfig.getClientMaxBodySize() << std::endl;
+
+	std::cout << "errorPages:" << std::endl;
+	const std::map<int, std::string>& errorPages = serverConfig.getErrorpages();
+	for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it)
+		std::cout << "  " << it->first << " -> " << it->second << std::endl;
+
+	std::cout << "locations:" << std::endl;
+	const std::vector<LocationConfig>& locations = serverConfig.getLocations();
+	for (size_t i = 0; i < locations.size(); i++)
+	{
+		const LocationConfig& location = locations[i];
+
+		std::cout << "  [" << i << "]" << std::endl;
+		std::cout << "    path: " << location.path << std::endl;
+		std::cout << "    root: " << location.root << std::endl;
+		std::cout << "    index: " << location.index << std::endl;
+
+		std::cout << "    methods:";
+		for (size_t j = 0; j < location.methods.size(); j++)
+			std::cout << " " << location.methods[j];
+		std::cout << std::endl;
+
+		std::cout << "    autoindex: " << location.autoindex << std::endl;
+		std::cout << "    hasRedirect: " << location.hasRedirect << std::endl;
+		std::cout << "    redirectCode: " << location.redirectCode << std::endl;
+		std::cout << "    redirectUrl: " << location.redirectUrl << std::endl;
+		std::cout << "    uploadEnabled: " << location.uploadEnabled << std::endl;
+		std::cout << "    uploadPath: " << location.uploadPath << std::endl;
+		std::cout << "    cgiEnabled: " << location.cgiEnabled << std::endl;
+
+		std::cout << "    cgiExtensions:" << std::endl;
+		for (std::map<std::string, std::string>::const_iterator it = location.cgiExtensions.begin();
+			 it != location.cgiExtensions.end(); ++it)
+			std::cout << "      " << it->first << " -> " << it->second << std::endl;
 	}
 }
 
@@ -275,6 +394,7 @@ void ConfigParser::parse()
 		if (tokenStream.expect(T_WORD).value == "server")
 		{
 			parseServer(tokenStream, serverConfig);
+			printServerConfig(serverConfig);
 		}
 	}
 	catch (std::exception& error)
