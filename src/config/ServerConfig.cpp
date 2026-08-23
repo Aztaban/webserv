@@ -13,7 +13,8 @@
 #include "config/ServerConfig.hpp"
 
 ServerConfig::ServerConfig()
-    : _host("127.0.0.1"),
+    : _serverName("default"),
+	  _host("127.0.0.1"),
       _port(8000),
       _root("./www/site1"),
       _index("index.html"),
@@ -23,8 +24,9 @@ ServerConfig::ServerConfig()
 {
 }
 
-ServerConfig::ServerConfig(const std::string& host, int port)
-	: _host(host),
+ServerConfig::ServerConfig(const std::string& name, const std::string& host, int port)
+	: _serverName(name),
+	  _host(host),
 	  _port(port),
 	  _root("./www/site1"),
 	  _index("index.html"),
@@ -32,6 +34,10 @@ ServerConfig::ServerConfig(const std::string& host, int port)
 	  _errorPages(),
 	  _locations()
 {
+}
+
+const std::string&	ServerConfig::getName() const {
+    return _serverName;
 }
 
 const   std::string& ServerConfig::getHost() const {
@@ -64,6 +70,11 @@ const std::map<int, std::string>&   ServerConfig::getErrorpages() const
 const std::vector<LocationConfig>&  ServerConfig::getLocations() const
 {
 	return _locations;
+}
+
+void    ServerConfig::setName(const std::string& name)
+{
+    _serverName = name;
 }
 
 void	ServerConfig::setHost(const std::string& host)
@@ -99,5 +110,4 @@ void    ServerConfig::addLocation(const LocationConfig& location)
 {
 	_locations.push_back(location);
 }
-
 

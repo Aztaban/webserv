@@ -11,6 +11,7 @@
 class ServerConfig {
 
 private:
+	std::string _serverName;
     std::string _host;
     int         _port;
     std::string _root;
@@ -21,8 +22,9 @@ private:
 
 public:
     ServerConfig();
-    ServerConfig(const std::string &host, int port);
+    ServerConfig(const std::string& name, const std::string& host, int port);
 
+	const std::string&	getName() const;
     const std::string&  getHost() const;
     int                 getPort() const;
 
@@ -33,7 +35,8 @@ public:
     const std::map<int, std::string>&   getErrorpages() const;
     const std::vector<LocationConfig>&  getLocations() const;
 
-	
+
+	void    setName(const std::string& name);
     void	setHost(const std::string& host);
 	void	setPort(int host);
     void    setRoot(const std::string& root);

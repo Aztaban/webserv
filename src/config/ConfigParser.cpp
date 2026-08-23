@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 13:21:53 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/23 11:57:38 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/23 18:40:16 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <limits.h>
 #include "config/Token.hpp"
 #include "config/TokenStream.hpp"
 
@@ -192,20 +193,32 @@ std::map<std::string, std::string> checkCgiExtensions(TokenStream& tokenStream)
 	return extensions;
 }
 
-bool checkPort(std::string port);
+bool	checkNumber(std::string numStr, long min, long max)
+{
+	errno = 0;
+	char *end;
+	long num = std::strtol(numStr.c_str(), &end, 10);
+
+	if (*end != '\0')
+		return false;
+	if (errno == ERANGE)
+		return false;
+	if (num < min || num > max)
+		return false;
+	return true;
+}
 
 int checkRedirectCode(TokenStream& tokenStream)
 {
 	Token token = tokenStream.expect(T_WORD);
 
-	if (!checkPort(token.value))
+	if (!checkNumber(token.value, 300, 399))
 		throw std::runtime_error("Invalid redirect code: " + token.value);
 	return std::atoi(token.value.c_str());
 }
 
 void parseLocation(TokenStream& tokenStream, ServerConfig& serverConfig)
 {
-	std::cout << "Entering parse location! " << tokenStream.peek().value << std::endl;
 	Token token = tokenStream.expect(T_WORD);
 	LocationConfig locationConfig;
 
@@ -255,27 +268,14 @@ void parseLocation(TokenStream& tokenStream, ServerConfig& serverConfig)
 	serverConfig.addLocation(locationConfig);
 }
 
-bool	checkPort(std::string port)
-{
-	for (size_t i = 0; i < port.size(); i++)
-	{
-		if (!isdigit(port[i]))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
 void parseError(TokenStream& tokenStream, ServerConfig& serverConfig)
 {
-	// error_page 400 ./www/site1/errors/400.html;
 	Token token = tokenStream.expect(T_WORD);
-	int errorNum;
+	long int errorNum;
 
-	if (!checkPort(token.value))
+	if (!checkNumber(token.value, 400, 599))
 		throw std::runtime_error("Invalid error code: " + token.value);
-	errorNum = std::atoi(token.value.c_str());
+	errorNum = std::atol(token.value.c_str());
 	token = tokenStream.expect(T_WORD);
 	std::string error = token.value;
 	tokenStream.expect(T_SEMICOLON);
@@ -284,7 +284,6 @@ void parseError(TokenStream& tokenStream, ServerConfig& serverConfig)
 
 void parseIP(TokenStream& tokenStream, ServerConfig& serverConfig)
 {
-	std::cout << "Entering parse IP! " << tokenStream.peek().value << std::endl;
 	const Token& IP = tokenStream.expect(T_WORD);
 	std::string host;
 	std::string port;
@@ -295,7 +294,7 @@ void parseIP(TokenStream& tokenStream, ServerConfig& serverConfig)
 		host = IP.value.substr(0, posColon);
 		port = IP.value.substr(posColon + 1);
 		serverConfig.setHost(host);
-		if (checkPort(port))
+		if (checkNumber(port, 1, 65535))
 		{
 			int numPort = std::atoi(port.c_str());
 			serverConfig.setPort(numPort);
@@ -308,71 +307,9 @@ void parseIP(TokenStream& tokenStream, ServerConfig& serverConfig)
 		throw std::runtime_error("Invalid IP address: " + IP.value);
 }
 
-
-void ConfigParser::parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig)
-{
-	Token token = tokenStream.expect(T_WORD);
-
-	std::cout << "Entering parse directive! " << tokenStream.peek().value << std::endl;
-	if (token.value == "listen")
-	{
-		std::cout << "PARSEIP" << std::endl;
-		parseIP(tokenStream, serverConfig);
-	}
-	else if (token.value == "root")
-	{
-		std::cout << "ROOT" << std::endl;
-		Token root = tokenStream.expect(T_WORD);
-		serverConfig.setRoot(root.value);
-		tokenStream.expect(T_SEMICOLON);
-	}
-	else if (token.value == "index")
-	{
-		std::cout << "INDEX" << std::endl;
-		Token index = tokenStream.expect(T_WORD);
-		serverConfig.setIndex(index.value);
-		tokenStream.expect(T_SEMICOLON);
-	}
-	else if (token.value == "client_max_body_size")
-	{
-		std::cout << "CLIMAXBODY" << std::endl;
-		Token token = tokenStream.expect(T_WORD);
-		if (checkPort(token.value))
-			serverConfig.setClientMaxBodySize(std::atoi(token.value.c_str()));
-		tokenStream.expect(T_SEMICOLON);
-	}
-	else if (token.value == "error_page")
-	{
-		std::cout << "ERROR_PAGE" << std::endl;
-		parseError(tokenStream, serverConfig);
-	}
-	else if (token.value == "location")
-	{
-		std::cout << "PARSELOCATION" << std::endl;
-		parseLocation(tokenStream, serverConfig);
-	}
-	else if (token.value == "server_name")
-	{
-		token = tokenStream.expect(T_WORD);
-		token = tokenStream.expect(T_SEMICOLON);
-	}
-	else
-		throw std::runtime_error("Unknown directive: " + token.value);
-}
-
-void ConfigParser::parseServer(TokenStream& tokenStream, ServerConfig& serverConfig)
-{
-	Token token = tokenStream.expect(T_LBRACE);
-	while (token.type != T_RBRACE && !tokenStream.atEnd())
-	{
-		parseDirective(tokenStream, serverConfig);
-		token = tokenStream.peek();
-	}
-	tokenStream.expect(T_RBRACE);
-}
-
 void printServerConfig(const ServerConfig& serverConfig)
 {
+	std::cout << "name: " << serverConfig.getName() << std::endl;
 	std::cout << "host: " << serverConfig.getHost() << std::endl;
 	std::cout << "port: " << serverConfig.getPort() << std::endl;
 	std::cout << "root: " << serverConfig.getRoot() << std::endl;
@@ -413,6 +350,65 @@ void printServerConfig(const ServerConfig& serverConfig)
 			 it != location.cgiExtensions.end(); ++it)
 			std::cout << "      " << it->first << " -> " << it->second << std::endl;
 	}
+}
+
+void ConfigParser::parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig, std::set<std::string>& seenDirectives)
+{
+	Token token = tokenStream.expect(T_WORD);
+	bool isSingular = (token.value == "listen" || token.value == "root" || token.value == "index"
+		|| token.value == "client_max_body_size" || token.value == "server_name");
+
+	if (isSingular && !seenDirectives.insert(token.value).second)
+		throw std::runtime_error("Duplicate '" + token.value + "' directive");
+
+	if (token.value == "listen")
+		parseIP(tokenStream, serverConfig);
+	else if (token.value == "root")
+	{
+		Token root = tokenStream.expect(T_WORD);
+		serverConfig.setRoot(root.value);
+		tokenStream.expect(T_SEMICOLON);
+	}
+	else if (token.value == "index")
+	{
+		Token index = tokenStream.expect(T_WORD);
+		serverConfig.setIndex(index.value);
+		tokenStream.expect(T_SEMICOLON);
+	}
+	else if (token.value == "client_max_body_size")
+	{
+		Token token = tokenStream.expect(T_WORD);
+		if (checkNumber(token.value, 0, LONG_MAX))
+			serverConfig.setClientMaxBodySize(std::strtoul(token.value.c_str(), NULL, 10));
+		else
+			throw std::runtime_error("Invalid 'client_max_body_size' number\n");
+		tokenStream.expect(T_SEMICOLON);
+	}
+	else if (token.value == "error_page")
+		parseError(tokenStream, serverConfig);
+	else if (token.value == "location")
+		parseLocation(tokenStream, serverConfig);
+	else if (token.value == "server_name")
+	{
+		token = tokenStream.advance();
+		if (token.type == T_WORD || token.type == T_STRING)
+			serverConfig.setName(token.value);
+		token = tokenStream.expect(T_SEMICOLON);
+	}
+	else
+		throw std::runtime_error("Unknown directive: " + token.value);
+}
+
+void ConfigParser::parseServer(TokenStream& tokenStream, ServerConfig& serverConfig)
+{
+	Token token = tokenStream.expect(T_LBRACE);
+	std::set<std::string> seenDirectives;
+	while (token.type != T_RBRACE && !tokenStream.atEnd())
+	{
+		parseDirective(tokenStream, serverConfig, seenDirectives);
+		token = tokenStream.peek();
+	}
+	tokenStream.expect(T_RBRACE);
 }
 
 void ConfigParser::parse()

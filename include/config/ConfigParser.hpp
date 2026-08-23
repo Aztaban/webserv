@@ -19,6 +19,7 @@
 
 # include <string>
 # include <vector>
+# include <set>
 
 
 
@@ -40,7 +41,7 @@ class ConfigParser {
 		void tokenize();
 		void parse();
 		void parseServer(TokenStream& tokenStream, ServerConfig& serverConfig);
-		void parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig);
+		void parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig, std::set<std::string>& seenDirectives);
 };
 
 
