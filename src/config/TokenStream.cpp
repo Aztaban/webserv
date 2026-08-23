@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 17:36:57 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/19 15:55:32 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/23 11:58:52 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,25 @@ bool TokenStream::match(TokenType t)
 	return false;
 }
 
+static std::string tokenTypeName(TokenType t)
+{
+	switch (t)
+	{
+		case T_WORD:      return "word";
+		case T_LBRACE:    return "lbrace";
+		case T_RBRACE:    return "rbrace";
+		case T_SEMICOLON: return "semicolon";
+		case T_COMMENT:   return "comment";
+		case T_STRING:    return "string";
+		case T_EOF:    return "eof";
+	}
+	return "unknown";
+}
+
 const Token& TokenStream::expect(TokenType t)
 {
 	if (peek().type == t)
 		return advance();
-	else
-		throw std::runtime_error("Wrong syntax of config file");
+	throw std::runtime_error("Wrong syntax of config file - expected " + tokenTypeName(t)
+		+ ", got: \"" + peek().value + "\" (" + tokenTypeName(peek().type) + ")\n");
 }

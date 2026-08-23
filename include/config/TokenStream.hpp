@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 17:36:45 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/19 12:59:23 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/22 17:33:40 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ class TokenStream {
 		const Token& advance();
 		bool match(TokenType t);
 		const Token& expect(TokenType t);
-
 };
 
 #endif

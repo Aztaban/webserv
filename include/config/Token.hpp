@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 17:38:30 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/17 17:42:08 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/23 11:57:23 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@ enum TokenType {
 	T_RBRACE,
 	T_SEMICOLON,
 	T_COMMENT,
-	T_STRING
+	T_STRING,
+	T_EOF
 };
 
 struct Token {
