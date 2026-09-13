@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 13:20:26 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/19 15:08:03 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/26 16:29:25 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,13 @@ class ConfigParser {
 		void pushWord(std::string& word);
 		void loadSource();
 		void tokenize();
-		void parse();
+		std::vector<ServerConfig> parse();
 		void parseServer(TokenStream& tokenStream, ServerConfig& serverConfig);
 		void parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig, std::set<std::string>& seenDirectives);
 };
+
+void printServerConfig(const ServerConfig& serverConfig);
+void printServerConfigs(const std::vector<ServerConfig>& serverConfigs);
 
 
 #endif

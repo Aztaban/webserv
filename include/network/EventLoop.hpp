@@ -1,6 +1,7 @@
 #ifndef EVENTLOOP_HPP
 # define EVENTLOOP_HPP
 
+# include "cgi/CgiJob.hpp"
 # include "network/Listener.hpp"
 # include "network/ClientConnection.hpp"
 
@@ -23,23 +24,33 @@ class EventLoop {
 
 private:
 	static const int	CLIENT_TIMEOUT_SECONDS = 30;
+	static const int	CGI_TIMEOUT_SECONDS = 30;
 
 	std::vector<struct pollfd>			_pollFds;
 	std::map<int, Listener *>			_listeners;
 	std::map<int, ClientConnection *>	_clients;
+	std::map<int, CgiJob *>				_cgiByFd;
+	std::map<int, int>					_cgiFdToClientFd;
+	std::map<int, CgiJob *>				_cgiByClientFd;
 
 	bool	_isListenerFd(int fd) const;
 	bool	_isClientFd(int fd) const;
+	bool	_isCgiFd(int fd) const;
 
 	void	_addPollFd(int fd, short events);
 	void	_removePollFd(int fd);
 	void	_updateClientEvents(int fd);
 	void	_handleListenerEvent(int fd);
 	void	_handleClientEvent(int fd, short revents);
+	void	_handleJobEvent(int fd, short revents);
+	void	_startCgiForClient(int fd, ClientConnection* client);
 	void	_addClient(int clientFd, Listener* listener);
 	void	_removeClient(int clientFd);
 	void	_setNonBlocking(int fd);
 	void	_removeTimedOutClients();
+	void	_removeTimedOutCgi();
+	void	_eraseFdFrom(int fd);
+	void	_removeCgi(int clientFd);
 
 public:
 	EventLoop();

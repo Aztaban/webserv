@@ -18,6 +18,7 @@ SRCS := \
 	$(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/cgi/CgiJob.cpp \
 	$(SRC_DIR)/cgi/CgiRequest.cpp \
+	$(SRC_DIR)/cgi/CgiOutputParser.cpp \
 	$(SRC_DIR)/config/ServerConfig.cpp \
 	$(SRC_DIR)/config/ConfigParser.cpp \
 	$(SRC_DIR)/config/TokenStream.cpp \

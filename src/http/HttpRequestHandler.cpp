@@ -105,12 +105,6 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 		target = request.target;
 	else
 		target = request.path;
-
-	// TEMPORARY DESIGN DECISION (NOT FINAL ARCHITECTURE)
-	// Upload directory is hardcoded here, but SHOULD come from:
-	//   - config file (Lada, will do it:))
-	//   - route/location block
-	//   - or Router resolution layer
 	
 	std::string uploadDir = _root + "/uploads/";
 
@@ -239,12 +233,6 @@ std::string HttpRequestHandler::_getFileName(const std::string& target)
 
 // ---------------- PATH RESOLUTION (TEMPORARY IMPLEMENTATION) ----------------
 
-/* for now is just = basic URI -> filesystem mapping and has minimal sanitization
-the isues: hardcoded routes (/uploads, site1), no config awareness, no location block support
-so the final thing should be =
-YO Diana = asks Router/Config for resolved path
-and Lada = provides mapping rules */
-
 std::string HttpRequestHandler::_resolvePath(const std::string& target)
 {
 	if (target.empty() || target[0] != '/')
@@ -260,14 +248,6 @@ std::string HttpRequestHandler::_resolvePath(const std::string& target)
 	// Basic security check (OK but not sufficient alone)
 	if (cleanTarget.find("..") != std::string::npos)
 		return "";
-
-	// TEMPORARY ROUTING HACK
-	// This bypasses proper config-based routing.
-	// Should be removed once Lada implements:
-	//   - location blocks
-	//   - root directives
-	//   - alias rules
-	// loking forwardssssss:)
 
 	if (cleanTarget.find("/uploads/") == 0)
 		return _root + "/site1" + cleanTarget;

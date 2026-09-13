@@ -1,6 +1,7 @@
 #ifndef CLIENTCONNECTION_HPP
 # define CLIENTCONNECTION_HPP
 
+# include "cgi/CgiRequest.hpp"
 # include "core/RequestContext.hpp"
 # include "http/HttpResponse.hpp"
 
@@ -38,6 +39,7 @@ private:
 	std::string		_writeBuffer;
 	std::time_t		_lastActivity;
 	RequestContext	_context;
+	CgiRequest		_pendingCgiRequest;
 
 	ClientConnection(const ClientConnection &other);
 	ClientConnection &operator=(const ClientConnection &other);
@@ -52,6 +54,7 @@ public:
 	~ClientConnection();
 
 	int			getFd() const;
+	CgiRequest	getCgiRequest() const;
 	ClientState	getState() const;
 	bool		wantsRead() const;
 	bool		wantsWrite() const;

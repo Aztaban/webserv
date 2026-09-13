@@ -4,6 +4,8 @@
 # include "http/HttpRequest.hpp"
 # include "http/HttpResponse.hpp"
 # include "core/RequestContext.hpp"
+# include "core/RequestResult.hpp"
+# include "cgi/CgiRequest.hpp"
 
 /**
  * @brief Central request dispatch entry point.
@@ -21,7 +23,9 @@ public:
 	/**
 	 * @brief Handles one parsed request and returns the response.
 	 */
-	static HttpResponse handle(const HttpRequest& request, const RequestContext& context);
+	static RequestResult handle(const HttpRequest& request, const RequestContext& context);
+	static bool _isCgiRequest(const HttpRequest&, const LocationConfig&, std::string& outScriptPath, std::string& outInterpreter);
+	static CgiRequest _buildCgiRequest(const HttpRequest&, const LocationConfig&, const RequestContext&);
 
 };
 

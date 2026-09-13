@@ -7,3 +7,5 @@ report.html
 server_test.log
 tests/bin
 lada_roadmap.md
+cgi_job_tests
+test_upload.txt

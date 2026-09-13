@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 13:21:53 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/23 18:40:16 by lformank         ###   ########.fr       */
+/*   Updated: 2026/08/26 17:54:57 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -352,6 +352,15 @@ void printServerConfig(const ServerConfig& serverConfig)
 	}
 }
 
+void printServerConfigs(const std::vector<ServerConfig>& serverConfigs)
+{
+	for (size_t i = 0; i < serverConfigs.size(); i++)
+	{
+		std::cout << "=== server [" << i << "] ===" << std::endl;
+		printServerConfig(serverConfigs[i]);
+	}
+}
+
 void ConfigParser::parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig, std::set<std::string>& seenDirectives)
 {
 	Token token = tokenStream.expect(T_WORD);
@@ -411,24 +420,27 @@ void ConfigParser::parseServer(TokenStream& tokenStream, ServerConfig& serverCon
 	tokenStream.expect(T_RBRACE);
 }
 
-void ConfigParser::parse()
+std::vector<ServerConfig> ConfigParser::parse()
 {
 	TokenStream tokenStream(_tokens);
-	ServerConfig serverConfig;
-	
+	std::vector<ServerConfig> vectorServerConfig;
+
 	try 
 	{
-		if (tokenStream.expect(T_WORD).value == "server")
+		while (!tokenStream.atEnd() && tokenStream.peek().type == T_WORD
+			&& tokenStream.expect(T_WORD).value == "server")
 		{
+			ServerConfig serverConfig;
 			parseServer(tokenStream, serverConfig);
 			printServerConfig(serverConfig);
+			vectorServerConfig.push_back(serverConfig);
 		}
 	}
 	catch (std::exception& error)
 	{
 		std::cerr << error.what();
 	}
-	
+	return vectorServerConfig;
 }
 
 // std::vector<ServerConfig> ConfigParser::parse()

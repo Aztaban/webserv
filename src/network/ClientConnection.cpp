@@ -31,6 +31,11 @@ int ClientConnection::getFd() const
 	return (_fd);
 }
 
+CgiRequest	ClientConnection::getCgiRequest() const
+{
+	return (_pendingCgiRequest);
+}
+
 ClientState ClientConnection::getState() const
 {
 	return (_state);
@@ -167,8 +172,14 @@ void ClientConnection::_processReadBuffer()
 
 	_state = CLIENT_PROCESSING;
 
-	HttpResponse response = RequestHandler::handle(parser.getRequest(), _context);
-	prepareResponse(response);
+	RequestResult response = RequestHandler::handle(parser.getRequest(), _context);
+	if (response.type == RequestResult::RESPONSE_READY)
+		prepareResponse(response.response);
+	else if (response.type == RequestResult::CGI_REQUIRED)
+	{
+		_pendingCgiRequest = response.cgiRequest;
+		_state = CLIENT_WAITING_CGI;
+	}
 }
 
 std::size_t ClientConnection::_getClientMaxBodySize() const
