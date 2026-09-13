@@ -6,7 +6,7 @@
 /*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 17:43:44 by lformank          #+#    #+#             */
-/*   Updated: 2026/09/13 14:54:24 by lformank         ###   ########.fr       */
+/*   Updated: 2026/09/13 14:56:38 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,10 @@ HttpResponse CgiOutputParser::parse(const std::string& rawOutput)
 		else
 			break;
 	}
-	response.body = rawOutput.substr(index + delimiterLength);
+	if (index == std::string::npos)
+		response.body = rawOutput;
+	else
+		response.body = rawOutput.substr(index + delimiterLength);
 	if (response.headers.find("Content-Type") == response.headers.end())
 	{
 		return HttpResponse(500, "Internal Server Error", "CGI output missing Content-Type header");
