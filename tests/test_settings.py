@@ -10,8 +10,8 @@ The webserv config grammar may still change during development.
 """
 
 HOST: str = "127.0.0.1"
-PORT: int = 8000
-SECOND_PORT: int = 8001
+PORT: int = 18080
+SECOND_PORT: int = 18081
 
 CONFIG_PATH: str = "tests/fixtures/test.conf"
 

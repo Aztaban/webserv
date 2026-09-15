@@ -44,7 +44,9 @@ TEST_SRCS := \
 	$(SRC_DIR)/http/test.cpp \
 	$(SRC_DIR)/http/HttpRequestParser.cpp \
 	$(SRC_DIR)/http/HttpRequestHandler.cpp \
-	$(SRC_DIR)/http/HttpResponseBuilder.cpp
+	$(SRC_DIR)/http/HttpResponseBuilder.cpp \
+	$(SRC_DIR)/core/ErrorResponseFactory.cpp \
+	$(SRC_DIR)/utils/FileUtils.cpp
 
 TEST_OBJS := $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
 

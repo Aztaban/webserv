@@ -240,17 +240,15 @@ std::string HttpRequestHandler::_resolvePath(const std::string& target)
 
 	std::string cleanTarget = target;
 
-	// Remove query string (OK = mine part)
 	size_t q = cleanTarget.find('?');
 	if (q != std::string::npos)
 		cleanTarget = cleanTarget.substr(0, q);
 
-	// Basic security check (OK but not sufficient alone)
 	if (cleanTarget.find("..") != std::string::npos)
 		return "";
 
-	if (cleanTarget.find("/uploads/") == 0)
-		return _root + "/site1" + cleanTarget;
+	if (cleanTarget == "/")
+		return _root + "/index.html";
 
 	return _root + cleanTarget;
 }

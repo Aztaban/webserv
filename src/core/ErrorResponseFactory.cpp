@@ -20,6 +20,8 @@ ErrorResponseFactory::~ErrorResponseFactory() {}
 
 std::string	ErrorResponseFactory::_reasonPhrase(int code)
 {
+	if (code == 204)
+		return ("No Content");
 	if (code == 400)
 		return ("Bad Request");
 	if (code == 403)
