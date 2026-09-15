@@ -1,22 +1,32 @@
 #ifndef REQUESTHANDLER_HPP
 # define REQUESTHANDLER_HPP
 
-# include "core/EffectiveRouteConfig.hpp"
-# include "core/RequestHandler.hpp"
-# include "http/HttpRequestHandler.hpp"
-# include "routing/Router.hpp"
-# include "utils/Logger.hpp"
+# include "http/HttpRequest.hpp"
+# include "http/HttpResponse.hpp"
+# include "core/RequestContext.hpp"
+# include "core/RequestResult.hpp"
+# include "cgi/CgiRequest.hpp"
 
-class RequestHandler
-{
-	public:
-		// Merges the selected server and location into one source of truth for
-		// redirect, CGI, and static request handling.
-		static EffectiveRouteConfig buildEffectiveConfig(const RouteResult& route);
-		// Handles one parsed request.
-		static HttpResponse handle(
-			const HttpRequest& request,
-			const RequestContext& context);
+/**
+ * @brief Central request dispatch entry point.
+ *
+ * RequestHandler receives a parsed HttpRequest and runtime RequestContext,
+ * then produces an HttpResponse. Later this is where server selection,
+ * routing, method checks, redirects, uploads, DELETE, static files, and CGI
+ * will be connected.
+ *
+ * It should not read from or write to sockets.
+ */
+class RequestHandler {
+
+public:
+	/**
+	 * @brief Handles one parsed request and returns the response.
+	 */
+	static RequestResult handle(const HttpRequest& request, const RequestContext& context);
+	static bool _isCgiRequest(const HttpRequest&, const LocationConfig&, std::string& outScriptPath, std::string& outInterpreter);
+	static CgiRequest _buildCgiRequest(const HttpRequest&, const LocationConfig&, const RequestContext&);
+
 };
 
 #endif

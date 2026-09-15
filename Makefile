@@ -1,5 +1,6 @@
 # -------- Project --------
 NAME      = webserv
+TEST_NAME = http_test
 
 SRC_DIR := src
 OBJ_DIR := build
@@ -17,10 +18,10 @@ SRCS := \
 	$(SRC_DIR)/main.cpp \
 	$(SRC_DIR)/cgi/CgiJob.cpp \
 	$(SRC_DIR)/cgi/CgiRequest.cpp \
-	$(SRC_DIR)/config/ConfigParser.cpp \
-	$(SRC_DIR)/config/ConfigParserBlocks.cpp \
-	$(SRC_DIR)/config/ConfigParserUtils.cpp \
+	$(SRC_DIR)/cgi/CgiOutputParser.cpp \
 	$(SRC_DIR)/config/ServerConfig.cpp \
+	$(SRC_DIR)/config/ConfigParser.cpp \
+	$(SRC_DIR)/config/TokenStream.cpp \
 	$(SRC_DIR)/core/ErrorResponseFactory.cpp \
 	$(SRC_DIR)/core/RequestHandler.cpp \
 	$(SRC_DIR)/core/RequestResult.cpp \
@@ -43,7 +44,9 @@ TEST_SRCS := \
 	$(SRC_DIR)/http/test.cpp \
 	$(SRC_DIR)/http/HttpRequestParser.cpp \
 	$(SRC_DIR)/http/HttpRequestHandler.cpp \
-	$(SRC_DIR)/http/HttpResponseBuilder.cpp
+	$(SRC_DIR)/http/HttpResponseBuilder.cpp \
+	$(SRC_DIR)/core/ErrorResponseFactory.cpp \
+	$(SRC_DIR)/utils/FileUtils.cpp
 
 TEST_OBJS := $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
 
@@ -65,9 +68,17 @@ $(NAME): $(OBJS)
 		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
 		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
 
-# -------- Tester --------
-test: 
-	./tests/runner.py
+# -------- Test --------
+test: $(TEST_NAME)
+
+$(TEST_NAME): $(TEST_OBJS)
+	@printf "$(BLU)Link$(RESET)   $(TEST_NAME)... "
+	@$(CXX) $(CXXFLAGS) $(TEST_OBJS) -o $(TEST_NAME) && \
+		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
+		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
+
+runtest: $(TEST_NAME)
+	@./$(TEST_NAME)
 
 # -------- Compile --------
 $(OBJ_DIR)/%.o: %.cpp
@@ -93,4 +104,4 @@ fclean: clean
 re: fclean all
 
 # -------- PHONY --------
-.PHONY: all clean fclean re run test
+.PHONY: all clean fclean re run test runtest

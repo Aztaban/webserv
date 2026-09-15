@@ -1,1 +1,3 @@
-console.log("webserv fixture loaded");
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('webserv asset loaded');
+});

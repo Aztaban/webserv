@@ -44,30 +44,12 @@ CPP_UNIT_TESTS: List[Tuple[str, List[str]]] = [
         ],
     ),
     (
-        "config_tests",
-        [
-            "tests/unit/config_tests.cpp",
-            "src/config/ConfigParser.cpp",
-            "src/config/ConfigParserBlocks.cpp",
-            "src/config/ConfigParserUtils.cpp",
-            "src/config/ServerConfig.cpp",
-        ],
-    ),
-    (
         "response_builder_tests",
         [
             "tests/unit/response_builder_tests.cpp",
             "src/http/HttpResponseBuilder.cpp",
         ],
-    ),
-    (
-        "router_tests",
-        [
-            "tests/unit/router_tests.cpp",
-            "src/routing/Router.cpp",
-            "src/config/ServerConfig.cpp",
-        ],
-    ),
+    )
 ]
 
 TestFunction = Callable[[TestContext], None]

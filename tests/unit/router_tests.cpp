@@ -1,108 +1,186 @@
 #include "routing/Router.hpp"
 
-#include <cassert>
-#include <vector>
+#include <iostream>
+#include <cstdlib>
+#include <string>
 
-static LocationConfig makeLocation(const std::string& path)
+/*
+** Webserv Unit Tests
+**
+** Target:
+**     Router
+**
+** Planned tests:
+**     - exact match
+**     - longest prefix match
+**     - missing route
+**     - method restrictions
+**     - upload route
+**     - CGI route
+**
+** Status:
+**     Placeholder only.
+*/
+
+static void	require(bool condition, const std::string& message)
 {
-	LocationConfig location;
-	location.path = path;
-	return location;
+	if (!condition)
+	{
+		std::cerr << "[FAIL]" << message << std::endl;
+		std::exit(1);
+	}
 }
 
-static HttpRequest makeRequest(const std::string& path, const std::string& host)
+static void  test_exact_match(void)
 {
+	ServerConfig server("test", "127.0.0.1", 8000);
+
+	LocationConfig root;
+	root.path = "/";
+
+	LocationConfig cgiBin;
+	cgiBin.path = "/cgi-bin";
+
+	server.addLocation(root);
+	server.addLocation(cgiBin);
+
 	HttpRequest request;
-	request.method = "GET";
-	request.path = path;
-	request.target = path;
-	request.version = "HTTP/1.1";
-	if (!host.empty())
-		request.headers["hOsT"] = host;
-	return request;
+	request.path = "/cgi-bin";
+
+	Router router;
+	const LocationConfig* result = router.matchLocation(request, server);
+
+	require(result != NULL, "exact match on /cgi-bin should return a location");
+	require(result->path == "/cgi-bin", "exact match should return the /cgi-bin location, not /");
 }
 
-static void testVirtualServerSelection()
+static void  test_longest_prefix_match(void)
 {
-	std::vector<ServerConfig> servers(2);
-	servers[0].addServerName("one.test");
-	servers[1].addServerName("Two.Test");
-	RequestContext context(&servers, "127.0.0.1", 8000);
+	ServerConfig server("test", "127.0.0.1", 8000);
 
-	RouteResult route = Router::route(makeRequest("/", "  TWO.TEST:8000\t"), context);
-	assert(route.errorStatusCode == 0);
-	assert(route.server == &servers[1]);
+	LocationConfig root;
+	root.path = "/";
 
-	route = Router::route(makeRequest("/", "unknown.test"), context);
-	assert(route.errorStatusCode == 0);
-	assert(route.server == &servers[0]);
+	LocationConfig cgiBin;
+	cgiBin.path = "/cgi-bin";
 
-	route = Router::route(makeRequest("/", "two.test:not-a-port"), context);
-	assert(route.errorStatusCode == 400);
-	assert(route.server == &servers[0]);
+	server.addLocation(root);
+	server.addLocation(cgiBin);
 
-	route = Router::route(makeRequest("/", ""), context);
-	assert(route.errorStatusCode == 400);
-	assert(route.server == &servers[0]);
+	HttpRequest request;
+	request.path = "/cgi-bin/test.py";
+
+	Router router;
+	const LocationConfig* result = router.matchLocation(request, server);
+
+	require(result != NULL, "/cgi-bin/test.py should match a location");
+	require(result->path == "/cgi-bin", "the more specific /cgi-bin should win over /");
 }
 
-static void testLocationSelection()
+static void  test_root_fallback(void)
 {
-	std::vector<ServerConfig> servers(1);
-	servers[0].addLocation(makeLocation("/"));
-	servers[0].addLocation(makeLocation("/images"));
-	servers[0].addLocation(makeLocation("/images/private"));
-	RequestContext context(&servers, "127.0.0.1", 8000);
+	ServerConfig server("test", "127.0.0.1", 8000);
 
-	RouteResult route = Router::route(makeRequest("/images/private/a.png", "site.test"), context);
-	assert(route.location == &servers[0].getLocations()[2]);
+	LocationConfig root;
+	root.path = "/";
 
-	route = Router::route(makeRequest("/images/a.png", "site.test"), context);
-	assert(route.location == &servers[0].getLocations()[1]);
+	LocationConfig cgiBin;
+	cgiBin.path = "/cgi-bin";
 
-	route = Router::route(makeRequest("/images2", "site.test"), context);
-	assert(route.location == &servers[0].getLocations()[0]);
+	server.addLocation(root);
+	server.addLocation(cgiBin);
+
+	HttpRequest request;
+	request.path = "/about.html";
+
+	Router router;
+	const LocationConfig* result = router.matchLocation(request, server);
+
+	require(result != NULL, "/about.html should fall back to the root location");
+	require(result->path == "/", "unmatched path should be served by /, not /cgi-bin");
 }
 
-static void testTrailingSlashAndEqualLengthBehavior()
+static void  test_missing_route(void)
 {
-	std::vector<ServerConfig> servers(1);
-	servers[0].addLocation(makeLocation("/foo/"));
-	servers[0].addLocation(makeLocation("/foo"));
-	RequestContext context(&servers, "127.0.0.1", 8000);
+	ServerConfig server("test", "127.0.0.1", 8000);
 
-	RouteResult route = Router::route(makeRequest("/foo/bar", "site.test"), context);
-	assert(route.location == &servers[0].getLocations()[0]);
+	LocationConfig upload;
+	upload.path = "/upload";
+
+	server.addLocation(upload);
+
+	HttpRequest request;
+	request.path = "/nonexistent";
+
+	Router router;
+	const LocationConfig* result = router.matchLocation(request, server);
+
+	require(result == NULL, "a path matching no location (no root defined) should return NULL");
 }
 
-
-static void testEmptyCandidateList()
+static void  test_upload_route(void)
 {
-	std::vector<ServerConfig> servers;
-	RequestContext context(&servers, "127.0.0.1", 8000);
-	RouteResult route = Router::route(makeRequest("/", "site.test"), context);
+	ServerConfig server("test", "127.0.0.1", 8000);
 
-	assert(route.server == NULL);
-	assert(route.location == NULL);
-	assert(route.errorStatusCode == 0);
+	LocationConfig root;
+	root.path = "/";
+
+	LocationConfig upload;
+	upload.path = "/upload";
+	upload.uploadEnabled = true;
+	upload.uploadPath = "./www/uploads";
+
+	server.addLocation(root);
+	server.addLocation(upload);
+
+	HttpRequest request;
+	request.path = "/upload/report.pdf";
+
+	Router router;
+	const LocationConfig* result = router.matchLocation(request, server);
+
+	require(result != NULL, "/upload/report.pdf should match a location");
+	require(result->path == "/upload", "should match /upload, not /");
+	require(result->uploadEnabled == true, "matched location should carry uploadEnabled through");
 }
 
-static void testServerLevelFallback()
+static void  test_cgi_route(void)
 {
-	std::vector<ServerConfig> servers(1);
-	RequestContext context(&servers, "127.0.0.1", 8000);
-	RouteResult route = Router::route(makeRequest("/anything", "site.test"), context);
+	ServerConfig server("test", "127.0.0.1", 8000);
 
-	assert(route.server == &servers[0]);
-	assert(route.location == NULL);
+	LocationConfig root;
+	root.path = "/";
+
+	LocationConfig cgiBin;
+	cgiBin.path = "/cgi-bin";
+	cgiBin.cgiEnabled = true;
+	cgiBin.cgiExtensions[".py"] = "/usr/bin/python3";
+
+	server.addLocation(root);
+	server.addLocation(cgiBin);
+
+	HttpRequest request;
+	request.path = "/cgi-bin/test.py";
+
+	Router router;
+	const LocationConfig* result = router.matchLocation(request, server);
+
+	require(result != NULL, "/cgi-bin/test.py should match a location");
+	require(result->path == "/cgi-bin", "should match /cgi-bin, not /");
+	require(result->cgiEnabled == true, "matched location should carry cgiEnabled through");
+	require(result->cgiExtensions.find(".py") != result->cgiExtensions.end(),
+		"matched location should still have its .py interpreter mapping");
 }
 
-int main()
+int main(void)
 {
-	testVirtualServerSelection();
-	testLocationSelection();
-	testTrailingSlashAndEqualLengthBehavior();
-	testServerLevelFallback();
-	testEmptyCandidateList();
-	return 0;
+	test_exact_match();
+	test_longest_prefix_match();
+	test_root_fallback();
+	test_missing_route();
+	test_upload_route();
+	test_cgi_route();
+
+   	std::cout << "[PASS] Router unit tests" << std::endl;
+	return (0);
 }

@@ -1,78 +1,63 @@
-# Final touches
+# Webserv Progress;))
 
-tasks								Status
-HTTP request parsing				✅ Done
-Headers/body parsing				✅ Done
-Chunked + Content-Length			✅ Done
-Response building					✅ Done
-Static files						✅ Done
-Directory listing					✅ Done
-POST uploads						✅ Done
-DELETE								✅ Done
-Config-driven HTTP handling			🔄 Next
-RouteResult structure				🔄 Next
-Route matching						🔄 Next
-Allowed methods checking			🔄 Next
-Redirect responses					🔄 Next
+## Week 1 — Core HTTP Output Layer (currentos states;))
 
+| Day | Topic | co mam | co chybi / next step | a co bude "doufam"|
+|-----|------|----------------------|------------------------------|-------------------|
+| 1 | Parser cleanup + stability | Full HTTP parser (request line, headers, body, validation) | Add reset(), improve edge-case handling, better incomplete detection | Stable parser (~90% done) |
+| 2 | HttpResponse redesign | HttpResponse struct + handler usage | Later refactor into stronger response pipeline | Mostly done |
+| 3 | Response builder v1 | HttpResponseBuilder fully implemented | Extend flexibility later | DONE |
+| 4 | Error response system | error404 / error405 inside handler | Centralize later | Partially done |
+| 5 | Static file serving v1 | NOT YET | Read file from disk into response body | GET /file.html works |
+| 6 | MIME types system | NOT YET | Map extensions to Content-Type | Browser renders files correctly |
+| 7 | Integration test day | Full pipeline test exists | Upgrade with file serving | MVP pipeline done |
 
-Raw HTTP request
-        ↓
-Parser
-        ↓
-Request handling
-        ↓
-Responses
-        ↓
-Files / uploads / DELETE
-        ↓
-Config integration
-        ↓
-Routing + methods + redirects
+---
 
+## Week 2 — Real Server Features
 
-Lada:
-.conf file
-        ↓
-Config parser
-        ↓
-Server/location objects
-        ↓
-CGI execution
+| Day | Topic | coz znamena? | Result |
+|-----|------|-------------------------------|--------|
+| 8 | Directory listing (autoindex) | Generate HTML listing for folders | `/folder/` works |
+| 9 | Path safety | Prevent `../` traversal attacks | Secure file access |
+| 10 | POST upload v1 | Save request body to file | Upload works |
+| 11 | Upload improvements | Filename handling, overwrite rules | Stable upload system |
+| 12 | Chunked transfer intro | Detect Transfer-Encoding | HTTP/1.1 upgrade |
+| 13 | Chunked decoding | Rebuild chunked body | Full compliance |
+| 14 | Integration + stress test | Multi-client + event loop testing | MVP server stable |
 
+---
 
-Both:
-        ↓
-Integration tests
-        ↓
-Final debugging
+## takze zatim
 
-so next steps
+- HTTP parser , si
+- HttpRequest model , si
+- HttpResponse model , si
+- Request handler , si
+- Response builder , si
+- Full pipeline test , si
 
-1. RouteResult structure	Create the structure that carries the matched ServerConfig and LocationConfig	Existing config classes
+so mame a working **mini HTTP engine**
 
-The purpose of this part is:
+ale mame hardcoded responses
+- no filesystem
+- no real server behavior yet
 
-- read our config file
-- turn it into ServerConfig objects
-- later use those objects to drive routing, uploads, index files, errors, redirects, and CGI
+Next steps turns it into:
 
-2. Route matching	Match URI to the correct location (longest-prefix match)	RouteResult
-3. Config-driven HTTP handling	Make HttpRequestHandler use ServerConfig/LocationConfig instead of hardcoded values	Route matching
-4. Redirect responses	Return 301/302 with Location header when route requires it	Config-driven handler
-5. Allowed methods checking	Return 405 Method Not Allowed when appropriate	Config-driven handler
-6. Tests	Unit + integration tests for all of the above	Everything
+- real file server
+- real web behavior
+- browser-compatible responses
 
+---
 
-tests check
+## so budu next step implementovat Static file serving**
 
-curl -i http://127.0.0.1:8000/
-curl -i http://127.0.0.1:8000/index.html
-curl -i http://127.0.0.1:8000/listing/
-curl -i http://127.0.0.1:8000/uploads/
-curl -i -X POST --data-binary @test_upload.txt http://127.0.0.1:8000/upload/test_upload.txt
-curl -i -X DELETE http://127.0.0.1:8000/uploads/test_upload.txt
+GET /index.html → read file from disk → return content
 
+soo implement:
 
-Martin checker
-python3 tests/runner.py unit
+- file reading
+- path mapping
+- safe filesystem access
+

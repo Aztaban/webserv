@@ -1,61 +1,449 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ConfigParser.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/13 13:21:53 by lformank          #+#    #+#             */
+/*   Updated: 2026/08/26 17:54:57 by lformank         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "config/ConfigParser.hpp"
 
+#include <fstream>
 #include <sstream>
+#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <limits.h>
+#include "config/Token.hpp"
+#include "config/TokenStream.hpp"
 
-// Stores the config file path that will be parsed later.
-ConfigParser::ConfigParser(const std::string& path)
-	: _path(path)
+ConfigParser::ConfigParser() : _tokens(), _path(), _source()
+{}
+
+ConfigParser::ConfigParser(const std::string& path) : _tokens(), _path(path), _source()
+{}
+
+const ConfigParser& ConfigParser::operator=(const ConfigParser& other)
 {
-}
-
-static std::runtime_error makeLineError(
-	const std::string& path,
-	std::size_t lineNumber,
-	const std::string& message)
-{
-	std::ostringstream stream;
-
-	stream << path << ":" << lineNumber << ": " << message;
-	return std::runtime_error(stream.str());
-}
-
-// Reads the config file, builds server blocks, and fills the config objects.
-std::vector<ServerConfig> ConfigParser::parse() const
-{
-	std::ifstream input(_path.c_str());
-	std::string rawLine;
-	std::vector<ServerConfig> servers;
-	ServerConfig currentServer;
-	LocationConfig currentLocation;
-	ConfigParserBlocks::ParseState state;
-	std::size_t lineNumber = 0;
-
-	if (!input.is_open())
-		throw std::runtime_error("cannot open config file: " + _path);
-	while (std::getline(input, rawLine))
+	if (this != &other)
 	{
-		lineNumber++;
-		std::string line = ConfigParserUtils::trim(rawLine);
-		std::size_t comment = line.find('#');
-
-		if (comment != std::string::npos)
-			line = ConfigParserUtils::trim(line.substr(0, comment));
-		if (line.empty())
-			continue;
-		try
-		{
-			ConfigParserBlocks::parseConfigLine(line, state, currentServer, currentLocation, servers);
-		}
-		catch(const std::exception& e)
-		{
-			throw makeLineError(_path, lineNumber, e.what());
-		}
-		
-		
+		this->_tokens.clear();
+		this->_tokens.insert(_tokens.begin(), other._tokens.begin(), other._tokens.end());
+		this->_path = other._path;
+		this->_source = other._source;
 	}
-	if (state.inServer || state.inLocation)
-		throw makeLineError(_path, lineNumber, "unclosed server or location block");
-	if (servers.empty())
-		throw std::runtime_error("no server blocks found in config file: " + _path);
-	return servers;
+	return *this;
 }
+
+ConfigParser::ConfigParser(const ConfigParser& other)
+{
+	*this = other;
+}
+
+ConfigParser::~ConfigParser() {}
+
+const std::string& ConfigParser::getSource()
+{
+	return _source;
+}
+
+void	ConfigParser::loadSource()
+{
+	std::ifstream file(_path.c_str());
+	std::ostringstream oss;
+	oss << file.rdbuf();
+	_source = oss.str();
+}
+
+void ConfigParser::pushToken(const std::string& str, TokenType type)
+{
+	Token token;
+	token.type = type;
+	token.value = str;
+	_tokens.push_back(token);
+}
+
+void ConfigParser::pushWord(std::string& word)
+{
+	if (!word.empty())
+	{
+		pushToken(word, T_WORD);
+		word.clear();
+	}
+}
+
+void ConfigParser::tokenize()
+{
+	std::string word;
+
+	for(size_t i = 0; i < _source.size(); i++)
+	{
+		if (!isspace((unsigned char)_source[i]))
+		{
+			if (_source[i] == '{')
+			{
+				pushWord(word);
+				pushToken("", T_LBRACE);
+			}
+			else if (_source[i] == '}')
+			{
+				pushWord(word);
+				pushToken("", T_RBRACE);
+			}
+			else if (_source[i] == ';')
+			{
+				pushWord(word);
+				pushToken("", T_SEMICOLON);
+			}
+			else if (_source[i] == '"')
+			{
+				pushWord(word);
+				std::string str;
+				while (_source[++i] && _source[i] != '"')
+					str += _source[i];
+				if (_source[i] == '\0')
+					throw std::runtime_error("unterminated string config file: " + _path);
+				pushToken(str, T_STRING);
+			}
+			else if (_source[i] == '#')
+			{
+				pushWord(word);
+				while (_source[++i] && _source[i] != '\n') {}
+				pushToken("", T_COMMENT);
+			}
+			else
+				word += _source[i];
+		}
+		else
+			pushWord(word);
+	}
+	pushWord(word);
+	pushToken("", T_EOF);
+}
+
+bool validBool(TokenStream& tokenStream)
+{
+	Token token = tokenStream.expect(T_WORD);
+
+	tokenStream.expect(T_SEMICOLON);
+	if (token.value == "on")
+		return true;
+	else if (token.value != "off")
+		throw std::runtime_error("Invalid bool value: " + token.value);
+	return false;
+}
+
+std::string checkRedirectUrl(TokenStream& tokenStream)
+{
+	std::string str;
+
+	if (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING)
+	{
+		str = tokenStream.advance().value;
+		tokenStream.expect(T_SEMICOLON);
+		return str;
+	}
+	throw std::runtime_error("Missing redirectUrl value");
+}
+
+std::vector<std::string> checkMethods(TokenStream& tokenStream)
+{
+	Token token = tokenStream.advance();
+	std::vector<std::string> methods;
+
+	while (token.type != T_SEMICOLON && token.type != T_RBRACE)
+	{
+		if (token.value == "GET" || token.value == "POST" || token.value == "DELETE")
+		{
+			methods.push_back(token.value);
+			token = tokenStream.advance();
+		}
+		else
+			throw std::runtime_error("Invalid method: " + token.value);
+	}
+	if (token.type != T_SEMICOLON)
+		throw std::runtime_error("Missing ';' after methods");
+	return methods;
+}
+
+std::map<std::string, std::string> checkCgiExtensions(TokenStream& tokenStream)
+{
+	std::map<std::string, std::string> extensions;
+	Token token = tokenStream.advance();
+
+	while (token.type != T_SEMICOLON && token.type != T_RBRACE)
+	{
+		if (token.value.empty() || token.value[0] != '.')
+			throw std::runtime_error("Invalid extension: " + token.value);
+		std::string extension = token.value;
+
+		token = tokenStream.advance();
+		if (token.type != T_WORD && token.type != T_STRING)
+			throw std::runtime_error("Missing path for extension: " + extension);
+		extensions[extension] = token.value;
+
+		token = tokenStream.advance();
+	}
+	if (token.type != T_SEMICOLON)
+		throw std::runtime_error("Missing ';' after cgiExtensions");
+	return extensions;
+}
+
+bool	checkNumber(std::string numStr, long min, long max)
+{
+	errno = 0;
+	char *end;
+	long num = std::strtol(numStr.c_str(), &end, 10);
+
+	if (*end != '\0')
+		return false;
+	if (errno == ERANGE)
+		return false;
+	if (num < min || num > max)
+		return false;
+	return true;
+}
+
+int checkRedirectCode(TokenStream& tokenStream)
+{
+	Token token = tokenStream.expect(T_WORD);
+
+	if (!checkNumber(token.value, 300, 399))
+		throw std::runtime_error("Invalid redirect code: " + token.value);
+	return std::atoi(token.value.c_str());
+}
+
+void parseLocation(TokenStream& tokenStream, ServerConfig& serverConfig)
+{
+	Token token = tokenStream.expect(T_WORD);
+	LocationConfig locationConfig;
+
+	if (token.value[0] != '/')
+		throw std::runtime_error("Invalid location's address: " + token.value);
+	locationConfig.path = token.value;
+	tokenStream.expect(T_LBRACE);
+	token = tokenStream.expect(T_WORD);
+	while (token.type != T_RBRACE)
+	{
+		if (token.value == "root" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+		{
+			locationConfig.root = tokenStream.advance().value;
+			tokenStream.expect(T_SEMICOLON);
+		}
+		else if (token.value == "index" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+		{
+			locationConfig.index = tokenStream.advance().value;
+			tokenStream.expect(T_SEMICOLON);
+		}
+		else if (token.value == "methods")
+			locationConfig.methods = checkMethods(tokenStream);
+		else if (token.value == "autoindex")
+			locationConfig.autoindex = validBool(tokenStream);
+		else if (token.value == "return")
+		{
+			locationConfig.hasRedirect = true;
+			locationConfig.redirectCode = checkRedirectCode(tokenStream);
+			locationConfig.redirectUrl = checkRedirectUrl(tokenStream);
+		}
+		else if (token.value == "upload" )
+			locationConfig.uploadEnabled = validBool(tokenStream);
+		else if (token.value == "upload_path" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+		{
+			locationConfig.uploadPath = tokenStream.advance().value;
+			tokenStream.expect(T_SEMICOLON);
+		}
+		else if (token.value == "cgi_extension" && (tokenStream.peek().type == T_WORD || tokenStream.peek().type == T_STRING))
+		{
+			locationConfig.cgiEnabled = true;
+			locationConfig.cgiExtensions = checkCgiExtensions(tokenStream);
+		}
+		else
+			throw std::runtime_error("Invalid property of location: " + token.value);
+		token = tokenStream.advance();
+	}
+	serverConfig.addLocation(locationConfig);
+}
+
+void parseError(TokenStream& tokenStream, ServerConfig& serverConfig)
+{
+	Token token = tokenStream.expect(T_WORD);
+	long int errorNum;
+
+	if (!checkNumber(token.value, 400, 599))
+		throw std::runtime_error("Invalid error code: " + token.value);
+	errorNum = std::atol(token.value.c_str());
+	token = tokenStream.expect(T_WORD);
+	std::string error = token.value;
+	tokenStream.expect(T_SEMICOLON);
+	serverConfig.addErrorPage(errorNum, error);
+}
+
+void parseIP(TokenStream& tokenStream, ServerConfig& serverConfig)
+{
+	const Token& IP = tokenStream.expect(T_WORD);
+	std::string host;
+	std::string port;
+	size_t posColon = IP.value.find_first_of(':');
+
+	if (posColon != std::string::npos)
+	{
+		host = IP.value.substr(0, posColon);
+		port = IP.value.substr(posColon + 1);
+		serverConfig.setHost(host);
+		if (checkNumber(port, 1, 65535))
+		{
+			int numPort = std::atoi(port.c_str());
+			serverConfig.setPort(numPort);
+			tokenStream.expect(T_SEMICOLON);
+		}
+		else
+			throw std::runtime_error("Invalid port: " + port);
+	}
+	else
+		throw std::runtime_error("Invalid IP address: " + IP.value);
+}
+
+void printServerConfig(const ServerConfig& serverConfig)
+{
+	std::cout << "name: " << serverConfig.getName() << std::endl;
+	std::cout << "host: " << serverConfig.getHost() << std::endl;
+	std::cout << "port: " << serverConfig.getPort() << std::endl;
+	std::cout << "root: " << serverConfig.getRoot() << std::endl;
+	std::cout << "index: " << serverConfig.getIndex() << std::endl;
+	std::cout << "clientMaxBodySize: " << serverConfig.getClientMaxBodySize() << std::endl;
+
+	std::cout << "errorPages:" << std::endl;
+	const std::map<int, std::string>& errorPages = serverConfig.getErrorpages();
+	for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it)
+		std::cout << "  " << it->first << " -> " << it->second << std::endl;
+
+	std::cout << "locations:" << std::endl;
+	const std::vector<LocationConfig>& locations = serverConfig.getLocations();
+	for (size_t i = 0; i < locations.size(); i++)
+	{
+		const LocationConfig& location = locations[i];
+
+		std::cout << "  [" << i << "]" << std::endl;
+		std::cout << "    path: " << location.path << std::endl;
+		std::cout << "    root: " << location.root << std::endl;
+		std::cout << "    index: " << location.index << std::endl;
+
+		std::cout << "    methods:";
+		for (size_t j = 0; j < location.methods.size(); j++)
+			std::cout << " " << location.methods[j];
+		std::cout << std::endl;
+
+		std::cout << "    autoindex: " << location.autoindex << std::endl;
+		std::cout << "    hasRedirect: " << location.hasRedirect << std::endl;
+		std::cout << "    redirectCode: " << location.redirectCode << std::endl;
+		std::cout << "    redirectUrl: " << location.redirectUrl << std::endl;
+		std::cout << "    uploadEnabled: " << location.uploadEnabled << std::endl;
+		std::cout << "    uploadPath: " << location.uploadPath << std::endl;
+		std::cout << "    cgiEnabled: " << location.cgiEnabled << std::endl;
+
+		std::cout << "    cgiExtensions:" << std::endl;
+		for (std::map<std::string, std::string>::const_iterator it = location.cgiExtensions.begin();
+			 it != location.cgiExtensions.end(); ++it)
+			std::cout << "      " << it->first << " -> " << it->second << std::endl;
+	}
+}
+
+void printServerConfigs(const std::vector<ServerConfig>& serverConfigs)
+{
+	for (size_t i = 0; i < serverConfigs.size(); i++)
+	{
+		std::cout << "=== server [" << i << "] ===" << std::endl;
+		printServerConfig(serverConfigs[i]);
+	}
+}
+
+void ConfigParser::parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig, std::set<std::string>& seenDirectives)
+{
+	Token token = tokenStream.expect(T_WORD);
+	bool isSingular = (token.value == "listen" || token.value == "root" || token.value == "index"
+		|| token.value == "client_max_body_size" || token.value == "server_name");
+
+	if (isSingular && !seenDirectives.insert(token.value).second)
+		throw std::runtime_error("Duplicate '" + token.value + "' directive");
+
+	if (token.value == "listen")
+		parseIP(tokenStream, serverConfig);
+	else if (token.value == "root")
+	{
+		Token root = tokenStream.expect(T_WORD);
+		serverConfig.setRoot(root.value);
+		tokenStream.expect(T_SEMICOLON);
+	}
+	else if (token.value == "index")
+	{
+		Token index = tokenStream.expect(T_WORD);
+		serverConfig.setIndex(index.value);
+		tokenStream.expect(T_SEMICOLON);
+	}
+	else if (token.value == "client_max_body_size")
+	{
+		Token token = tokenStream.expect(T_WORD);
+		if (checkNumber(token.value, 0, LONG_MAX))
+			serverConfig.setClientMaxBodySize(std::strtoul(token.value.c_str(), NULL, 10));
+		else
+			throw std::runtime_error("Invalid 'client_max_body_size' number\n");
+		tokenStream.expect(T_SEMICOLON);
+	}
+	else if (token.value == "error_page")
+		parseError(tokenStream, serverConfig);
+	else if (token.value == "location")
+		parseLocation(tokenStream, serverConfig);
+	else if (token.value == "server_name")
+	{
+		token = tokenStream.advance();
+		if (token.type == T_WORD || token.type == T_STRING)
+			serverConfig.setName(token.value);
+		token = tokenStream.expect(T_SEMICOLON);
+	}
+	else
+		throw std::runtime_error("Unknown directive: " + token.value);
+}
+
+void ConfigParser::parseServer(TokenStream& tokenStream, ServerConfig& serverConfig)
+{
+	Token token = tokenStream.expect(T_LBRACE);
+	std::set<std::string> seenDirectives;
+	while (token.type != T_RBRACE && !tokenStream.atEnd())
+	{
+		parseDirective(tokenStream, serverConfig, seenDirectives);
+		token = tokenStream.peek();
+	}
+	tokenStream.expect(T_RBRACE);
+}
+
+std::vector<ServerConfig> ConfigParser::parse()
+{
+	TokenStream tokenStream(_tokens);
+	std::vector<ServerConfig> vectorServerConfig;
+
+	try 
+	{
+		while (!tokenStream.atEnd() && tokenStream.peek().type == T_WORD
+			&& tokenStream.expect(T_WORD).value == "server")
+		{
+			ServerConfig serverConfig;
+			parseServer(tokenStream, serverConfig);
+			printServerConfig(serverConfig);
+			vectorServerConfig.push_back(serverConfig);
+		}
+	}
+	catch (std::exception& error)
+	{
+		std::cerr << error.what();
+	}
+	return vectorServerConfig;
+}
+
+// std::vector<ServerConfig> ConfigParser::parse()
+// {
+	
+// }

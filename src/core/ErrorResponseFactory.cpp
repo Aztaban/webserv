@@ -20,6 +20,8 @@ ErrorResponseFactory::~ErrorResponseFactory() {}
 
 std::string	ErrorResponseFactory::_reasonPhrase(int code)
 {
+	if (code == 204)
+		return ("No Content");
 	if (code == 400)
 		return ("Bad Request");
 	if (code == 403)
@@ -58,19 +60,38 @@ std::string	ErrorResponseFactory::_fallbackBody(int code)
 	return (body.str());
 }
 
-HttpResponse	ErrorResponseFactory::create(int code, const std::map<int, std::string>& errorPages)
+std::string	ErrorResponseFactory::_errorFileName(int code)
+{
+	std::ostringstream	fileName;
+
+	fileName << code << ".html";
+	return (fileName.str());
+}
+
+std::string	ErrorResponseFactory::_selectRootFromContext(
+	const RequestContext& context)
+{
+	if (!context.serverCandidates || context.serverCandidates->empty())
+		return ("");
+
+	return ((*context.serverCandidates)[0].getRoot());
+}
+
+HttpResponse	ErrorResponseFactory::create(int code, const std::string& root)
 {
 	HttpResponse	res;
 	std::string		body;
-	std::map<int, std::string>::const_iterator configured;
+	std::string		path;
 
 	res.statusCode = code;
 	res.reasonPhrase = _reasonPhrase(code);
 	res.closeConnection = true;
 
-	configured = errorPages.find(code);
-	if (configured != errorPages.end() && !configured->second.empty())
-		body = FileUtils::read(configured->second);
+	if (!root.empty())
+	{
+		path = root + "/errors/" + _errorFileName(code);
+		body = FileUtils::read(path);
+	}
 
 	if (body.empty())
 		body = _fallbackBody(code);
@@ -81,11 +102,10 @@ HttpResponse	ErrorResponseFactory::create(int code, const std::map<int, std::str
 	return (res);
 }
 
-HttpResponse	ErrorResponseFactory::create(int code, const ServerConfig* server)
+HttpResponse	ErrorResponseFactory::create(int code, const RequestContext& context)
 {
 	std::string	root;
 
-	if (server)
-		return create(code, server->getErrorpages());
-	return create(code, std::map<int, std::string>());
+	root = _selectRootFromContext(context);
+	return create(code, root);
 }

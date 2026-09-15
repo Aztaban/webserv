@@ -1,10 +1,11 @@
 #include "network/EventLoop.hpp"
 #include "utils/Logger.hpp"
 #include "core/RequestContext.hpp"
-#include "utils/SignalState.hpp"
 
 #include <stdexcept>
+#include <iostream>
 #include <ctime>
+#include <vector>
 
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -65,6 +66,11 @@ bool	EventLoop::_isClientFd(int fd) const
 	return (_clients.find(fd) != _clients.end());
 }
 
+bool	EventLoop::_isCgiFd(int fd) const
+{
+	return (_cgiByFd.find(fd) != _cgiByFd.end());
+}
+
 void	EventLoop::_addClient(int clientFd, Listener* listener)
 {
 	RequestContext	context(
@@ -82,6 +88,20 @@ void	EventLoop::_addClient(int clientFd, Listener* listener)
 
 void	EventLoop::_removeClient(int clientFd)
 {
+	std::map<int, CgiJob *>::iterator jobIt = _cgiByClientFd.find(clientFd);
+	if (jobIt != _cgiByClientFd.end())
+	{
+		CgiJob *job = jobIt->second;
+		int jobStdin = job->getStdinFd();
+		int jobStdout = job->getStdoutFd();
+
+		job->killProcess();
+		_removePollFd(jobStdin);
+		_removePollFd(jobStdout);
+		_eraseFdFrom(jobStdin);
+		_eraseFdFrom(jobStdout);
+		delete job;
+	}
 	std::map<int, ClientConnection *>::iterator	it = _clients.find(clientFd);
 	_removePollFd(clientFd);
 	if (it != _clients.end())
@@ -89,6 +109,8 @@ void	EventLoop::_removeClient(int clientFd)
 		delete it->second;
 		_clients.erase(it);
 	}
+
+
 	Logger::info("Client closed: fd " + toString(clientFd));
 }
 
@@ -149,6 +171,10 @@ void	EventLoop::_handleClientEvent(int fd, short revents)
 	}
 	if ((revents & POLLIN) && client->wantsRead())
 		client->readFromSocket();
+	if (client->getState() == CLIENT_WAITING_CGI)
+	{
+		_startCgiForClient(fd, client);
+	}
 	if (client->isDone())
 	{
 		_removeClient(fd);
@@ -164,23 +190,96 @@ void	EventLoop::_handleClientEvent(int fd, short revents)
 	_updateClientEvents(fd);
 }
 
+void EventLoop::_startCgiForClient(int fd, ClientConnection* client)
+{
+	CgiRequest	cgiRequest = client->getCgiRequest();
+	CgiJob *job = new CgiJob();
+
+	job->start(cgiRequest);
+	if (job->hasFailed())
+	{
+		client->prepareResponse(job->buildResponse());
+		delete job;
+	}
+	else
+	{
+		_addPollFd(job->getStdoutFd(), POLLIN);
+		_cgiFdToClientFd[job->getStdoutFd()] = fd;
+		_cgiByFd[job->getStdoutFd()] = job;
+		if (job->wantsWrite() == true)
+		{
+			_addPollFd(job->getStdinFd(), POLLOUT);
+			_cgiFdToClientFd[job->getStdinFd()] = fd;
+			_cgiByFd[job->getStdinFd()] = job;
+		}
+		else
+			job->closeStdin();
+		_cgiByClientFd[client->getFd()] = job;
+	}
+}
+
+void	EventLoop::_eraseFdFrom(int fd)
+{
+	std::map<int, int>::iterator clientIt = _cgiFdToClientFd.find(fd);
+	if (clientIt != _cgiFdToClientFd.end())
+	{
+		_cgiByClientFd.erase(clientIt->second);
+		_cgiFdToClientFd.erase(clientIt);
+	}
+	_cgiByFd.erase(fd);
+}
+
+void	EventLoop::_handleJobEvent(int fd, short revents)
+{
+	CgiJob *job = _cgiByFd[fd];
+	ClientConnection *client = _clients[_cgiFdToClientFd[fd]];
+	int jobStdin = job->getStdinFd();
+	int jobStdout = job->getStdoutFd();
+
+	if (fd == job->getStdinFd() && (revents & POLLOUT))
+		job->writeToCgi();
+	else if (fd == job->getStdoutFd() && (revents & POLLIN))
+		job->readFromCgi();
+	else if (revents & (POLLERR | POLLHUP | POLLNVAL))
+	{
+		if (fd == job->getStdinFd())
+			job->closeStdin();
+		else if (fd == job->getStdoutFd())
+			job->closeStdout();
+	}
+	if (!job->wantsWrite() && fd == jobStdin && jobStdin != -1)
+	{
+		job->closeStdin();
+		_removePollFd(jobStdin);
+		_eraseFdFrom(jobStdin);
+	}
+	if (job->isDone())
+	{
+		client->prepareResponse(job->buildResponse());
+		_removePollFd(jobStdin);
+		_removePollFd(jobStdout);
+		_eraseFdFrom(jobStdin);
+		_eraseFdFrom(jobStdout);
+		if (job->getStdinFd() != -1)
+			job->closeStdin();
+		job->closeStdout();
+
+		delete job;
+		_updateClientEvents(client->getFd());
+	}
+}
+
 void	EventLoop::run()
 {
 	Logger::info("Event loop started");
 
-	while (!SignalState::shutdownRequested)
+	while (true)
 	{
 		if (_pollFds.empty())
 			throw std::runtime_error("no file descriptors registered in event loop");
 		int ready = poll(&_pollFds[0], _pollFds.size(), 1000);
 		if (ready == -1)
-		{
-			if (SignalState::shutdownRequested)
-				break;
 			throw std::runtime_error("poll() failed");
-		}
-		if (SignalState::shutdownRequested)
-			break;
 		_removeTimedOutClients();
 		if (ready == 0)
 			continue;
@@ -199,9 +298,10 @@ void	EventLoop::run()
 				_handleListenerEvent(fd);
 			else if (_isClientFd(fd))
 				_handleClientEvent(fd, revents);
+			else if (_isCgiFd(fd))
+				_handleJobEvent(fd, revents);
 		}
 	}
-	Logger::info("Event loop stopped");
 }
 
 void	EventLoop::_removeTimedOutClients()
@@ -219,5 +319,43 @@ void	EventLoop::_removeTimedOutClients()
 	{
 		Logger::warn("Client timed out: fd " + toString(timedOutFds[i]));
 		_removeClient(timedOutFds[i]);
+	}
+}
+
+void	EventLoop::_removeCgi(int clientFd)
+{
+	ClientConnection* client = _clients[clientFd];
+	CgiJob* job = _cgiByClientFd.find(clientFd)->second;	
+	int jobStdin = job->getStdinFd();
+	int jobStdout = job->getStdoutFd();
+
+	job->killProcess();
+	client->prepareResponse(job->buildResponse());
+	_removePollFd(jobStdin);
+	_removePollFd(jobStdout);
+	_eraseFdFrom(jobStdin);
+	_eraseFdFrom(jobStdout);
+	if (job->getStdinFd() != -1)
+		job->closeStdin();
+	job->closeStdout();
+	delete job;
+	_updateClientEvents(client->getFd());
+}
+
+void	EventLoop::_removeTimedOutCgi()
+{
+	std::time_t				now = std::time(NULL);
+	std::vector<int>		timedOutCgis;
+
+	for (std::map<int, CgiJob*>::iterator it = _cgiByClientFd.begin(); it != _cgiByClientFd.end(); it++)
+	{
+		if (it->second->isTimedOut(now, CGI_TIMEOUT_SECONDS))
+			timedOutCgis.push_back(it->first);
+	}
+	
+	for (std::size_t i = 0; i < timedOutCgis.size(); i++)
+	{
+		Logger::warn("CGI timed out: fd");
+		_removeCgi(timedOutCgis[i]);
 	}
 }

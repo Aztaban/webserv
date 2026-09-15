@@ -1,27 +1,51 @@
-#ifndef CONFIGPARSER_HPP
-# define CONFIGPARSER_HPP
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ConfigParser.hpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/08/13 13:20:26 by lformank          #+#    #+#             */
+/*   Updated: 2026/08/26 16:29:25 by lformank         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-#include "config/ServerConfig.hpp"
-#include "config/ConfigParserUtils.hpp"
-#include "config/ConfigParserBlocks.hpp"
+#ifndef CONFIG_PASER_HPP
+# define CONFIG_PASER_HPP
 
-#include <cstdlib>
-#include <fstream>
-#include <stdexcept>
+# include "config/ServerConfig.hpp"
+# include "config/Token.hpp"
+# include "config/TokenStream.hpp"
+
 # include <string>
 # include <vector>
+# include <set>
+
+
 
 class ConfigParser {
-
-private:
-	std::string	_path;
-
-public:
-	// Stores the config file path that will be parsed later.
-	ConfigParser(const std::string& path);
-
-	// Reads the config file and returns the parsed server blocks.
-	std::vector<ServerConfig> parse() const;
+	private:
+		std::vector<Token>	_tokens;
+		std::string			_path;
+		std::string			_source;
+	public:
+		ConfigParser();
+		ConfigParser(const std::string& path);
+		ConfigParser(const ConfigParser& other);
+		const ConfigParser& operator=(const ConfigParser& other);
+		~ConfigParser();
+		const std::string& getSource();
+		void pushToken(const std::string& str, TokenType type);
+		void pushWord(std::string& word);
+		void loadSource();
+		void tokenize();
+		std::vector<ServerConfig> parse();
+		void parseServer(TokenStream& tokenStream, ServerConfig& serverConfig);
+		void parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig, std::set<std::string>& seenDirectives);
 };
+
+void printServerConfig(const ServerConfig& serverConfig);
+void printServerConfigs(const std::vector<ServerConfig>& serverConfigs);
+
 
 #endif
