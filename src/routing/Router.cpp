@@ -3,27 +3,102 @@
 /*                                                        :::      ::::::::   */
 /*   Router.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: diana <diana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 15:18:09 by lformank          #+#    #+#             */
-/*   Updated: 2026/08/27 16:57:49 by lformank         ###   ########.fr       */
+/*   Updated: 2026/09/15 15:13:06 by diana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "routing/Router.hpp"
 
+#include <algorithm>
+#include <cctype>
+
 Router::Router() {}
 Router::~Router() {}
 
+static std::string toLowerCopy(const std::string& value)
+{
+	std::string lower = value;
+	for (std::size_t i = 0; i < lower.size(); ++i)
+		lower[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(lower[i])));
+	return lower;
+}
+
+static std::string trimWhitespace(const std::string& value)
+{
+	std::size_t start = 0;
+	while (start < value.size() && (value[start] == ' ' || value[start] == '\t'))
+		++start;
+	std::size_t end = value.size();
+	while (end > start && (value[end - 1] == ' ' || value[end - 1] == '\t'))
+		--end;
+	return value.substr(start, end - start);
+}
+
+static std::string normalizeHost(const std::string& value)
+{
+	std::string host = trimWhitespace(value);
+	if (host.empty())
+		return "";
+
+	std::size_t colon = host.rfind(':');
+	if (colon != std::string::npos)
+	{
+		if (host.find(':', colon + 1) != std::string::npos)
+			return "";
+		std::string port = host.substr(colon + 1);
+		if (port.empty() || port.find_first_not_of("0123456789") != std::string::npos)
+			return "";
+		host = host.substr(0, colon);
+	}
+
+	if (host.empty())
+		return "";
+	return host;
+}
+
 bool prefixCheck(const std::string& requestPath, const std::string& locationPath)
 {
-	size_t i = 0;
-	while(i < locationPath.size() && requestPath[i] == locationPath[i])
-		i++;
-	if (i == locationPath.size() && (requestPath[i] == '/' || requestPath[i] == '\0'
-			|| locationPath[locationPath.size() - 1] == '/'))
+	if (locationPath.empty())
+		return false;
+	if (requestPath == locationPath)
 		return true;
-	return false;
+	if (requestPath.compare(0, locationPath.size(), locationPath) != 0)
+		return false;
+	if (locationPath[locationPath.size() - 1] == '/')
+		return true;
+	if (requestPath.size() == locationPath.size())
+		return false;
+	return requestPath[locationPath.size()] == '/';
+}
+
+const ServerConfig* Router::matchServer(const std::vector<ServerConfig>& servers, const HttpRequest& request) const
+{
+	if (servers.empty())
+		return NULL;
+
+	std::map<std::string, std::string>::const_iterator hostIt = request.headers.find("Host");
+	if (hostIt == request.headers.end())
+		return NULL;
+
+	std::string host = normalizeHost(hostIt->second);
+	if (host.empty())
+		return NULL;
+
+	std::string normalizedHost = toLowerCopy(host);
+	for (std::size_t i = 0; i < servers.size(); ++i)
+	{
+		const std::vector<std::string>& serverNames = servers[i].getServerNames();
+		for (std::size_t j = 0; j < serverNames.size(); ++j)
+		{
+			std::string serverName = toLowerCopy(serverNames[j]);
+			if (serverName == normalizedHost)
+				return &servers[i];
+		}
+	}
+	return &servers[0];
 }
 
 const LocationConfig* Router::matchLocation(const HttpRequest& request, const ServerConfig& server) const

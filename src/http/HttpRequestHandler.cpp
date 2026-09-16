@@ -106,6 +106,9 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 	else
 		target = request.path;
 	
+	if (target.find("..") != std::string::npos)
+		return _error(400);
+	
 	std::string uploadDir = _root + "/uploads/";
 
 	std::string fileName = _getFileName(target);

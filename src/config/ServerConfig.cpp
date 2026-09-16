@@ -14,6 +14,7 @@
 
 ServerConfig::ServerConfig()
     : _serverName("default"),
+      _serverNames(),
 	  _host("127.0.0.1"),
       _port(8000),
       _root("./www/site1"),
@@ -22,10 +23,12 @@ ServerConfig::ServerConfig()
       _errorPages(),
       _locations()
 {
+    _serverNames.push_back(_serverName);
 }
 
 ServerConfig::ServerConfig(const std::string& name, const std::string& host, int port)
 	: _serverName(name),
+	  _serverNames(),
 	  _host(host),
 	  _port(port),
 	  _root("./www/site1"),
@@ -34,10 +37,15 @@ ServerConfig::ServerConfig(const std::string& name, const std::string& host, int
 	  _errorPages(),
 	  _locations()
 {
+    _serverNames.push_back(_serverName);
 }
 
 const std::string&	ServerConfig::getName() const {
     return _serverName;
+}
+
+const std::vector<std::string>& ServerConfig::getServerNames() const {
+    return _serverNames;
 }
 
 const   std::string& ServerConfig::getHost() const {
@@ -75,6 +83,29 @@ const std::vector<LocationConfig>&  ServerConfig::getLocations() const
 void    ServerConfig::setName(const std::string& name)
 {
     _serverName = name;
+    if (_serverNames.empty())
+        _serverNames.push_back(name);
+    else if (_serverNames.size() == 1 && _serverNames[0] == _serverName)
+        return;
+    else
+    {
+        _serverNames.clear();
+        _serverNames.push_back(name);
+    }
+}
+
+void ServerConfig::addServerName(const std::string& name)
+{
+    if (name.empty())
+        return;
+    for (std::size_t i = 0; i < _serverNames.size(); ++i)
+    {
+        if (_serverNames[i] == name)
+            return;
+    }
+    _serverNames.push_back(name);
+    if (_serverName.empty())
+        _serverName = name;
 }
 
 void	ServerConfig::setHost(const std::string& host)

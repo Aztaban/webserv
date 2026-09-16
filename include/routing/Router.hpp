@@ -11,6 +11,7 @@ public:
     Router();
     ~Router();
 
+    const ServerConfig* matchServer(const std::vector<ServerConfig>& servers, const HttpRequest& request) const;
     const LocationConfig* matchLocation(const HttpRequest& request, const ServerConfig& server) const;
 
 };

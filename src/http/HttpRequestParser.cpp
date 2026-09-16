@@ -279,6 +279,32 @@ HttpRequestParser::validateRequest()
 		return (PARSE_ERROR);
 	}
 
+	std::string trimmed = host;
+	while (!trimmed.empty() && (trimmed[0] == ' ' || trimmed[0] == '\t'))
+		trimmed.erase(0, 1);
+	while (!trimmed.empty() && (trimmed[trimmed.size() - 1] == ' ' || trimmed[trimmed.size() - 1] == '\t'))
+		trimmed.erase(trimmed.size() - 1);
+	if (trimmed.empty())
+	{
+		_errorStatusCode = 400;
+		return (PARSE_ERROR);
+	}
+	std::size_t colon = trimmed.rfind(':');
+	if (colon != std::string::npos)
+	{
+		if (trimmed.find(':', colon + 1) != std::string::npos)
+		{
+			_errorStatusCode = 400;
+			return (PARSE_ERROR);
+		}
+		std::string port = trimmed.substr(colon + 1);
+		if (port.empty() || port.find_first_not_of("0123456789") != std::string::npos)
+		{
+			_errorStatusCode = 400;
+			return (PARSE_ERROR);
+		}
+	}
+
 	return (PARSE_COMPLETE);
 }
 

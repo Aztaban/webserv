@@ -71,6 +71,8 @@ std::string	ErrorResponseFactory::_errorFileName(int code)
 std::string	ErrorResponseFactory::_selectRootFromContext(
 	const RequestContext& context)
 {
+	if (context.selectedServer)
+		return context.selectedServer->getRoot();
 	if (!context.serverCandidates || context.serverCandidates->empty())
 		return ("");
 
@@ -105,6 +107,27 @@ HttpResponse	ErrorResponseFactory::create(int code, const std::string& root)
 HttpResponse	ErrorResponseFactory::create(int code, const RequestContext& context)
 {
 	std::string	root;
+	std::string	body;
+	std::string	path;
+
+	if (context.selectedServer)
+	{
+		std::map<int, std::string>::const_iterator it = context.selectedServer->getErrorpages().find(code);
+		if (it != context.selectedServer->getErrorpages().end() && !it->second.empty())
+		{
+			body = FileUtils::read(it->second);
+			if (!body.empty())
+			{
+				HttpResponse res;
+				res.statusCode = code;
+				res.reasonPhrase = _reasonPhrase(code);
+				res.closeConnection = true;
+				res.body = body;
+				res.headers["Content-Type"] = "text/html";
+				return res;
+			}
+		}
+	}
 
 	root = _selectRootFromContext(context);
 	return create(code, root);

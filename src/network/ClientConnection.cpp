@@ -4,6 +4,7 @@
 #include "http/HttpRequestParser.hpp"
 #include "http/HttpResponseBuilder.hpp"
 #include "core/ErrorResponseFactory.hpp"
+#include "routing/Router.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -172,7 +173,18 @@ void ClientConnection::_processReadBuffer()
 
 	_state = CLIENT_PROCESSING;
 
-	RequestResult response = RequestHandler::handle(parser.getRequest(), _context);
+	RequestContext effectiveContext = _context;
+	Router router;
+	const ServerConfig* selectedServer = router.matchServer(*_context.serverCandidates, parser.getRequest());
+	if (selectedServer == NULL)
+	{
+		_prepareErrorResponse(400);
+		return;
+	}
+	effectiveContext.selectedServer = selectedServer;
+	_context.selectedServer = selectedServer;
+
+	RequestResult response = RequestHandler::handle(parser.getRequest(), effectiveContext);
 	if (response.type == RequestResult::RESPONSE_READY)
 		prepareResponse(response.response);
 	else if (response.type == RequestResult::CGI_REQUIRED)
@@ -184,8 +196,23 @@ void ClientConnection::_processReadBuffer()
 
 std::size_t ClientConnection::_getClientMaxBodySize() const
 {
+	if (_context.selectedServer)
+		return _context.selectedServer->getClientMaxBodySize();
 	if (_context.serverCandidates && !_context.serverCandidates->empty())
+	{
+		HttpRequestParser parser;
+		HttpRequestParser::ParseStatus status = parser.parse(_readBuffer);
+		if (parser.headersComplete())
+		{
+			Router router;
+			const ServerConfig* selectedServer = router.matchServer(*_context.serverCandidates, parser.getRequest());
+			if (selectedServer)
+				return selectedServer->getClientMaxBodySize();
+		}
+		if (status == HttpRequestParser::PARSE_ERROR)
+			return ((*_context.serverCandidates)[0].getClientMaxBodySize());
 		return ((*_context.serverCandidates)[0].getClientMaxBodySize());
+	}
 
 	return (DEFAULT_CLIENT_MAX_BODY_SIZE);
 }
@@ -194,6 +221,7 @@ bool	ClientConnection::_bodyExceedsLimit() const
 {
 	std::size_t	headerEnd;
 	std::size_t	bodyStart;
+	std::size_t	bodySize;
 
 	headerEnd = _readBuffer.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
@@ -201,8 +229,12 @@ bool	ClientConnection::_bodyExceedsLimit() const
 	bodyStart = headerEnd + 4;
 	if (_readBuffer.size() <= bodyStart)
 		return false;
-		
-	return ((_readBuffer.size() - bodyStart) > _getClientMaxBodySize());
+
+	bodySize = _readBuffer.size() - bodyStart;
+	if (bodySize <= _getClientMaxBodySize())
+		return false;
+
+	return true;
 }
 
 

@@ -12,6 +12,7 @@ class ServerConfig {
 
 private:
 	std::string _serverName;
+    std::vector<std::string> _serverNames;
     std::string _host;
     int         _port;
     std::string _root;
@@ -25,6 +26,7 @@ public:
     ServerConfig(const std::string& name, const std::string& host, int port);
 
 	const std::string&	getName() const;
+    const std::vector<std::string>& getServerNames() const;
     const std::string&  getHost() const;
     int                 getPort() const;
 
@@ -37,6 +39,7 @@ public:
 
 
 	void    setName(const std::string& name);
+    void    addServerName(const std::string& name);
     void	setHost(const std::string& host);
 	void	setPort(int host);
     void    setRoot(const std::string& root);

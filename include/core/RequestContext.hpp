@@ -17,13 +17,15 @@ class RequestContext {
 
 public:
 	const std::vector<ServerConfig>*	serverCandidates;
+	const ServerConfig* selectedServer;
 	std::string localHost;
 	int localPort;
 
-	RequestContext() : serverCandidates(NULL), localHost(), localPort(0) {}
+	RequestContext() : serverCandidates(NULL), selectedServer(NULL), localHost(), localPort(0) {}
 
 	RequestContext(const std::vector<ServerConfig>* candidates, const std::string& host, int port)
 		: serverCandidates(candidates),
+		  selectedServer(NULL),
 		  localHost(host),
 		  localPort(port)
 	{

@@ -10,8 +10,10 @@
 
 static std::string	selectRootFromContext(const RequestContext& context)
 {
+	if (context.selectedServer)
+		return context.selectedServer->getRoot();
 	if (!context.serverCandidates || context.serverCandidates->empty())
-	return ("");
+		return ("");
 
 	return ((*context.serverCandidates)[0].getRoot());
 }
@@ -102,18 +104,36 @@ CgiRequest RequestHandler::_buildCgiRequest(const HttpRequest& httpRequest, cons
 
 RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestContext& context)
 {
-	std::string root = selectRootFromContext(context);
+	if (!context.serverCandidates || context.serverCandidates->empty())
+	{
+		Logger::error("RequestHandler received empty RequestContext");
+		return RequestResult::fromResponse(HttpResponse(500, "Internal Server Error", "No server configuration"));
+	}
+
+	Router router;
+	const ServerConfig* selectedServer = context.selectedServer ? context.selectedServer : router.matchServer(*context.serverCandidates, request);
+	if (selectedServer == NULL)
+		return RequestResult::fromResponse(ErrorResponseFactory::create(400, context));
+
+	RequestContext effectiveContext = context;
+	effectiveContext.selectedServer = selectedServer;
+	std::string root = selectRootFromContext(effectiveContext);
 	if (root.empty())
 	{
 		Logger::error("RequestHandler received empty RequestContext");
 		return RequestResult::fromResponse(HttpResponse(500, "Internal Server Error", "No server configuration"));
 	}
 
-	const ServerConfig& server = (*context.serverCandidates)[0];
-	Router router;
+	const ServerConfig& server = *selectedServer;
 	const LocationConfig* location = router.matchLocation(request, server);
 	if (location == NULL)
-		return RequestResult::fromResponse(ErrorResponseFactory::create(404, root));
+		return RequestResult::fromResponse(ErrorResponseFactory::create(404, effectiveContext));
+
+	std::string requestRoot = location->root.empty() ? root : location->root;
+	if (location->root.empty())
+		requestRoot = root;
+	else if (!location->path.empty() && request.path.compare(0, location->path.size(), location->path) == 0)
+		requestRoot = location->root;
 
 	if (location->hasRedirect)
 	{
@@ -137,7 +157,7 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 			}
 		}
 		if (!allowed)
-			return RequestResult::fromResponse(ErrorResponseFactory::create(405, root));
+			return RequestResult::fromResponse(ErrorResponseFactory::create(405, effectiveContext));
 	}
 
 	if (request.method == "DELETE")
@@ -146,7 +166,7 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 		std::string restPath;
 
 		if (request.path.find("..") != std::string::npos)
-			return RequestResult::fromResponse(ErrorResponseFactory::create(403, root));
+			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
 		if (request.path.find(location->path, 0) != std::string::npos)
 			restPath = request.path.substr(location->path.length());
 
@@ -156,23 +176,44 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 		else if (!restPath.empty())
 			path += "/" + restPath;
 		if (stat(path.c_str(), &status) == -1)
-			return RequestResult::fromResponse(ErrorResponseFactory::create(404, root));
+			return RequestResult::fromResponse(ErrorResponseFactory::create(404, effectiveContext));
 		else if (S_ISREG(status.st_mode))
 		{
 			std::remove(path.c_str());
-			return RequestResult::fromResponse(ErrorResponseFactory::create(204, root));
+			return RequestResult::fromResponse(ErrorResponseFactory::create(204, effectiveContext));
 		}
 		else
-			return RequestResult::fromResponse(ErrorResponseFactory::create(403, root));
+			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
 	}
 
 	std::string scriptPath, interpreter;
 	if (_isCgiRequest(request, *location, scriptPath, interpreter))
 	{
-		CgiRequest cgiRequest = _buildCgiRequest(request, *location, context);
+		CgiRequest cgiRequest = _buildCgiRequest(request, *location, effectiveContext);
 		return RequestResult::fromCgiRequest(cgiRequest);
 	}
 
-	HttpRequestHandler handler(root);
-	return RequestResult::fromResponse(handler.handle(request));
+	HttpRequest adjustedRequest = request;
+	std::string effectiveRoot = requestRoot;
+	if (!location->path.empty())
+	{
+		bool preserveUploadTarget = (request.method == "POST" && location->uploadEnabled && request.path == location->path);
+		if (!preserveUploadTarget)
+		{
+			std::string relativePath = request.path;
+			if (relativePath == location->path)
+				relativePath = "/";
+			else if (relativePath.compare(0, location->path.size(), location->path) == 0)
+				relativePath = relativePath.substr(location->path.size());
+			if (relativePath.empty())
+				relativePath = "/";
+			if (relativePath[0] != '/')
+				relativePath = "/" + relativePath;
+			adjustedRequest.path = relativePath;
+			adjustedRequest.target = relativePath;
+		}
+	}
+
+	HttpRequestHandler handler(effectiveRoot);
+	return RequestResult::fromResponse(handler.handle(adjustedRequest));
 }
