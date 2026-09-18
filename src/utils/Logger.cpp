@@ -4,7 +4,7 @@
 #include <iostream>
 #include <ctime>
 
-bool	Logger::_debugEnabled = true;
+bool	Logger::_debugEnabled = false;
 
 Logger::Logger() {}
 Logger::~Logger() {}

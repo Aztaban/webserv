@@ -1,8 +1,34 @@
 <!doctype html>
-<html>
-<head><title>webserv site2</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Webserv site2 · port test</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <style>
+    body{background:radial-gradient(circle at 75% 15%,rgba(124,92,255,.20),transparent 28rem),radial-gradient(circle at 20% 20%,rgba(98,230,255,.10),transparent 25rem),linear-gradient(145deg,#080b16,#15102e 55%,#080b16)}
+    .site2-gradient{background:linear-gradient(90deg,#9f8cff,#62e6ff,#ff73d0);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .core-circle{box-shadow:0 28px 65px rgba(0,0,0,.45),0 0 58px rgba(124,92,255,.20),inset 0 0 35px rgba(255,255,255,.04)}
+  </style>
+</head>
 <body>
-<h1>webserv site2</h1>
-<p>If you see this on port 8001, multiple ports work.</p>
+  <div class="grid-bg"></div>
+  <main class="wrap">
+    <section class="page-hero">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> second server / second port</span>
+        <h1>Site2 is alive on<br><span class="site2-gradient">port 8001.</span></h1>
+        <p class="lead">If this page is visually different from site1 while using your second configured listen socket, Webserv selected the other server/root correctly.</p>
+        <div class="page-actions"><a class="btn primary" href="/">Reload site2</a><a class="btn" href="/this-route-does-not-exist">Test site2 404</a></div>
+      </div>
+      <div class="page-orbit">
+        <div class="orbit-ring-two"></div>
+        <div class="core-circle"><span class="core-small">SERVER 02</span><strong>:8001</strong><span class="core-code">200 OK</span></div>
+        <div class="satellite" style="--delay:0s"><div class="sat-photo"><img src="/assets/crew-1.png" alt="Crew member 1"></div></div>
+        <div class="satellite" style="--delay:-5s"><div class="sat-photo"><img src="/assets/crew-2.png" alt="Crew member 2"></div></div>
+        <div class="satellite" style="--delay:-10s"><div class="sat-photo"><img src="/assets/crew-3.png" alt="Crew member 3"></div></div>
+      </div>
+    </section>
+  </main>
 </body>
 </html>

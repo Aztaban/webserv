@@ -1,16 +1,108 @@
 <!doctype html>
-<html>
-  <head>
-    <title>webserv site1</title>
-  </head>
-  <body>
-    <h1>webserv site1</h1>
-    <p>Static GET works.</p>
-    <ul>
-      <li><a href="/listing">Autoindex test</a></li>
-      <li><a href="/uploads">Uploads directory</a></li>
-      <li><a href="/cgi-bin/hello.py?name=webserv">CGI GET test</a></li>
-      <li><a href="/old">Redirect test</a></li>
-    </ul>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Webserv Test Orbit — site1</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot"></span> site1 · webserv alive</span>
+        <h1>Test routes.<br><span class="gradient">Watch the crew orbit.</span></h1>
+        <p class="lead">
+          A visual test page for Webserv. No JavaScript test console: just normal links that switch between files and routes,
+          while the animation stays entirely CSS-driven.
+        </p>
+        <div class="chips">
+          <span class="chip">STATIC GET</span><span class="chip">AUTOINDEX</span><span class="chip">CGI</span>
+          <span class="chip">REDIRECT</span><span class="chip">404</span><span class="chip">UPLOADS</span>
+        </div>
+      </div>
+
+      <div class="orbit-stage" aria-label="Three team photos orbiting the Webserv core">
+        <div class="orbit-glow"></div>
+        <div class="orbit-ring orbit-ring-two"></div>
+        <div class="core-circle">
+          <div class="core-pulse"></div>
+          <span class="core-small">HTTP</span>
+          <strong>WEBSERV</strong>
+          <span class="core-code">200 OK</span>
+        </div>
+
+        <div class="satellite sat-one" style="--delay:0s">
+          <div class="sat-photo"><img src="/assets/crew-1.png" alt="Webserv crew member 1"></div>
+        </div>
+        <div class="satellite sat-two" style="--delay:-5s">
+          <div class="sat-photo"><img src="/assets/crew-2.png" alt="Webserv crew member 2"></div>
+        </div>
+        <div class="satellite sat-three" style="--delay:-10s">
+          <div class="sat-photo"><img src="/assets/crew-3.png" alt="Webserv crew member 3"></div>
+        </div>
+
+        <span class="packet packet-a">GET /</span>
+        <span class="packet packet-b">200 OK</span>
+        <span class="packet packet-c">{ }</span>
+      </div>
+    </section>
+
+    <section id="tests" class="test-section">
+      <div class="section-title">
+        <div>
+          <h2>Switch files and routes</h2>
+          <p>Each card is a normal browser navigation. Clicking it makes the browser request another resource from your Webserv.</p>
+        </div>
+      </div>
+
+      <div class="cards">
+        <article class="card banana-card">
+          <span class="method">GET</span><div class="card-icon">🍌</div>
+          <h3>Static HTML</h3><p>Open a real HTML file and its shared CSS.</p>
+          <a class="btn primary" href="/listing/banana.html">Open banana</a>
+        </article>
+
+        <article class="card">
+          <span class="method">GET</span><div class="card-icon">📂</div>
+          <h3>Autoindex</h3><p>The folder intentionally has no index file. Webserv should generate the listing.</p>
+          <a class="btn" href="/listing/">Open directory</a>
+        </article>
+
+        <article class="card">
+          <span class="method">GET</span><div class="card-icon">🐍</div>
+          <h3>CGI</h3><p>Run the Python CGI with a query string.</p>
+          <a class="btn" href="/cgi-bin/hello.py?name=webserv">Run CGI GET</a>
+        </article>
+
+        <article class="card">
+          <span class="method">3XX</span><div class="card-icon spin-arrow">↪</div>
+          <h3>Redirect</h3><p>Your configured <code>/old</code> route should redirect to its destination.</p>
+          <a class="btn" href="/old">Follow /old</a>
+        </article>
+
+        <article class="card">
+          <span class="method error-method">404</span><div class="card-icon">🪐</div>
+          <h3>Custom 404</h3><p>Request a resource that definitely does not exist.</p>
+          <a class="btn" href="/definitely-not-a-real-space-potato">Summon 404</a>
+        </article>
+
+        <article class="card">
+          <span class="method">GET</span><div class="card-icon">📦</div>
+          <h3>Uploads folder</h3><p>Browse the upload directory or its generated listing.</p>
+          <a class="btn" href="/uploads/">Browse uploads</a>
+        </article>
+
+        <article class="card crew-card-link">
+          <span class="method">GET</span><div class="mini-faces"><img src="/assets/crew-1.png" alt=""><img src="/assets/crew-2.png" alt=""><img src="/assets/crew-3.png" alt=""></div>
+          <h3>PNG assets</h3><p>Load a page that requests all three local photos.</p>
+          <a class="btn" href="/listing/crew.html">Test the crew</a>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer"><span class="wiggle">⚡</span> CSS animation only · local HTML/CSS/PNG assets · no JavaScript lab</footer>
+  </main>
+</body>
 </html>

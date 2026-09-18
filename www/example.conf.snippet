@@ -1,0 +1,42 @@
+# PSEUDO-CONFIG / adaptation guide only.
+# Rename directives to match YOUR parser syntax.
+
+server {
+    listen 8000;
+    root ./site1;
+    index index.html;
+    client_max_body_size 1000000;
+    error_page 400 /errors/400.html;
+    error_page 404 /errors/404.html;
+
+    location /listing/ {
+        root ./site1;
+        autoindex on;
+        methods GET;
+    }
+
+    location /uploads/ {
+        root ./site1;
+        methods GET POST DELETE;
+        autoindex on;
+        upload_path ./site1/uploads;
+    }
+
+    location /cgi-bin/ {
+        root ./site1;
+        methods GET POST;
+        cgi_extension .py;
+        cgi_path /usr/bin/python3;
+    }
+
+    location /old {
+        return 301 /;
+    }
+}
+
+server {
+    listen 8001;
+    root ./site2;
+    index index.html;
+    error_page 404 /errors/404.html;
+}

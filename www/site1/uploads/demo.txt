@@ -1,0 +1,2 @@
+Hello from /uploads/demo.txt
+If GET can retrieve this, static file delivery in the upload directory works too.
