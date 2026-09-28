@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "/home/diana/Documents/webserv/tests/e2e/test_allow_header.py", line 63, in test_allow_header
+    assert values == [expected], (method, path, values, expected)
+           ^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('POST', '/', [], 'GET')

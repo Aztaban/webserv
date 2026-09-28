@@ -157,7 +157,18 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 			}
 		}
 		if (!allowed)
-			return RequestResult::fromResponse(ErrorResponseFactory::create(405, effectiveContext));
+		{
+			HttpResponse response = ErrorResponseFactory::create(405, effectiveContext);
+			std::string allow;
+			for (std::size_t i = 0; i < location->methods.size(); ++i)
+			{
+				if (i != 0)
+					allow += ", ";
+				allow += location->methods[i];
+			}
+			response.headers["Allow"] = allow;
+			return RequestResult::fromResponse(response);
+		}
 	}
 
 	if (request.method == "DELETE")
@@ -179,8 +190,9 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 			return RequestResult::fromResponse(ErrorResponseFactory::create(404, effectiveContext));
 		else if (S_ISREG(status.st_mode))
 		{
-			std::remove(path.c_str());
-			return RequestResult::fromResponse(ErrorResponseFactory::create(204, effectiveContext));
+			if (std::remove(path.c_str()) != 0)
+				return RequestResult::fromResponse(ErrorResponseFactory::create(500, effectiveContext));
+			return RequestResult::fromResponse(HttpResponse(204, "No Content", ""));
 		}
 		else
 			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
@@ -192,6 +204,10 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 		CgiRequest cgiRequest = _buildCgiRequest(request, *location, effectiveContext);
 		return RequestResult::fromCgiRequest(cgiRequest);
 	}
+
+	// CGI POST is independent of permission to store uploaded files.
+	if (request.method == "POST" && !location->uploadEnabled)
+		return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
 
 	HttpRequest adjustedRequest = request;
 	std::string effectiveRoot = requestRoot;
@@ -214,6 +230,8 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 		}
 	}
 
-	HttpRequestHandler handler(effectiveRoot);
-	return RequestResult::fromResponse(handler.handle(adjustedRequest));
+	const std::string& effectiveIndex = location->index.empty() ? server.getIndex() : location->index;
+	HttpRequestHandler handler(effectiveRoot, effectiveIndex, location->autoindex,
+		location->uploadPath);
+	return RequestResult::fromResponse(handler.handle(adjustedRequest, request.path));
 }

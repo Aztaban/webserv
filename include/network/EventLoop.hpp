@@ -33,6 +33,8 @@ private:
 	std::map<int, int>					_cgiFdToClientFd;
 	std::map<int, CgiJob *>				_cgiByClientFd;
 
+	std::vector<CgiJob *>	_retiredCgiJobs;
+
 	bool	_isListenerFd(int fd) const;
 	bool	_isClientFd(int fd) const;
 	bool	_isCgiFd(int fd) const;
@@ -50,7 +52,9 @@ private:
 	void	_removeTimedOutClients();
 	void	_removeTimedOutCgi();
 	void	_eraseFdFrom(int fd);
-	void	_removeCgi(int clientFd);
+	void	_timeoutCgi(int clientFd);
+	void	_releaseCgi(int clientFd);
+	void	_checkCgiProcesses();
 
 public:
 	EventLoop();

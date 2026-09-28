@@ -8,20 +8,25 @@
 #include <vector>
 
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/socket.h>
 
 EventLoop::EventLoop() {}
 
 EventLoop::~EventLoop()
 {
-	for (std::map<int, ClientConnection *>::iterator it = _clients.begin(); it != _clients.end(); it++)
-		delete it->second;
+	while (!_clients.empty())
+		_removeClient(_clients.begin()->first);
+	for (std::size_t i = 0; i < _retiredCgiJobs.size(); ++i)
+		delete _retiredCgiJobs[i];
 }
 
 void	EventLoop::_setNonBlocking(int fd)
 {
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 		throw std::runtime_error("fcntl(O_NONBLOCK) failed");
+	if (fcntl(fd, F_SETFD, FD_CLOEXEC) == -1)
+		throw std::runtime_error("fcntl(FD_CLOEXEC) failed");
 }
 
 void	EventLoop::addListener(Listener *listener)
@@ -79,7 +84,16 @@ void	EventLoop::_addClient(int clientFd, Listener* listener)
 		listener->getPort()
 	);
 
-	_setNonBlocking(clientFd);
+	try
+	{
+		_setNonBlocking(clientFd);
+	}
+	catch (const std::exception& error)
+	{
+		close(clientFd);
+		Logger::error(error.what());
+		return;
+	}
 	_clients[clientFd] = new ClientConnection(clientFd, context);
 	_addPollFd(clientFd, POLLIN);
 
@@ -88,20 +102,7 @@ void	EventLoop::_addClient(int clientFd, Listener* listener)
 
 void	EventLoop::_removeClient(int clientFd)
 {
-	std::map<int, CgiJob *>::iterator jobIt = _cgiByClientFd.find(clientFd);
-	if (jobIt != _cgiByClientFd.end())
-	{
-		CgiJob *job = jobIt->second;
-		int jobStdin = job->getStdinFd();
-		int jobStdout = job->getStdoutFd();
-
-		job->killProcess();
-		_removePollFd(jobStdin);
-		_removePollFd(jobStdout);
-		_eraseFdFrom(jobStdin);
-		_eraseFdFrom(jobStdout);
-		delete job;
-	}
+	_releaseCgi(clientFd);
 	std::map<int, ClientConnection *>::iterator	it = _clients.find(clientFd);
 	_removePollFd(clientFd);
 	if (it != _clients.end())
@@ -195,11 +196,20 @@ void EventLoop::_startCgiForClient(int fd, ClientConnection* client)
 	CgiRequest	cgiRequest = client->getCgiRequest();
 	CgiJob *job = new CgiJob();
 
-	job->start(cgiRequest);
+	_cgiByClientFd[fd] = job;
+	try
+	{
+		job->start(cgiRequest);
+	}
+	catch (...)
+	{
+		_releaseCgi(fd);
+		throw;
+	}
 	if (job->hasFailed())
 	{
-		client->prepareResponse(job->buildResponse());
-		delete job;
+		client->prepareErrorResponse(500);
+		_releaseCgi(fd);
 	}
 	else
 	{
@@ -214,7 +224,6 @@ void EventLoop::_startCgiForClient(int fd, ClientConnection* client)
 		}
 		else
 			job->closeStdin();
-		_cgiByClientFd[client->getFd()] = job;
 	}
 }
 
@@ -223,7 +232,6 @@ void	EventLoop::_eraseFdFrom(int fd)
 	std::map<int, int>::iterator clientIt = _cgiFdToClientFd.find(fd);
 	if (clientIt != _cgiFdToClientFd.end())
 	{
-		_cgiByClientFd.erase(clientIt->second);
 		_cgiFdToClientFd.erase(clientIt);
 	}
 	_cgiByFd.erase(fd);
@@ -231,41 +239,93 @@ void	EventLoop::_eraseFdFrom(int fd)
 
 void	EventLoop::_handleJobEvent(int fd, short revents)
 {
-	CgiJob *job = _cgiByFd[fd];
-	ClientConnection *client = _clients[_cgiFdToClientFd[fd]];
+	CgiJob *job = _cgiByFd.find(fd)->second;
 	int jobStdin = job->getStdinFd();
 	int jobStdout = job->getStdoutFd();
 
-	if (fd == job->getStdinFd() && (revents & POLLOUT))
+	if (revents & (POLLERR | POLLNVAL))
+		job->killProcess();
+	else if (fd == jobStdin && (revents & POLLOUT))
 		job->writeToCgi();
-	else if (fd == job->getStdoutFd() && (revents & POLLIN))
+	else if (fd == jobStdout && (revents & POLLIN))
 		job->readFromCgi();
 	else if (revents & (POLLERR | POLLHUP | POLLNVAL))
 	{
-		if (fd == job->getStdinFd())
+		if (fd == jobStdin)
+		{
+			if (job->wantsWrite())
+				job->killProcess();
 			job->closeStdin();
-		else if (fd == job->getStdoutFd())
+		}
+		else if (fd == jobStdout)
 			job->closeStdout();
 	}
-	if (!job->wantsWrite() && fd == jobStdin && jobStdin != -1)
-	{
+	if (!job->wantsWrite())
 		job->closeStdin();
+	// Remove closed pipes immediately, even while the child is still running.
+	if (jobStdin != -1 && job->getStdinFd() == -1)
+	{
 		_removePollFd(jobStdin);
 		_eraseFdFrom(jobStdin);
 	}
-	if (job->isDone())
+	if (jobStdout != -1 && job->getStdoutFd() == -1)
 	{
-		client->prepareResponse(job->buildResponse());
-		_removePollFd(jobStdin);
 		_removePollFd(jobStdout);
-		_eraseFdFrom(jobStdin);
 		_eraseFdFrom(jobStdout);
-		if (job->getStdinFd() != -1)
-			job->closeStdin();
-		job->closeStdout();
+	}
+}
 
+void	EventLoop::_releaseCgi(int clientFd)
+{
+	std::map<int, CgiJob *>::iterator it = _cgiByClientFd.find(clientFd);
+	if (it == _cgiByClientFd.end())
+		return;
+	CgiJob *job = it->second;
+	_cgiByClientFd.erase(it);
+	int stdinFd = job->getStdinFd();
+	int stdoutFd = job->getStdoutFd();
+	_removePollFd(stdinFd);
+	_removePollFd(stdoutFd);
+	_eraseFdFrom(stdinFd);
+	_eraseFdFrom(stdoutFd);
+	job->closeStdin();
+	job->closeStdout();
+	if (job->getPid() > 0)
+		job->killProcess();
+	// SIGKILL does not guarantee an immediately waitable child.
+	if (job->getPid() > 0)
+		_retiredCgiJobs.push_back(job);
+	else
 		delete job;
-		_updateClientEvents(client->getFd());
+}
+
+void	EventLoop::_checkCgiProcesses()
+{
+	for (std::vector<CgiJob *>::iterator it = _retiredCgiJobs.begin();
+		it != _retiredCgiJobs.end();)
+	{
+		(*it)->updateProcessState();
+		if ((*it)->isDone())
+		{
+			delete *it;
+			it = _retiredCgiJobs.erase(it);
+		}
+		else
+			++it;
+	}
+	for (std::map<int, CgiJob *>::iterator it = _cgiByClientFd.begin();
+		it != _cgiByClientFd.end();)
+	{
+		int clientFd = it->first;
+		CgiJob *job = it->second;
+		++it;
+		job->updateProcessState();
+		if (job->hasFailed() || job->isDone())
+		{
+			_clients.find(clientFd)->second->prepareResponse(job->buildResponse());
+			_releaseCgi(clientFd);
+			_updateClientEvents(clientFd);
+		}
 	}
 }
 
@@ -277,9 +337,13 @@ void	EventLoop::run()
 	{
 		if (_pollFds.empty())
 			throw std::runtime_error("no file descriptors registered in event loop");
-		int ready = poll(&_pollFds[0], _pollFds.size(), 1000);
+		_checkCgiProcesses();
+		int timeout = (_cgiByClientFd.empty() && _retiredCgiJobs.empty()) ? 1000 : 100;
+		int ready = poll(&_pollFds[0], _pollFds.size(), timeout);
 		if (ready == -1)
 			throw std::runtime_error("poll() failed");
+		// CGI deadlines must prepare their response before idle-client cleanup.
+		_removeTimedOutCgi();
 		_removeTimedOutClients();
 		if (ready == 0)
 			continue;
@@ -295,7 +359,10 @@ void	EventLoop::run()
 			if (revents == 0)
 				continue;
 			if (_isListenerFd(fd))
-				_handleListenerEvent(fd);
+			{
+				if (revents & POLLIN)
+					_handleListenerEvent(fd);
+			}
 			else if (_isClientFd(fd))
 				_handleClientEvent(fd, revents);
 			else if (_isCgiFd(fd))
@@ -311,7 +378,8 @@ void	EventLoop::_removeTimedOutClients()
 
 	for (std::map<int, ClientConnection *>::iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
-		if (it->second->isTimedOut(now, CLIENT_TIMEOUT_SECONDS))
+		if (it->second->getState() != CLIENT_WAITING_CGI
+			&& it->second->isTimedOut(now, CLIENT_TIMEOUT_SECONDS))
 			timedOutFds.push_back(it->first);
 	}
 
@@ -322,24 +390,13 @@ void	EventLoop::_removeTimedOutClients()
 	}
 }
 
-void	EventLoop::_removeCgi(int clientFd)
+void	EventLoop::_timeoutCgi(int clientFd)
 {
-	ClientConnection* client = _clients[clientFd];
-	CgiJob* job = _cgiByClientFd.find(clientFd)->second;	
-	int jobStdin = job->getStdinFd();
-	int jobStdout = job->getStdoutFd();
-
-	job->killProcess();
-	client->prepareResponse(job->buildResponse());
-	_removePollFd(jobStdin);
-	_removePollFd(jobStdout);
-	_eraseFdFrom(jobStdin);
-	_eraseFdFrom(jobStdout);
-	if (job->getStdinFd() != -1)
-		job->closeStdin();
-	job->closeStdout();
-	delete job;
-	_updateClientEvents(client->getFd());
+	ClientConnection* client = _clients.find(clientFd)->second;
+	// Preserve the selected server's error-page configuration and reset activity.
+	client->prepareErrorResponse(504);
+	_releaseCgi(clientFd);
+	_updateClientEvents(clientFd);
 }
 
 void	EventLoop::_removeTimedOutCgi()
@@ -355,7 +412,7 @@ void	EventLoop::_removeTimedOutCgi()
 	
 	for (std::size_t i = 0; i < timedOutCgis.size(); i++)
 	{
-		Logger::warn("CGI timed out: fd");
-		_removeCgi(timedOutCgis[i]);
+		Logger::warn("CGI timed out: client fd " + toString(timedOutCgis[i]));
+		_timeoutCgi(timedOutCgis[i]);
 	}
 }

@@ -26,6 +26,14 @@ def test_delete_existing_file(ctx: TestContext) -> None:
 
     assert_http_response(response)
 
+    assert_status(response, 204)
+    headers, body = response.split("\r\n\r\n", 1)
+    if body:
+        raise AssertionError("204 DELETE response must have no body")
+    names = [line.split(":", 1)[0].lower() for line in headers.split("\r\n")[1:]]
+    if 'content-length' in names or 'transfer-encoding' in names:
+        raise AssertionError("204 DELETE response must omit framing headers")
+
     if os.path.exists(target_path):
         raise AssertionError("DELETE did not remove target file")
 

@@ -44,6 +44,24 @@ CPP_UNIT_TESTS: List[Tuple[str, List[str]]] = [
         ],
     ),
     (
+        "cgi_job_tests",
+        [
+            "tests/unit/cgi_job_tests.cpp",
+            "src/cgi/CgiJob.cpp",
+            "src/cgi/CgiRequest.cpp",
+            "src/cgi/CgiOutputParser.cpp",
+        ],
+    ),
+    (
+        "cgi_startup_tests",
+        [
+            "tests/unit/cgi_startup_tests.cpp",
+            "src/cgi/CgiJob.cpp",
+            "src/cgi/CgiRequest.cpp",
+            "src/cgi/CgiOutputParser.cpp",
+        ],
+    ),
+    (
         "response_builder_tests",
         [
             "tests/unit/response_builder_tests.cpp",
@@ -51,6 +69,11 @@ CPP_UNIT_TESTS: List[Tuple[str, List[str]]] = [
         ],
     )
 ]
+
+# GNU linker wrappers inject syscall failures only into this Linux test binary.
+CPP_TEST_LINK_FLAGS = {
+    "cgi_startup_tests": ["-Wl,--wrap=pipe", "-Wl,--wrap=fcntl", "-Wl,--wrap=fork", "-Wl,--wrap=dup2", "-Wl,--wrap=read", "-Wl,--wrap=write"],
+}
 
 TestFunction = Callable[[TestContext], None]
 RegisteredTest = Tuple[str, TestFunction]
@@ -203,6 +226,7 @@ def run_cpp_unit_test(name: str, sources: List[str]) -> TestResult:
         "-Iinclude",
     ]
     compile_command.extend(sources)
+    compile_command.extend(CPP_TEST_LINK_FLAGS.get(name, []))
     compile_command.extend(["-o", binary_path])
 
     compile_result: subprocess.CompletedProcess = _run_command(compile_command, ROOT_DIR)

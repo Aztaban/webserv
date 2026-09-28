@@ -45,7 +45,6 @@ private:
 	ClientConnection &operator=(const ClientConnection &other);
 
 	void		_processReadBuffer();
-	void		_prepareErrorResponse(int code);
 	std::size_t	_getClientMaxBodySize() const;
 	bool		_bodyExceedsLimit() const;
 
@@ -82,6 +81,7 @@ public:
 	 * EventLoop needs to give the final response back to the client.
 	 */
 	void		prepareResponse(const HttpResponse& response);
+	void		prepareErrorResponse(int code);
 
 	/**
 	 * @brief Checks whether the client has been inactive for too long.

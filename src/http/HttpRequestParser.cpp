@@ -257,7 +257,7 @@ HttpRequestParser::validateRequest()
 		&& _request.method != "POST"
 		&& _request.method != "DELETE")
 	{
-		_errorStatusCode = 405;
+		_errorStatusCode = 501;
 		return (PARSE_ERROR);
 	}
 

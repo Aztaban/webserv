@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "/home/diana/Documents/webserv/tests/e2e/test_upload_path.py", line 71, in test_upload_path
+    assert (storage / name).exists(), 'upload_path ignored: ' + route
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: upload_path ignored: absolute

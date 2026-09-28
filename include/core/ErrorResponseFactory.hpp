@@ -22,6 +22,7 @@ private:
 public:
 	static HttpResponse	create(int code, const std::string& root);
 	static HttpResponse	create(int code, const RequestContext& context);
+	static bool	applyCustomPage(HttpResponse& response, const RequestContext& context);
 
 };
 

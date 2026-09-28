@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "/home/diana/Documents/webserv/tests/e2e/test_upload_policy.py", line 66, in test_upload_policy
+    assert actual == (403, b'Uploads disabled'), (route, name, actual)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('off', 'new.txt', (201, b'File uploaded\n'))

@@ -28,6 +28,10 @@ private:
 
     std::time_t _startTime;
 
+    CgiJob(const CgiJob& other);
+    CgiJob& operator=(const CgiJob& other);
+    void _failStart(int inFds[2], int outFds[2]);
+
 public:
     CgiJob();
     ~CgiJob();
@@ -50,6 +54,7 @@ public:
     void    closeStdin();
     void    closeStdout();
     void    killProcess();
+    void    updateProcessState();
 
     HttpResponse    buildResponse() const;
 

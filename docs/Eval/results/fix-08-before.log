@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+  File "/home/diana/Documents/webserv/tests/e2e/test_custom_error_pages.py", line 109, in test_custom_error_page_paths
+    if failures: raise AssertionError('\n'.join(failures))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: primary GET /missing: expected (404, 'primary CUSTOM 404'), got (404, 'LEGACY FALLBACK')
+primary GET /other/missing: expected (404, 'primary CUSTOM 404'), got (404, '<html><body><h1>404 Not Found</h1></body></html>')
+primary POST /upload/file.txt: expected (400, 'primary CUSTOM 400'), got (400, '<html><body><h1>400 Bad Request</h1></body></html>')
+primary POST /upload/file.txt: expected (500, 'primary CUSTOM 500'), got (500, '<html><body><h1>500 Internal Server Error</h1></body></html>')
+primary POST /upload/file.txt: expected (413, 'primary CUSTOM 413'), got (413, '<html><body><h1>413 Payload Too Large</h1></body></html>')
+primary GET /cgi-bin/error.py: expected (500, 'primary CUSTOM 500'), got (500, 'CGI failed')
+primary GET /cgi-bin/bad_output.py: expected (500, 'primary CUSTOM 500'), got (500, 'CGI output missing Content-Type header')
+alternate GET /missing: expected (404, 'alternate CUSTOM 404'), got (404, 'LEGACY FALLBACK')
+alternate GET /other/missing: expected (404, 'alternate CUSTOM 404'), got (404, '<html><body><h1>404 Not Found</h1></body></html>')
+alternate POST /upload/file.txt: expected (400, 'alternate CUSTOM 400'), got (400, '<html><body><h1>400 Bad Request</h1></body></html>')
+alternate POST /upload/file.txt: expected (500, 'alternate CUSTOM 500'), got (500, '<html><body><h1>500 Internal Server Error</h1></body></html>')
+alternate POST /upload/file.txt: expected (413, 'alternate CUSTOM 413'), got (413, '<html><body><h1>413 Payload Too Large</h1></body></html>')
+alternate GET /cgi-bin/error.py: expected (500, 'alternate CUSTOM 500'), got (500, 'CGI failed')
+alternate GET /cgi-bin/bad_output.py: expected (500, 'alternate CUSTOM 500'), got (500, 'CGI output missing Content-Type header')
+early alternate 413: expected (413, 'alternate CUSTOM 413'), got (413, '<html><body><h1>413 Payload Too Large</h1></body></html>')
+alternate malformed body length: expected (400, 'alternate CUSTOM 400'), got (400, '<html><body><h1>400 Bad Request</h1></body></html>')
+malformed Host default page: expected (400, 'primary CUSTOM 400'), got (400, '<html><body><h1>400 Bad Request</h1></body></html>')
+unknown Host default page: expected (404, 'primary CUSTOM 404'), got (404, 'LEGACY FALLBACK')
+empty custom page: expected (404, ''), got (404, 'LEGACY FALLBACK')
+page edit without restart: expected (404, 'EDITED ERROR PAGE'), got (404, 'LEGACY FALLBACK')

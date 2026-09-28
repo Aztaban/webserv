@@ -1,0 +1,147 @@
+[
+  {
+    "test": "configured index home.html",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '17', 'Connection': 'close'}, 'CONFIGURED INDEX\\n')"
+  },
+  {
+    "test": "different route root",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"
+  },
+  {
+    "test": "second port",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"
+  },
+  {
+    "test": "second loopback address",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"
+  },
+  {
+    "test": "virtual host",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"
+  },
+  {
+    "test": "configured custom 404",
+    "pass": true,
+    "detail": "(404, {'Content-Type': 'text/html', 'Content-Length': '20', 'Connection': 'close'}, 'CUSTOM ERROR MARKER\\n')"
+  },
+  {
+    "test": "listing enabled",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '152', 'Connection': 'close'}, '<html><body><h1>Index of /listing/</h1><ul><li><a href=\"/listing/nested/\">nested/</a></li><li><a href=\"/listing/a.txt\">a.txt</a></li></ul></body></html>')"
+  },
+  {
+    "test": "listing nested enabled",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '119', 'Connection': 'close'}, '<html><body><h1>Index of /listing/nested/</h1><ul><li><a href=\"/listing/nested/a.txt\">a.txt</a></li></ul></body></html>')"
+  },
+  {
+    "test": "listing disabled",
+    "pass": true,
+    "detail": "(404, {'Content-Type': 'text/html', 'Content-Length': '20', 'Connection': 'close'}, 'CUSTOM ERROR MARKER\\n')"
+  },
+  {
+    "test": "redirect",
+    "pass": true,
+    "detail": "(301, {'Location': '/', 'Content-Length': '0', 'Connection': 'close', 'Content-Type': 'text/plain'}, '')"
+  },
+  {
+    "test": "DELETE forbidden",
+    "pass": true,
+    "detail": "(405, {'Allow': 'GET', 'Content-Type': 'text/html', 'Content-Length': '57', 'Connection': 'close'}, '<html><body><h1>405 Method Not Allowed</h1></body></html>')"
+  },
+  {
+    "test": "unknown method gets 501",
+    "pass": true,
+    "detail": "(501, {'Content-Type': 'text/html', 'Content-Length': '54', 'Connection': 'close'}, '<html><body><h1>501 Not Implemented</h1></body></html>')"
+  },
+  {
+    "test": "upload 64 bytes accepted",
+    "pass": true,
+    "detail": "(201, {'Content-Type': 'text/plain', 'Content-Length': '14', 'Connection': 'close'}, 'File uploaded\\n')"
+  },
+  {
+    "test": "upload_path honored",
+    "pass": true,
+    "detail": "custom-uploads=True hardcoded site/uploads=False"
+  },
+  {
+    "test": "retrieve actual upload",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '64', 'Connection': 'close'}, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')"
+  },
+  {
+    "test": "delete actual upload",
+    "pass": true,
+    "detail": "(204, {'Connection': 'close'}, '')"
+  },
+  {
+    "test": "204 has no body or Content-Length",
+    "pass": true,
+    "detail": "b'HTTP/1.1 204 No Content\\r\\nConnection: close\\r\\n\\r\\n'"
+  },
+  {
+    "test": "deleted file gone",
+    "pass": true,
+    "detail": "(404, {'Content-Type': 'text/html', 'Content-Length': '20', 'Connection': 'close'}, 'CUSTOM ERROR MARKER\\n')"
+  },
+  {
+    "test": "65 byte body rejected",
+    "pass": true,
+    "detail": "(413, {'Content-Type': 'text/html', 'Content-Length': '56', 'Connection': 'close'}, '<html><body><h1>413 Payload Too Large</h1></body></html>')"
+  },
+  {
+    "test": "upload off honored with POST allowed",
+    "pass": true,
+    "detail": "file_created=False"
+  },
+  {
+    "test": "CGI GET",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '35', 'Connection': 'close'}, 'method=GET\\nquery=name=Diana\\ntype=\\n\\n')"
+  },
+  {
+    "test": "CGI POST",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '47', 'Connection': 'close'}, 'method=POST\\nquery=\\ntype=text/plain\\nhello=world\\n')"
+  },
+  {
+    "test": "CGI relative file",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '12', 'Connection': 'close'}, 'RELATIVE OK\\n')"
+  },
+  {
+    "test": "CGI error returns 500",
+    "pass": true,
+    "detail": "(500, {'Content-Length': '10', 'Connection': 'close', 'Content-Type': 'text/plain'}, 'CGI failed')"
+  },
+  {
+    "test": "overlapping process rejected",
+    "pass": true,
+    "detail": "exit=1 "
+  },
+  {
+    "test": "idle partial client released",
+    "pass": true,
+    "detail": "elapsed=29.3s data=b''"
+  },
+  {
+    "test": "infinite CGI gets HTTP error",
+    "pass": true,
+    "detail": "(504, {'Content-Type': 'text/html', 'Content-Length': '54', 'Connection': 'close'}, '<html><body><h1>504 Gateway Timeout</h1></body></html>')"
+  },
+  {
+    "test": "CGI closing stdout must not freeze static requests",
+    "pass": true,
+    "detail": "static response in 0.00s: 200"
+  },
+  {
+    "test": "server still alive",
+    "pass": true,
+    "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '0', 'Connection': 'close'}, '')"
+  }
+]

@@ -1,3 +1,4 @@
+#include "utils/Logger.hpp"
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
@@ -307,59 +308,7 @@ void parseIP(TokenStream& tokenStream, ServerConfig& serverConfig)
 		throw std::runtime_error("Invalid IP address: " + IP.value);
 }
 
-void printServerConfig(const ServerConfig& serverConfig)
-{
-	std::cout << "name: " << serverConfig.getName() << std::endl;
-	std::cout << "host: " << serverConfig.getHost() << std::endl;
-	std::cout << "port: " << serverConfig.getPort() << std::endl;
-	std::cout << "root: " << serverConfig.getRoot() << std::endl;
-	std::cout << "index: " << serverConfig.getIndex() << std::endl;
-	std::cout << "clientMaxBodySize: " << serverConfig.getClientMaxBodySize() << std::endl;
 
-	std::cout << "errorPages:" << std::endl;
-	const std::map<int, std::string>& errorPages = serverConfig.getErrorpages();
-	for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); ++it)
-		std::cout << "  " << it->first << " -> " << it->second << std::endl;
-
-	std::cout << "locations:" << std::endl;
-	const std::vector<LocationConfig>& locations = serverConfig.getLocations();
-	for (size_t i = 0; i < locations.size(); i++)
-	{
-		const LocationConfig& location = locations[i];
-
-		std::cout << "  [" << i << "]" << std::endl;
-		std::cout << "    path: " << location.path << std::endl;
-		std::cout << "    root: " << location.root << std::endl;
-		std::cout << "    index: " << location.index << std::endl;
-
-		std::cout << "    methods:";
-		for (size_t j = 0; j < location.methods.size(); j++)
-			std::cout << " " << location.methods[j];
-		std::cout << std::endl;
-
-		std::cout << "    autoindex: " << location.autoindex << std::endl;
-		std::cout << "    hasRedirect: " << location.hasRedirect << std::endl;
-		std::cout << "    redirectCode: " << location.redirectCode << std::endl;
-		std::cout << "    redirectUrl: " << location.redirectUrl << std::endl;
-		std::cout << "    uploadEnabled: " << location.uploadEnabled << std::endl;
-		std::cout << "    uploadPath: " << location.uploadPath << std::endl;
-		std::cout << "    cgiEnabled: " << location.cgiEnabled << std::endl;
-
-		std::cout << "    cgiExtensions:" << std::endl;
-		for (std::map<std::string, std::string>::const_iterator it = location.cgiExtensions.begin();
-			 it != location.cgiExtensions.end(); ++it)
-			std::cout << "      " << it->first << " -> " << it->second << std::endl;
-	}
-}
-
-void printServerConfigs(const std::vector<ServerConfig>& serverConfigs)
-{
-	for (size_t i = 0; i < serverConfigs.size(); i++)
-	{
-		std::cout << "=== server [" << i << "] ===" << std::endl;
-		printServerConfig(serverConfigs[i]);
-	}
-}
 
 void ConfigParser::parseDirective(TokenStream& tokenStream, ServerConfig& serverConfig, std::set<std::string>& seenDirectives)
 {
@@ -432,13 +381,13 @@ std::vector<ServerConfig> ConfigParser::parse()
 		{
 			ServerConfig serverConfig;
 			parseServer(tokenStream, serverConfig);
-			printServerConfig(serverConfig);
+
 			vectorServerConfig.push_back(serverConfig);
 		}
 	}
 	catch (std::exception& error)
 	{
-		std::cerr << error.what();
+		Logger::error(error.what());
 	}
 	return vectorServerConfig;
 }

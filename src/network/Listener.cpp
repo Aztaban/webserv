@@ -36,6 +36,8 @@ void	Listener::_setNonBlocking(int fd)
 {
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 		throw std::runtime_error("fcntl(O_NONBLOCK) failed");
+	if (fcntl(fd, F_SETFD, FD_CLOEXEC) == -1)
+		throw std::runtime_error("fcntl(FD_CLOEXEC) failed");
 }
 
 void	Listener::setup() 

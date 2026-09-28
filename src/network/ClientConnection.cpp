@@ -78,14 +78,14 @@ void ClientConnection::readFromSocket()
 		&& _readBuffer.size() > MAX_HEADER_SIZE)
 	{
 		Logger::error("Client fd " + toString(_fd) + " header too large");
-		_prepareErrorResponse(431);
+		prepareErrorResponse(431);
 		_state = CLIENT_WRITING;
 		return;
 	}
 	if (_bodyExceedsLimit())
 	{
 		Logger::error("Client fd " + toString(_fd) + " request too large");
-		_prepareErrorResponse(413);
+		prepareErrorResponse(413);
 		_state = CLIENT_WRITING;
 		return;
 	}
@@ -119,7 +119,15 @@ void ClientConnection::writeToSocket()
 
 void	ClientConnection::prepareResponse(const HttpResponse& response)
 {
-	_writeBuffer = HttpResponseBuilder::build(response);
+	// Apply configured pages at the shared boundary for static, parser and CGI errors.
+	if (response.statusCode >= 400 && response.statusCode <= 599)
+	{
+		HttpResponse effectiveResponse = response;
+		ErrorResponseFactory::applyCustomPage(effectiveResponse, _context);
+		_writeBuffer = HttpResponseBuilder::build(effectiveResponse);
+	}
+	else
+		_writeBuffer = HttpResponseBuilder::build(response);
 	_state = CLIENT_WRITING;
 	touch();
 
@@ -146,7 +154,7 @@ void ClientConnection::_processReadBuffer()
 	if (status == HttpRequestParser::PARSE_ERROR)
 	{
 		Logger::error("Client fd " + toString(_fd) + " malformed request");
-		_prepareErrorResponse(parser.getErrorStatusCode());
+		prepareErrorResponse(parser.getErrorStatusCode());
 		return;
 	}
 
@@ -157,7 +165,7 @@ void ClientConnection::_processReadBuffer()
 		if (request.hasBody && request.contentLength > _getClientMaxBodySize())
 		{
 			Logger::error("Client fd " + toString(_fd) + " request body too large");
-			_prepareErrorResponse(413);
+			prepareErrorResponse(413);
 			return;
 		}
 
@@ -178,7 +186,7 @@ void ClientConnection::_processReadBuffer()
 	const ServerConfig* selectedServer = router.matchServer(*_context.serverCandidates, parser.getRequest());
 	if (selectedServer == NULL)
 	{
-		_prepareErrorResponse(400);
+		prepareErrorResponse(400);
 		return;
 	}
 	effectiveContext.selectedServer = selectedServer;
@@ -238,8 +246,23 @@ bool	ClientConnection::_bodyExceedsLimit() const
 }
 
 
-void ClientConnection::_prepareErrorResponse(int code)
+void ClientConnection::prepareErrorResponse(int code)
 {
+	// Errors such as 413 can occur before normal request dispatch selects a host.
+	if (!_context.selectedServer && _context.serverCandidates)
+	{
+		std::size_t headerEnd = _readBuffer.find("\r\n\r\n");
+		if (headerEnd != std::string::npos)
+		{
+			HttpRequestParser parser;
+			parser.parse(_readBuffer.substr(0, headerEnd + 4));
+			if (parser.headersComplete())
+			{
+				Router router;
+				_context.selectedServer = router.matchServer(*_context.serverCandidates, parser.getRequest());
+			}
+		}
+	}
 	HttpResponse	response;
 
 	response = ErrorResponseFactory::create(code, _context);

@@ -1,0 +1,31 @@
+{"test": "configured index home.html", "pass": false, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '14', 'Connection': 'close'}, 'PRIMARY INDEX\\n')"}
+{"test": "different route root", "pass": true, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"}
+{"test": "second port", "pass": true, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"}
+{"test": "second loopback address", "pass": true, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"}
+{"test": "virtual host", "pass": true, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '12', 'Connection': 'close'}, 'SECOND SITE\\n')"}
+{"test": "configured custom 404", "pass": false, "detail": "(404, {'Content-Type': 'text/html', 'Content-Length': '48', 'Connection': 'close'}, '<html><body><h1>404 Not Found</h1></body></html>')"}
+{"test": "listing enabled", "pass": false, "detail": "(404, {'Content-Type': 'text/html', 'Content-Length': '48', 'Connection': 'close'}, '<html><body><h1>404 Not Found</h1></body></html>')"}
+{"test": "listing nested enabled", "pass": true, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '95', 'Connection': 'close'}, '<html><body><h1>Index of /nested/</h1><ul><li><a href=\"a.txt\">a.txt</a></li></ul></body></html>')"}
+{"test": "listing disabled", "pass": false, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '105', 'Connection': 'close'}, '<html><body><h1>Index of /nested/</h1><ul><li><a href=\"secret.txt\">secret.txt</a></li></ul></body></html>')"}
+{"test": "redirect", "pass": true, "detail": "(301, {'Location': '/', 'Content-Length': '0', 'Connection': 'close', 'Content-Type': 'text/plain'}, '')"}
+{"test": "DELETE forbidden", "pass": true, "detail": "(405, {'Content-Type': 'text/html', 'Content-Length': '57', 'Connection': 'close'}, '<html><body><h1>405 Method Not Allowed</h1></body></html>')"}
+{"test": "unknown method gets 501", "pass": false, "detail": "(405, {'Content-Type': 'text/html', 'Content-Length': '57', 'Connection': 'close'}, '<html><body><h1>405 Method Not Allowed</h1></body></html>')"}
+{"test": "upload 64 bytes accepted", "pass": true, "detail": "(201, {'Content-Type': 'text/plain', 'Content-Length': '14', 'Connection': 'close'}, 'File uploaded\\n')"}
+{"test": "upload_path honored", "pass": false, "detail": "custom-uploads=False hardcoded site/uploads=True"}
+{"test": "retrieve actual upload", "pass": true, "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '64', 'Connection': 'close'}, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')"}
+{"test": "delete actual upload", "pass": true, "detail": "(204, {'Content-Type': 'text/html', 'Content-Length': '49', 'Connection': 'close'}, '')"}
+{"test": "204 has no body or Content-Length", "pass": false, "detail": "b'HTTP/1.1 204 No Content\\r\\nContent-Type: text/html\\r\\nContent-Length: 49\\r\\nConnection: close\\r\\n\\r\\n<html><body><h1>204 No Content</h1></body></html>'"}
+{"test": "deleted file gone", "pass": true, "detail": "(404, {'Content-Type': 'text/html', 'Content-Length': '48', 'Connection': 'close'}, '<html><body><h1>404 Not Found</h1></body></html>')"}
+{"test": "65 byte body rejected", "pass": true, "detail": "(413, {'Content-Type': 'text/html', 'Content-Length': '56', 'Connection': 'close'}, '<html><body><h1>413 Payload Too Large</h1></body></html>')"}
+{"test": "upload off honored with POST allowed", "pass": false, "detail": "file_created=True"}
+{"test": "CGI GET", "pass": true, "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '35', 'Connection': 'close'}, 'method=GET\\nquery=name=Diana\\ntype=\\n\\n')"}
+{"test": "CGI POST", "pass": true, "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '47', 'Connection': 'close'}, 'method=POST\\nquery=\\ntype=text/plain\\nhello=world\\n')"}
+{"test": "CGI relative file", "pass": true, "detail": "(200, {'Content-Type': 'text/plain', 'Content-Length': '12', 'Connection': 'close'}, 'RELATIVE OK\\n')"}
+{"test": "CGI error returns 500", "pass": true, "detail": "(500, {'Content-Length': '10', 'Connection': 'close', 'Content-Type': 'text/plain'}, 'CGI failed')"}
+{"test": "overlapping process rejected", "pass": true, "detail": "exit=1 \u001b[31m[2026-09-28 09:46:34] [ERROR] webserv: bind() failed\u001b[0m\n"}
+STRESS [{"before": {"rss_kb": 4188, "fds": 6}, "after": {"rss_kb": 4196, "fds": 6}, "exit": 0}, {"before": {"rss_kb": 4196, "fds": 6}, "after": {"rss_kb": 4196, "fds": 6}, "exit": 0}, {"before": {"rss_kb": 4196, "fds": 6}, "after": {"rss_kb": 4196, "fds": 6}, "exit": 0}]
+{"test": "idle partial client released", "pass": true, "detail": "elapsed=29.0s data=b''"}
+{"test": "infinite CGI gets HTTP error", "pass": false, "detail": "No HTTP error response: RemoteDisconnected('Remote end closed connection without response')"}
+{"test": "CGI closing stdout must not freeze static requests", "pass": false, "detail": "static request stalled: TimeoutError('timed out')"}
+{"test": "server still alive", "pass": true, "detail": "(200, {'Content-Type': 'text/html', 'Content-Length': '0', 'Connection': 'close'}, '')"}
+Artifacts: /tmp/webserv-evaluation-neif27qg

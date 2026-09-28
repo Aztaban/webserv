@@ -113,7 +113,7 @@ static void test_missing_host_returns_400(void)
 		"missing Host should set error 400");
 }
 
-static void test_unsupported_method_returns_405(void)
+static void test_unsupported_method_returns_501(void)
 {
 	HttpRequestParser parser;
 	std::string raw =
@@ -123,8 +123,8 @@ static void test_unsupported_method_returns_405(void)
 
 	require(parser.parse(raw) == HttpRequestParser::PARSE_ERROR,
 		"unsupported method should return parse error");
-	require(parser.getErrorStatusCode() == 405,
-		"unsupported method should set error 405");
+	require(parser.getErrorStatusCode() == 501,
+		"unsupported method should set error 501");
 }
 
 int main(void)
@@ -135,7 +135,7 @@ int main(void)
 	test_short_body_is_incomplete();
 	test_malformed_header_returns_400();
 	test_missing_host_returns_400();
-	test_unsupported_method_returns_405();
+	test_unsupported_method_returns_501();
 
 	std::cout << "[PASS] HttpRequestParser unit tests" << std::endl;
 	return (0);

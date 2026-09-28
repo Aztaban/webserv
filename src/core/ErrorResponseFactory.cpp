@@ -1,7 +1,10 @@
 #include "core/ErrorResponseFactory.hpp"
 #include "utils/FileUtils.hpp"
+#include "http/HttpHeaderUtils.hpp"
 
 #include <sstream>
+#include <fstream>
+#include <sys/stat.h>
 
 ErrorResponseFactory::ErrorResponseFactory() {}
 
@@ -104,31 +107,54 @@ HttpResponse	ErrorResponseFactory::create(int code, const std::string& root)
 	return (res);
 }
 
+bool ErrorResponseFactory::applyCustomPage(HttpResponse& response, const RequestContext& context)
+{
+	if (response.statusCode < 400 || response.statusCode > 599)
+		return false;
+	const ServerConfig* server = context.selectedServer;
+	if (!server && context.serverCandidates && !context.serverCandidates->empty())
+		server = &(*context.serverCandidates)[0];
+	if (!server)
+		return false;
+	std::map<int, std::string>::const_iterator it = server->getErrorpages().find(response.statusCode);
+	if (it == server->getErrorpages().end() || it->second.empty())
+		return false;
+
+	// An empty regular file is a valid page; a missing file or directory is not.
+	struct stat status;
+	if (stat(it->second.c_str(), &status) != 0 || !S_ISREG(status.st_mode))
+		return false;
+	std::ifstream file(it->second.c_str(), std::ios::binary);
+	if (!file.is_open())
+		return false;
+	std::ostringstream body;
+	body << file.rdbuf();
+	if (file.bad() || body.bad())
+		return false;
+
+	response.body = body.str();
+	// Keep status and policy headers, but discard metadata for the replaced body.
+	for (std::map<std::string, std::string>::iterator header = response.headers.begin();
+		header != response.headers.end();)
+	{
+		std::string name = HttpHeaderUtils::lowercase(header->first);
+		if (name == "content-type" || name == "content-length" || name == "content-encoding"
+			|| name == "content-range" || name == "transfer-encoding")
+			response.headers.erase(header++);
+		else
+			++header;
+	}
+	response.headers["Content-Type"] = FileUtils::mimeType(it->second);
+	return true;
+}
+
 HttpResponse	ErrorResponseFactory::create(int code, const RequestContext& context)
 {
-	std::string	root;
-	std::string	body;
-	std::string	path;
-
-	if (context.selectedServer)
-	{
-		std::map<int, std::string>::const_iterator it = context.selectedServer->getErrorpages().find(code);
-		if (it != context.selectedServer->getErrorpages().end() && !it->second.empty())
-		{
-			body = FileUtils::read(it->second);
-			if (!body.empty())
-			{
-				HttpResponse res;
-				res.statusCode = code;
-				res.reasonPhrase = _reasonPhrase(code);
-				res.closeConnection = true;
-				res.body = body;
-				res.headers["Content-Type"] = "text/html";
-				return res;
-			}
-		}
-	}
-
-	root = _selectRootFromContext(context);
-	return create(code, root);
+	HttpResponse response;
+	response.statusCode = code;
+	response.reasonPhrase = _reasonPhrase(code);
+	response.closeConnection = true;
+	if (applyCustomPage(response, context))
+		return response;
+	return create(code, _selectRootFromContext(context));
 }

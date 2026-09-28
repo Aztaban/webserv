@@ -1,0 +1,98 @@
+[
+  {
+    "round": 1,
+    "elapsed": 0.46,
+    "rss_kb": 4140,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 2,
+    "elapsed": 10.46,
+    "rss_kb": 4140,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 3,
+    "elapsed": 20.43,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 4,
+    "elapsed": 30.44,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 5,
+    "elapsed": 40.49,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 6,
+    "elapsed": 50.47,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 7,
+    "elapsed": 60.48,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 8,
+    "elapsed": 70.55,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 9,
+    "elapsed": 80.48,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 10,
+    "elapsed": 90.47,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 11,
+    "elapsed": 100.47,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  },
+  {
+    "round": 12,
+    "elapsed": 110.46,
+    "rss_kb": 4144,
+    "fds": 6,
+    "transactions": 2000,
+    "availability": 100.0
+  }
+]

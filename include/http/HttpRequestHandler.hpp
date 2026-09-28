@@ -18,10 +18,12 @@ class HttpRequestHandler
 {
 	private:
 		std::string _root;
+		std::string _index;
 		bool _autoindexEnabled;
+		std::string _uploadPath;
 
 		HttpResponse	_error(int code);
-		HttpResponse	_handleGET(const HttpRequest& request);
+		HttpResponse	_handleGET(const HttpRequest& request, const std::string& publicPath);
 		HttpResponse	_handlePOST(const HttpRequest& request);
 		HttpResponse	_handleDELETE(const HttpRequest& request);
 		
@@ -32,12 +34,13 @@ class HttpRequestHandler
 		std::string _getFileName(const std::string& target);
 
 	public:
-		HttpRequestHandler(const std::string& root);
+		HttpRequestHandler(const std::string& root, const std::string& index = "index.html",
+			bool autoindexEnabled = false, const std::string& uploadPath = "");
 		HttpRequestHandler(const HttpRequestHandler& other);
 		HttpRequestHandler& operator=(const HttpRequestHandler& other);
 		~HttpRequestHandler();
 
-		HttpResponse	handle(const HttpRequest& request);
+		HttpResponse	handle(const HttpRequest& request, const std::string& publicPath = "");
 
 };
 

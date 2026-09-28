@@ -1,0 +1,10 @@
+make: Nothing to be done for 'all'.
+[INFO] Running 4 test(s)
+[INFO] Building project
+[PASS] unit / parser_tests
+[PASS] unit / cgi_job_tests
+[FAIL] unit / cgi_startup_tests -> test failed
+[PASS] unit / response_builder_tests
+
+Result: 3/4 tests passed
+HTML report: /home/diana/Documents/webserv/tests/report.html

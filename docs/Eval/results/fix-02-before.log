@@ -1,0 +1,33 @@
+make: Nothing to be done for 'all'.
+[INFO] Running 26 test(s)
+[INFO] Building project
+[INFO] Starting server
+[PASS] e2e / CSS asset loads
+[PASS] e2e / JS asset loads
+[PASS] e2e / image asset loads
+[PASS] e2e / CGI GET executes script
+[FAIL] e2e / CGI stdout closure does not block GET -> expected status 200, got status line: 
+[FAIL] e2e / CGI stdout closure does not block POST -> expected status 200, got status line: 
+[FAIL] e2e / CGI failure after stdout closure returns 500 -> expected status 200, got status line: 
+[PASS] e2e / CGI output is drained completely after exit
+[PASS] e2e / DELETE existing file
+[PASS] e2e / DELETE missing file returns 404
+[PASS] e2e / default 404 error page
+[PASS] e2e / POST upload saves file
+[PASS] e2e / POST upload content exact
+[PASS] e2e / POST to upload-disabled route returns error
+[PASS] e2e / POST oversized upload returns 413
+[PASS] e2e / configured redirect
+[PASS] e2e / virtual hosts share one listener
+[PASS] e2e / unknown Host uses default server
+[PASS] e2e / malformed Host returns 400
+[PASS] e2e / longest location and segment boundary
+[PASS] e2e / body limit follows selected server
+[PASS] e2e / custom error page follows selected server
+[PASS] e2e / upload enabled and disabled
+[PASS] e2e / traversal attempt is rejected
+[PASS] e2e / GET existing index file
+[PASS] e2e / GET missing file returns 404
+
+Result: 23/26 tests passed
+HTML report: /home/diana/Documents/webserv/tests/report.html

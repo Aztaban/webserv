@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+  File "/home/diana/Documents/webserv/tests/e2e/test_autoindex.py", line 89, in test_autoindex_routes
+    raise AssertionError('\n'.join(failures))
+AssertionError: /: expected a directory listing, got 404
+/: file link lost its public route
+/listing: expected a directory listing, got 404
+/listing: file link lost its public route
+/listing/: expected a directory listing, got 404
+/listing/: file link lost its public route
+/listing/?sort=name: expected a directory listing, got 404
+/listing/?sort=name: file link lost its public route
+/listing/sub/: expected a directory listing, got 200
+/listing/sub/: file link lost its public route
+/private/sub/: listing must be disabled, got 200
+/default/sub/: listing must be disabled, got 200
+/directory-index/: listing must be disabled, got 200

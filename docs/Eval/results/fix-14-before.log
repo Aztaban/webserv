@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "<stdin>", line 4, in <module>
+  File "/home/diana/Documents/webserv/tests/e2e/test_file_failures.py", line 79, in test_file_failures
+    assert not errors, '; '.join(errors)
+           ^^^^^^^^^^
+AssertionError: failed upload reported (201, b'File uploaded\n'); failed upload reported (201, b'File uploaded\n'); failed deletion reported (204, b'')

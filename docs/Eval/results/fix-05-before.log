@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+  File "/home/diana/Documents/webserv/tests/e2e/test_configured_index.py", line 83, in test_configured_index
+    raise AssertionError('%s %s: expected %r, got %r' % (host, path, expected, actual))
+AssertionError: custom.test /: expected (200, 'SERVER INDEX', 'text/html'), got (200, 'DEFAULT INDEX', 'text/html')

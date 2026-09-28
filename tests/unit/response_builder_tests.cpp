@@ -113,6 +113,26 @@ static void test_simple_response(void)
 		"simple response should append body");
 }
 
+static void test_no_content_framing(void)
+{
+	HttpResponse response(204, "No Content", "must not reach the wire");
+	response.headers["cOnTeNt-LeNgTh"] = "99";
+	response.headers["TRANSFER-ENCODING"] = "chunked";
+	response.headers["ETag"] = "\"revision-2\"";
+	response.closeConnection = false;
+	std::string raw = HttpResponseBuilder::build(response);
+	require(raw.find("HTTP/1.1 204 No Content\r\n") == 0, "204 status line");
+	require(raw.find("\r\n\r\n") + 4 == raw.size(), "204 must end after headers");
+	require(!contains(raw, "Content-Length") && !contains(raw, "cOnTeNt-LeNgTh"),
+		"204 must not include Content-Length in any case");
+	require(!contains(raw, "TRANSFER-ENCODING"), "204 must not include Transfer-Encoding");
+	require(contains(raw, "ETag: \"revision-2\"\r\n"), "204 preserves metadata");
+	require(contains(raw, "Connection: keep-alive\r\n"), "204 preserves connection policy");
+	require(!contains(raw, "Content-Type:"), "204 needs no default body content type");
+	std::string simple = HttpResponseBuilder::buildSimpleResponse(204, "No Content", "ignored");
+	require(simple.find("\r\n\r\n") + 4 == simple.size(), "simple 204 has no body");
+}
+
 int main(void)
 {
 	test_builds_status_line_and_body();
@@ -121,6 +141,7 @@ int main(void)
 	test_keeps_custom_content_type_once();
 	test_connection_header();
 	test_simple_response();
+	test_no_content_framing();
 
 	std::cout << "[PASS] HttpResponseBuilder unit tests" << std::endl;
 	return (0);

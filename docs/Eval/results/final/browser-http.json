@@ -1,0 +1,356 @@
+{
+  "index": [
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "sec-ch-ua-platform: \"Linux\"",
+          "Upgrade-Insecure-Requests: 1",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Sec-Fetch-Site: none",
+          "Sec-Fetch-Mode: navigate",
+          "Sec-Fetch-User: ?1",
+          "Sec-Fetch-Dest: document",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET / HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 200 OK",
+          "Content-Type: text/html",
+          "Content-Length: 17",
+          "Connection: close"
+        ]
+      }
+    },
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua-platform: \"Linux\"",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          "Sec-Fetch-Site: same-origin",
+          "Sec-Fetch-Mode: no-cors",
+          "Sec-Fetch-Dest: image",
+          "Referer: http://127.0.0.1:18880/",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /favicon.ico HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 404 Not Found",
+          "Content-Type: text/html",
+          "Content-Length: 20",
+          "Connection: close"
+        ]
+      }
+    }
+  ],
+  "missing": [
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "sec-ch-ua-platform: \"Linux\"",
+          "Upgrade-Insecure-Requests: 1",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Sec-Fetch-Site: none",
+          "Sec-Fetch-Mode: navigate",
+          "Sec-Fetch-User: ?1",
+          "Sec-Fetch-Dest: document",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /missing HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 404 Not Found",
+          "Content-Type: text/html",
+          "Content-Length: 20",
+          "Connection: close"
+        ]
+      }
+    },
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua-platform: \"Linux\"",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          "Sec-Fetch-Site: same-origin",
+          "Sec-Fetch-Mode: no-cors",
+          "Sec-Fetch-Dest: image",
+          "Referer: http://127.0.0.1:18880/missing",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /favicon.ico HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 404 Not Found",
+          "Content-Type: text/html",
+          "Content-Length: 20",
+          "Connection: close"
+        ]
+      }
+    }
+  ],
+  "listing": [
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "sec-ch-ua-platform: \"Linux\"",
+          "Upgrade-Insecure-Requests: 1",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Sec-Fetch-Site: none",
+          "Sec-Fetch-Mode: navigate",
+          "Sec-Fetch-User: ?1",
+          "Sec-Fetch-Dest: document",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /listing/ HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 200 OK",
+          "Content-Type: text/html",
+          "Content-Length: 152",
+          "Connection: close"
+        ]
+      }
+    },
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua-platform: \"Linux\"",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          "Sec-Fetch-Site: same-origin",
+          "Sec-Fetch-Mode: no-cors",
+          "Sec-Fetch-Dest: image",
+          "Referer: http://127.0.0.1:18880/listing/",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /favicon.ico HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 404 Not Found",
+          "Content-Type: text/html",
+          "Content-Length: 20",
+          "Connection: close"
+        ]
+      }
+    }
+  ],
+  "redirect": [
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "Upgrade-Insecure-Requests: 1",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Sec-Fetch-Site: none",
+          "Sec-Fetch-Mode: navigate",
+          "Sec-Fetch-User: ?1",
+          "Sec-Fetch-Dest: document",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "sec-ch-ua-platform: \"Linux\"",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET / HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 200 OK",
+          "Content-Type: text/html",
+          "Content-Length: 17",
+          "Connection: close"
+        ]
+      }
+    },
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua-platform: \"Linux\"",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          "Sec-Fetch-Site: same-origin",
+          "Sec-Fetch-Mode: no-cors",
+          "Sec-Fetch-Dest: image",
+          "Referer: http://127.0.0.1:18880/",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /favicon.ico HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 404 Not Found",
+          "Content-Type: text/html",
+          "Content-Length: 20",
+          "Connection: close"
+        ]
+      }
+    }
+  ],
+  "port": [
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18881",
+          "Connection: keep-alive",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "sec-ch-ua-platform: \"Linux\"",
+          "Upgrade-Insecure-Requests: 1",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Sec-Fetch-Site: none",
+          "Sec-Fetch-Mode: navigate",
+          "Sec-Fetch-User: ?1",
+          "Sec-Fetch-Dest: document",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET / HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 200 OK",
+          "Content-Type: text/html",
+          "Content-Length: 12",
+          "Connection: close"
+        ]
+      }
+    },
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.1:18881",
+          "Connection: keep-alive",
+          "sec-ch-ua-platform: \"Linux\"",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          "Sec-Fetch-Site: same-origin",
+          "Sec-Fetch-Mode: no-cors",
+          "Sec-Fetch-Dest: image",
+          "Referer: http://127.0.0.1:18881/",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /favicon.ico HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 404 Not Found",
+          "Content-Type: text/html",
+          "Content-Length: 48",
+          "Connection: close"
+        ]
+      }
+    }
+  ],
+  "interface": [
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.2:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "sec-ch-ua-platform: \"Linux\"",
+          "Upgrade-Insecure-Requests: 1",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "Sec-Fetch-Site: none",
+          "Sec-Fetch-Mode: navigate",
+          "Sec-Fetch-User: ?1",
+          "Sec-Fetch-Dest: document",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET / HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 200 OK",
+          "Content-Type: text/html",
+          "Content-Length: 12",
+          "Connection: close"
+        ]
+      }
+    },
+    {
+      "request": {
+        "headers": [
+          "Host: 127.0.0.2:18880",
+          "Connection: keep-alive",
+          "sec-ch-ua-platform: \"Linux\"",
+          "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+          "sec-ch-ua: \"Not?A_Brand\";v=\"24\", \"Chromium\";v=\"152\"",
+          "sec-ch-ua-mobile: ?0",
+          "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+          "Sec-Fetch-Site: same-origin",
+          "Sec-Fetch-Mode: no-cors",
+          "Sec-Fetch-Dest: image",
+          "Referer: http://127.0.0.2:18880/",
+          "Accept-Encoding: gzip, deflate, br, zstd",
+          "Accept-Language: en-US,en;q=0.9"
+        ],
+        "line": "GET /favicon.ico HTTP/1.1\r\n"
+      },
+      "response": {
+        "headers": [
+          "HTTP/1.1 404 Not Found",
+          "Content-Type: text/html",
+          "Content-Length: 48",
+          "Connection: close"
+        ]
+      }
+    }
+  ]
+}

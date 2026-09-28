@@ -28,76 +28,89 @@ CgiJob::~CgiJob()
 {
 	closeStdin();
 	closeStdout();
+	if (_pid > 0)
+		killProcess();
+}
+
+void	CgiJob::_failStart(int inFds[2], int outFds[2])
+{
+	for (int i = 0; i < 2; ++i)
+	{
+		if (inFds[i] != -1)
+			close(inFds[i]);
+		if (outFds[i] != -1)
+			close(outFds[i]);
+	}
+	_failed = true;
+	_done = true;
 }
 
 void	CgiJob::start(const CgiRequest& request)
 {
-	int inFds[2];
-	int outFds[2];
-
-	if (pipe(inFds) == -1)
+	// Allocate buffers before acquiring descriptors or creating a child.
+	_inputBuffer = request.body;
+	std::vector<char *> envVector;
+	for (size_t i = 0; i < request.env.size(); ++i)
+		envVector.push_back(const_cast<char*>(request.env[i].c_str()));
+	envVector.push_back(NULL);
+	char resolved[PATH_MAX];
+	int inFds[2] = {-1, -1};
+	int outFds[2] = {-1, -1};
+	if (realpath(request.scriptPath.c_str(), resolved) == NULL)
 	{
-		_failed = true;
-		return ;
+		_failStart(inFds, outFds);
+		return;
 	}
-	if (pipe(outFds) == -1)
+	if (pipe(inFds) == -1 || pipe(outFds) == -1)
 	{
-		_failed = true;
-		close(inFds[1]);
-		close(inFds[0]);
-		return ;
+		_failStart(inFds, outFds);
+		return;
+	}
+	// Close all original pipe descriptors at exec; dup2 creates CGI stdin/stdout.
+	if (fcntl(inFds[0], F_SETFD, FD_CLOEXEC) == -1
+		|| fcntl(inFds[1], F_SETFD, FD_CLOEXEC) == -1
+		|| fcntl(outFds[0], F_SETFD, FD_CLOEXEC) == -1
+		|| fcntl(outFds[1], F_SETFD, FD_CLOEXEC) == -1
+		|| fcntl(inFds[1], F_SETFL, O_NONBLOCK) == -1
+		|| fcntl(outFds[0], F_SETFL, O_NONBLOCK) == -1)
+	{
+		_failStart(inFds, outFds);
+		return;
 	}
 	_pid = fork();
-	if (_pid == 0) // CHILD
+	if (_pid == -1)
 	{
-		std::vector<char *> envVector;
-		char *argv[3];
-		for(size_t i = 0; i < request.env.size(); ++i)
-			envVector.push_back(const_cast<char*>(request.env[i].c_str()));
-		envVector.push_back(NULL);
-		char **envArr = &envVector[0];
-		argv[0] = const_cast<char*>(request.interpreterPath.c_str());
-		char resolved[PATH_MAX];
-		if (realpath(request.scriptPath.c_str(), resolved) == NULL)
-		{
-			std::cerr << "Nonexistent script path" << std::endl;
+		_failStart(inFds, outFds);
+		return;
+	}
+	if (_pid == 0)
+	{
+		close(inFds[1]);
+		close(outFds[0]);
+		if (dup2(inFds[0], STDIN_FILENO) == -1
+			|| dup2(outFds[1], STDOUT_FILENO) == -1
+			|| fcntl(STDIN_FILENO, F_SETFD, 0) == -1
+			|| fcntl(STDOUT_FILENO, F_SETFD, 0) == -1)
 			_exit(1);
-		}
+		if (inFds[0] != STDIN_FILENO && inFds[0] != STDOUT_FILENO)
+			close(inFds[0]);
+		if (outFds[1] != STDIN_FILENO && outFds[1] != STDOUT_FILENO)
+			close(outFds[1]);
+		if (chdir(request.workingDirectory.c_str()) == -1)
+			_exit(1);
+		char *argv[3];
+		argv[0] = const_cast<char*>(request.interpreterPath.c_str());
 		argv[1] = resolved;
 		argv[2] = NULL;
-		close(inFds[1]);
-		close(outFds[0]);
-		dup2(inFds[0], STDIN_FILENO);
-		dup2(outFds[1], STDOUT_FILENO);
-		chdir(request.workingDirectory.c_str());
-		if (execve(request.interpreterPath.c_str(), argv, envArr) == -1)
-		{
-			close(inFds[0]);
-			close(outFds[1]);
-			std::cerr << "Error in cgi execution" << std::endl;
-			_exit(1);
-		}
-	}
-	else if (_pid == -1)
-	{
-		_failed = true;
-		close(outFds[0]);
-		close(outFds[1]);
-		close(inFds[0]);
-		close(inFds[1]);
-		return;
+		execve(request.interpreterPath.c_str(), argv, &envVector[0]);
+		_exit(1);
 	}
 	close(inFds[0]);
 	close(outFds[1]);
-	_inputBuffer = request.body;
 	_stdinClosed = false;
 	_stdoutClosed = false;
 	_stdinFd = inFds[1];
 	_stdoutFd = outFds[0];
-	if (fcntl(_stdinFd, F_SETFL, O_NONBLOCK) == -1)
-		throw std::runtime_error("fcntl(O_NONBLOCK) failed");
-	if (fcntl(_stdoutFd, F_SETFL, O_NONBLOCK) == -1)
-		throw std::runtime_error("fcntl(O_NONBLOCK) failed");
 }
 
 int CgiJob::getStdinFd() const
@@ -143,6 +156,7 @@ bool	CgiJob::isTimedOut(std::time_t now, int timeoutSeconds) const
 void	CgiJob::writeToCgi()
 {
 	size_t remaining = _inputBuffer.size() - _inputOffset;
+	// One write per POLLOUT event; nonpositive results fail this CGI job.
 	ssize_t n = write(_stdinFd, _inputBuffer.c_str() + _inputOffset, remaining);
 
 	if (n > 0)
@@ -150,10 +164,6 @@ void	CgiJob::writeToCgi()
 		_inputOffset += n;
 		if (_inputOffset == _inputBuffer.size())
 			closeStdin();
-	}
-	else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK ))
-	{
-		return ;
 	}
 	else
 	{
@@ -166,6 +176,7 @@ void	CgiJob::writeToCgi()
 void	CgiJob::readFromCgi()
 {
 	char buffer[4096];
+	// One read per POLLIN event; zero is EOF and a negative result is failure.
 	ssize_t loaded = read(_stdoutFd, &buffer, 4095);
 
 	if (loaded >= 0)
@@ -177,8 +188,6 @@ void	CgiJob::readFromCgi()
 			return ;
 		}
 	}
-	else if (loaded == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
-		return;
 	else
 	{
 		_failed = true;
@@ -201,31 +210,42 @@ void	CgiJob::closeStdout()
 {
 	if (_stdoutFd != -1)
 	{
-		int status = 0;
-		waitpid(_pid, &status, 0);
-		if (WIFEXITED(status) && WEXITSTATUS(status) == 0)
-			_done = true;
-		else
-		{
-			_done = true;
-			_failed = true;
-		}
 		close(_stdoutFd);
 		_stdoutFd = -1;
 	}
 	_stdoutClosed = true;
 }
 
-void	CgiJob::killProcess()
+void	CgiJob::updateProcessState()
 {
 	if (_pid > 0)
 	{
 		int status = 0;
-		kill(_pid, SIGKILL);
-		waitpid(_pid, &status, 0);
+		pid_t result = waitpid(_pid, &status, WNOHANG);
+		if (result == _pid)
+		{
+			_pid = -1;
+			if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
+				_failed = true;
+		}
+		else if (result < 0 && errno != EINTR)
+		{
+			// errno is inspected only after waitpid, never after pipe/socket I/O.
+			_failed = true;
+			if (errno == ECHILD)
+				_pid = -1;
+		}
 	}
+	// Child exit must not discard bytes still buffered in its output pipe.
+	_done = (_pid <= 0 && _stdoutClosed);
+}
+
+void	CgiJob::killProcess()
+{
 	_failed = true;
-	_done = true;
+	if (_pid > 0)
+		kill(_pid, SIGKILL);
+	updateProcessState();
 }
 
 HttpResponse	CgiJob::buildResponse() const

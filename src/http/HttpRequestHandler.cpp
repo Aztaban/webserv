@@ -3,18 +3,23 @@
 
 // ----------------- CONSTRUCTORS ----------------
 
-HttpRequestHandler::HttpRequestHandler(const std::string& root)
-	: _root(root), _autoindexEnabled(true) {} // TEMP: later comes from LocationConfig
+HttpRequestHandler::HttpRequestHandler(const std::string& root, const std::string& index,
+	bool autoindexEnabled, const std::string& uploadPath)
+	: _root(root), _index(index), _autoindexEnabled(autoindexEnabled),
+	  _uploadPath(uploadPath) {}
 
 HttpRequestHandler::HttpRequestHandler(const HttpRequestHandler& other)
-	: _root(other._root), _autoindexEnabled(other._autoindexEnabled) {}
+	: _root(other._root), _index(other._index), _autoindexEnabled(other._autoindexEnabled),
+	  _uploadPath(other._uploadPath) {}
 
 HttpRequestHandler& HttpRequestHandler::operator=(const HttpRequestHandler& other)
 {
 	if (this != &other)
 	{
 		_root = other._root;
+		_index = other._index;
 		_autoindexEnabled = other._autoindexEnabled;
+		_uploadPath = other._uploadPath;
 	}
 	return *this;
 }
@@ -29,22 +34,22 @@ HttpResponse	HttpRequestHandler::_error(int code)
 
 // ----------------- MAIN DISPATCH --------------------
 
-HttpResponse HttpRequestHandler::handle(const HttpRequest& request)
+HttpResponse HttpRequestHandler::handle(const HttpRequest& request, const std::string& publicPath)
 {
 	if (request.method == "GET")
-		return _handleGET(request);
+		return _handleGET(request, publicPath);
 	if (request.method == "POST")
 		return _handlePOST(request);
 	if (request.method == "DELETE")
 		return _handleDELETE(request);
 
-	return _error(405);
+	return _error(501);
 }
 
 
 // ------------------ GET ----------------------
 
-HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
+HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request, const std::string& publicPath)
 {
 	HttpResponse	res;
 	std::string		target;
@@ -60,7 +65,7 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 	if (target.find("..") != std::string::npos)
 		return _error(404);
 
-	path = _resolvePath(request.target);
+	path = _resolvePath(target);
 
 	// NOTE: if empty -> invalid route or blocked path
 	if (path.empty())
@@ -69,18 +74,19 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request)
 	if (stat(path.c_str(), &st) != 0)
 		return _error(404);
 
-	// DIRECTORY HANDLING (Diana responsibility)
+	// Directory requests use the configured index first, then listing policy.
 	if (S_ISDIR(st.st_mode))
 	{
 		if (!path.empty() && path[path.size() - 1] != '/')
 			path += "/";
 
-		std::string indexPath = path + "index.html";
+		std::string indexPath = path + _index;
 
-		if (FileUtils::exists(indexPath))
+		struct stat indexStatus;
+		if (stat(indexPath.c_str(), &indexStatus) == 0 && S_ISREG(indexStatus.st_mode))
 			path = indexPath;
 		else if (_autoindexEnabled)
-			return _generateAutoIndex(path, request.target);
+			return _generateAutoIndex(path, publicPath.empty() ? target : publicPath);
 		else
 			return _error(404);
 	}
@@ -109,7 +115,9 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 	if (target.find("..") != std::string::npos)
 		return _error(400);
 	
-	std::string uploadDir = _root + "/uploads/";
+	std::string uploadDir = _uploadPath.empty() ? _root + "/uploads" : _uploadPath;
+	if (uploadDir[uploadDir.size() - 1] != '/')
+		uploadDir += "/";
 
 	std::string fileName = _getFileName(target);
 
@@ -130,6 +138,9 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 
 	out.write(request.body.c_str(), request.body.size());
 	out.close();
+	// close() flushes buffered bytes; fail() also retains earlier write errors.
+	if (out.fail())
+		return _error(500);
 
 	res.statusCode = 201;
 	res.reasonPhrase = "Created";
@@ -181,19 +192,35 @@ HttpResponse HttpRequestHandler::_handleDELETE(const HttpRequest& request)
 
 // -------------- AUTOINDEX -----------------
 
+static std::string escapeListingHtml(const std::string& value)
+{
+	std::string escaped;
+	for (std::size_t i = 0; i < value.size(); ++i)
+	{
+		if (value[i] == '&') escaped += "&amp;";
+		else if (value[i] == '<') escaped += "&lt;";
+		else if (value[i] == '>') escaped += "&gt;";
+		else if (value[i] == '"') escaped += "&quot;";
+		else if (value[i] == '\'') escaped += "&#39;";
+		else escaped += value[i];
+	}
+	return escaped;
+}
+
 HttpResponse HttpRequestHandler::_generateAutoIndex(
 	const std::string& dirPath,
 	const std::string& uri)
 {
-	HttpResponse		res;
-	std::ostringstream	html;
-
+	HttpResponse res;
+	std::ostringstream html;
 	DIR* dir = opendir(dirPath.c_str());
 	if (!dir)
 		return _error(404);
 
-
-	html << "<html><body><h1>Index of " << uri << "</h1><ul>";
+	std::string base = uri.substr(0, uri.find('?'));
+	if (base.empty() || base[base.size() - 1] != '/')
+		base += "/";
+	html << "<html><body><h1>Index of " << escapeListingHtml(base) << "</h1><ul>";
 
 	struct dirent* entry;
 	while ((entry = readdir(dir)) != NULL)
@@ -201,24 +228,19 @@ HttpResponse HttpRequestHandler::_generateAutoIndex(
 		std::string name = entry->d_name;
 		if (name == "." || name == "..")
 			continue;
-
-		html << "<li><a href=\"" << name;
-
-		if (entry->d_type == DT_DIR)
-			html << "/";
-
-		html << "\">" << name << "</a></li>";
+		struct stat entryStatus;
+		bool isDirectory = (stat((dirPath + name).c_str(), &entryStatus) == 0
+			&& S_ISDIR(entryStatus.st_mode));
+		std::string suffix = isDirectory ? "/" : "";
+		html << "<li><a href=\"" << escapeListingHtml(base + name + suffix)
+			<< "\">" << escapeListingHtml(name + suffix) << "</a></li>";
 	}
-
 	closedir(dir);
-
 	html << "</ul></body></html>";
-
 	res.statusCode = 200;
 	res.reasonPhrase = "OK";
 	res.body = html.str();
 	res.headers["Content-Type"] = "text/html";
-
 	return res;
 }
 
@@ -249,9 +271,6 @@ std::string HttpRequestHandler::_resolvePath(const std::string& target)
 
 	if (cleanTarget.find("..") != std::string::npos)
 		return "";
-
-	if (cleanTarget == "/")
-		return _root + "/index.html";
 
 	return _root + cleanTarget;
 }

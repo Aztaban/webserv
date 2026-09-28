@@ -65,18 +65,16 @@ static void driveToCompletion(CgiJob& job, int timeoutSeconds)
 			fds[n].revents = 0;
 			++n;
 		}
-		if (n == 0)
-			break;
-
+		// A child can remain alive after both pipes close.
 		poll(fds, n, 200);
 
 		for (int i = 0; i < n; ++i)
 		{
 			if ((fds[i].revents & POLLOUT) && fds[i].fd == job.getStdinFd())
 				job.writeToCgi();
-			if ((fds[i].revents & POLLIN) && fds[i].fd == job.getStdoutFd())
+			else if ((fds[i].revents & POLLIN) && fds[i].fd == job.getStdoutFd())
 				job.readFromCgi();
-			if (fds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
+			else if (fds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
 			{
 				if (fds[i].fd == job.getStdoutFd())
 					job.closeStdout();
@@ -84,6 +82,7 @@ static void driveToCompletion(CgiJob& job, int timeoutSeconds)
 					job.closeStdin();
 			}
 		}
+		job.updateProcessState();
 	}
 }
 

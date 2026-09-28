@@ -1,0 +1,61 @@
+CXX    src/core/ErrorResponseFactory.cpp   [[32mOK[0m]
+CXX    src/network/ClientConnection.cpp    [[32mOK[0m]
+[34mLink[0m   webserv...                          [[32mOK[0m]
+[INFO] Running 52 test(s)
+[INFO] Building project
+[INFO] Starting server
+[PASS] unit / parser_tests
+[PASS] unit / cgi_job_tests
+[PASS] unit / cgi_startup_tests
+[PASS] unit / response_builder_tests
+[PASS] network / server accepts connection
+[PASS] network / basic GET returns HTTP response
+[PASS] network / GET / returns 200
+[PASS] network / response has Content-Length
+[PASS] network / response has header/body separator
+[PASS] network / connect/disconnect loop
+[PASS] network / partial request close loop
+[PASS] network / large body does not crash server
+[PASS] network / oversized content length returns 413
+[PASS] network / oversized body upload returns 413 or closes early
+[PASS] network / many simultaneous clients
+[PASS] network / primary port responds
+[PASS] network / second port responds
+[PASS] network / both ports stay alive
+[PASS] network / slow client does not freeze server
+[PASS] e2e / autoindex respects route policy and produces usable directory links
+[PASS] e2e / CSS asset loads
+[PASS] e2e / JS asset loads
+[PASS] e2e / image asset loads
+[PASS] e2e / CGI GET executes script
+[PASS] e2e / CGI stdout closure does not block GET
+[PASS] e2e / CGI stdout closure does not block POST
+[PASS] e2e / CGI failure after stdout closure returns 500
+[PASS] e2e / CGI output is drained completely after exit
+[PASS] e2e / CGI child reaped after POST client disconnect
+[PASS] e2e / CGI inherits no server sockets or extra pipes
+[PASS] e2e / CGI rejected POST returns 500 and reaps child
+[PASS] e2e / CGI GET/POST/closed-stdout deadlines return 504 and reap children
+[PASS] e2e / configured index follows server, location and default settings
+[PASS] e2e / custom error-page paths follow host across static/parser/CGI errors
+[PASS] e2e / DELETE existing file
+[PASS] e2e / DELETE missing file returns 404
+[PASS] e2e / default 404 error page
+[PASS] e2e / POST upload saves file
+[PASS] e2e / POST upload content exact
+[PASS] e2e / POST to upload-disabled route returns error
+[PASS] e2e / POST oversized upload returns 413
+[PASS] e2e / configured redirect
+[PASS] e2e / virtual hosts share one listener
+[PASS] e2e / unknown Host uses default server
+[PASS] e2e / malformed Host returns 400
+[PASS] e2e / longest location and segment boundary
+[PASS] e2e / body limit follows selected server
+[PASS] e2e / custom error page follows selected server
+[PASS] e2e / upload enabled and disabled
+[PASS] e2e / traversal attempt is rejected
+[PASS] e2e / GET existing index file
+[PASS] e2e / GET missing file returns 404
+
+Result: 52/52 tests passed
+HTML report: /home/diana/Documents/webserv/tests/report.html

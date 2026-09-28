@@ -1,0 +1,26 @@
+[
+  {
+    "case": "index",
+    "passed": true
+  },
+  {
+    "case": "missing",
+    "passed": true
+  },
+  {
+    "case": "listing",
+    "passed": true
+  },
+  {
+    "case": "redirect",
+    "passed": true
+  },
+  {
+    "case": "port",
+    "passed": true
+  },
+  {
+    "case": "interface",
+    "passed": true
+  }
+]
