@@ -18,7 +18,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
-#include <limits.h>
+#include <climits>
 #include "config/Token.hpp"
 #include "config/TokenStream.hpp"
 

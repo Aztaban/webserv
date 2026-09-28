@@ -25,8 +25,19 @@ void	EventLoop::_setNonBlocking(int fd)
 {
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1)
 		throw std::runtime_error("fcntl(O_NONBLOCK) failed");
-	if (fcntl(fd, F_SETFD, FD_CLOEXEC) == -1)
-		throw std::runtime_error("fcntl(FD_CLOEXEC) failed");
+}
+
+// Every descriptor the server owns (listeners, clients, CGI pipes) is in _pollFds.
+int	EventLoop::_highestFd() const
+{
+	int	highest = 2;
+
+	for (std::size_t i = 0; i < _pollFds.size(); ++i)
+	{
+		if (_pollFds[i].fd > highest)
+			highest = _pollFds[i].fd;
+	}
+	return (highest);
 }
 
 void	EventLoop::addListener(Listener *listener)
@@ -199,12 +210,13 @@ void EventLoop::_startCgiForClient(int fd, ClientConnection* client)
 	_cgiByClientFd[fd] = job;
 	try
 	{
-		job->start(cgiRequest);
+		job->start(cgiRequest, _highestFd());
 	}
 	catch (...)
 	{
 		_releaseCgi(fd);
-		throw;
+		client->prepareErrorResponse(500);
+		return;
 	}
 	if (job->hasFailed())
 	{
@@ -329,6 +341,26 @@ void	EventLoop::_checkCgiProcesses()
 	}
 }
 
+void  EventLoop::_recoverFromError(int fd)
+{
+      if (_isClientFd(fd))
+      {
+              _removeClient(fd);
+              return;
+      }
+      std::map<int, int>::iterator owner = _cgiFdToClientFd.find(fd);
+      if (owner == _cgiFdToClientFd.end())
+              return;
+      int clientFd = owner->second;
+      _releaseCgi(clientFd);
+      std::map<int, ClientConnection *>::iterator client = _clients.find(clientFd);
+      if (client != _clients.end())
+      {
+              client->second->prepareErrorResponse(500);
+              _updateClientEvents(clientFd);
+      }
+}
+
 void	EventLoop::run()
 {
 	Logger::info("Event loop started");
@@ -337,36 +369,54 @@ void	EventLoop::run()
 	{
 		if (_pollFds.empty())
 			throw std::runtime_error("no file descriptors registered in event loop");
-		_checkCgiProcesses();
-		int timeout = (_cgiByClientFd.empty() && _retiredCgiJobs.empty()) ? 1000 : 100;
-		int ready = poll(&_pollFds[0], _pollFds.size(), timeout);
-		if (ready == -1)
-			throw std::runtime_error("poll() failed");
-		// CGI deadlines must prepare their response before idle-client cleanup.
-		_removeTimedOutCgi();
-		_removeTimedOutClients();
-		if (ready == 0)
-			continue;
-
-		Logger::debug("poll() returned " + toString(ready) + " ready fd(s)");
-
-		std::vector<struct pollfd>	readyFds = _pollFds;
-		for (std::size_t i = 0; i < readyFds.size(); i++)
+		try
 		{
-			int	fd = readyFds[i].fd;
-			short	revents = readyFds[i].revents;
-
-			if (revents == 0)
-				continue;
-			if (_isListenerFd(fd))
+			_checkCgiProcesses();
+			int timeout = (_cgiByClientFd.empty() && _retiredCgiJobs.empty()) ? 1000 : 100;
+			int ready = poll(&_pollFds[0], _pollFds.size(), timeout);
+			if (ready == -1)
 			{
-				if (revents & POLLIN)
-					_handleListenerEvent(fd);
+				Logger::error("poll() failed, retrying");
+				continue;
 			}
-			else if (_isClientFd(fd))
-				_handleClientEvent(fd, revents);
-			else if (_isCgiFd(fd))
-				_handleJobEvent(fd, revents);
+			// CGI deadlines must prepare their response before idle-client cleanup.
+			_removeTimedOutCgi();
+			_removeTimedOutClients();
+			if (ready == 0)
+				continue;
+
+			Logger::debug("poll() returned " + toString(ready) + " ready fd(s)");
+
+			std::vector<struct pollfd>	readyFds = _pollFds;
+			for (std::size_t i = 0; i < readyFds.size(); i++)
+			{
+				int	fd = readyFds[i].fd;
+				short	revents = readyFds[i].revents;
+
+				if (revents == 0)
+					continue;
+				try
+				{
+					if (_isListenerFd(fd))
+					{
+						if (revents & POLLIN)
+							_handleListenerEvent(fd);
+					}
+					else if (_isClientFd(fd))
+						_handleClientEvent(fd, revents);
+					else if (_isCgiFd(fd))
+						_handleJobEvent(fd, revents);
+				}
+				catch (const std::exception& error)
+				{
+					Logger::error(std::string("Request failed: ") + error.what());
+					_recoverFromError(fd);
+				}
+			}
+		}
+		catch (const std::exception& error)
+		{
+			Logger::error(std::string("Event loop error: ") + error.what());
 		}
 	}
 }

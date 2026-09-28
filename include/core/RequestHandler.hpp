@@ -24,9 +24,8 @@ public:
 	 * @brief Handles one parsed request and returns the response.
 	 */
 	static RequestResult handle(const HttpRequest& request, const RequestContext& context);
-	static bool _isCgiRequest(const HttpRequest&, const LocationConfig&, std::string& outScriptPath, std::string& outInterpreter);
-	static CgiRequest _buildCgiRequest(const HttpRequest&, const LocationConfig&, const RequestContext&);
-
+	static bool _isCgiRequest(const HttpRequest&, const LocationConfig&, const std::string& root, std::string& outScriptPath, std::string& outInterpreter);
+	static CgiRequest _buildCgiRequest(const HttpRequest& httpRequest, const std::string& scriptPath, const std::string& interpreter, const RequestContext& requestContext);
 };
 
 #endif

@@ -68,11 +68,6 @@ void	Logger::log(LogLevel level, const std::string& message)
 {
 	if (level == LOG_DEBUG && !_debugEnabled)
 		return;
-	struct stat status;
-	const int fd = (level == LOG_ERROR) ? STDERR_FILENO : STDOUT_FILENO;
-	// Regular files are exempt from event-descriptor readiness requirements.
-	if (fstat(fd, &status) != 0 || !S_ISREG(status.st_mode))
-		return;
 	std::ostream&	out = (level == LOG_ERROR) ? std::cerr : std::cout;
 	out << _levelToColor(level) << "[" << _getTimestamp() << "] " << "[" << _levelToString(level)
 		<< "] " << message << RESET << std::endl;

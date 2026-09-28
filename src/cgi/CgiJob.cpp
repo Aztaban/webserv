@@ -5,8 +5,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <cerrno>
-#include <fcntl.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 CgiJob::CgiJob()
 	: _pid(-1),
@@ -44,7 +44,7 @@ void	CgiJob::_failStart(int inFds[2], int outFds[2])
 	_done = true;
 }
 
-void	CgiJob::start(const CgiRequest& request)
+void	CgiJob::start(const CgiRequest& request, int highestFd)
 {
 	// Allocate buffers before acquiring descriptors or creating a child.
 	_inputBuffer = request.body;
@@ -53,17 +53,37 @@ void	CgiJob::start(const CgiRequest& request)
 		envVector.push_back(const_cast<char*>(request.env[i].c_str()));
 	envVector.push_back(NULL);
 
+	// The child chdir()s into the script's directory, so the file name alone is enough.
 	std::string scriptName = request.scriptPath;
-    std::string::size_type slash = scriptName.find_last_of('/');
-    if (slash != std::string::npos)
-        scriptName = scriptName.substr(slash + 1);
-    int inFds[2] = {-1, -1};
-    int outFds[2] = {-1, -1};
-    if (pipe(inFds) == -1 || pipe(outFds) == -1)
-    {
-            _failStart(inFds, outFds);
-            return;
-    }
+	std::string::size_type slash = scriptName.find_last_of('/');
+	if (slash != std::string::npos)
+		scriptName = scriptName.substr(slash + 1);
+
+	int inFds[2] = {-1, -1};
+	int outFds[2] = {-1, -1};
+	if (pipe(inFds) == -1 || pipe(outFds) == -1)
+	{
+		_failStart(inFds, outFds);
+		return;
+	}
+	// Parent ends must be non-blocking: poll() only promises *some* free space,
+	// a blocking write() of the whole body could freeze the event loop.
+	if (fcntl(inFds[1], F_SETFL, O_NONBLOCK) == -1
+		|| fcntl(outFds[0], F_SETFL, O_NONBLOCK) == -1)
+	{
+		_failStart(inFds, outFds);
+		return;
+	}
+
+	// Highest descriptor the child may have inherited (server fds + these pipes).
+	int lastFd = highestFd;
+	for (int i = 0; i < 2; ++i)
+	{
+		if (inFds[i] > lastFd)
+			lastFd = inFds[i];
+		if (outFds[i] > lastFd)
+			lastFd = outFds[i];
+	}
 
 	_pid = fork();
 	if (_pid == -1)
@@ -73,15 +93,13 @@ void	CgiJob::start(const CgiRequest& request)
 	}
 	if (_pid == 0)
 	{
-		close(inFds[1]);
-		close(outFds[0]);
 		if (dup2(inFds[0], STDIN_FILENO) == -1
 			|| dup2(outFds[1], STDOUT_FILENO) == -1)
 			_exit(1);
-		if (inFds[0] != STDIN_FILENO && inFds[0] != STDOUT_FILENO)
-			close(inFds[0]);
-		if (outFds[1] != STDIN_FILENO && outFds[1] != STDOUT_FILENO)
-			close(outFds[1]);
+		// Close everything except stdin/stdout/stderr: server sockets, other CGIs'
+		// pipes and the original pipe ends. Replaces close-on-exec (F_SETFD).
+		for (int fd = 3; fd <= lastFd; ++fd)
+			close(fd);
 		if (!request.workingDirectory.empty() && chdir(request.workingDirectory.c_str()) == -1)
 			_exit(1);
 		char *argv[3];

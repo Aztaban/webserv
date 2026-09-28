@@ -55,6 +55,8 @@ private:
 	void	_timeoutCgi(int clientFd);
 	void	_releaseCgi(int clientFd);
 	void	_checkCgiProcesses();
+	void _recoverFromError(int fd);
+	int		_highestFd() const;
 
 public:
 	EventLoop();

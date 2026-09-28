@@ -36,7 +36,7 @@ public:
     CgiJob();
     ~CgiJob();
 
-    void    start(const CgiRequest& request);
+    void    start(const CgiRequest& request, int highestFd = 1023);
 
     int     getStdinFd() const;
     int     getStdoutFd() const;

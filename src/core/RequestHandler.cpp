@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <cstdio>
 #include <sstream>
+#include <cctype>
 
 static std::string	selectRootFromContext(const RequestContext& context)
 {
@@ -50,26 +51,30 @@ static std::string	reasonPhrase(int code)
 	return ("Moved");
 }
 
-bool RequestHandler::_isCgiRequest(const HttpRequest& request, const LocationConfig& location, std::string& outScriptPath, std::string& outInterpreter)
+bool RequestHandler::_isCgiRequest(const HttpRequest& request, const LocationConfig& location, const std::string& root, std::string& outScriptPath, std::string& outInterpreter)
 {
-	std::string restPath;
-	if (request.path.find(location.path, 0) != std::string::npos)
-		restPath = request.path.substr(location.path.length());
-	std::string path = location.root + restPath;
-	if (location.cgiEnabled)
-	{
-		if (path.find_last_of('.') != std::string::npos)
-		{
-			std::string extension = path.substr(path.find_last_of('.'));
-			if (location.cgiExtensions.find(extension) != location.cgiExtensions.end())
-			{
-				outScriptPath = path;
-				outInterpreter = location.cgiExtensions.find(extension)->second;
-				return true;
-			}
-		}
-	}
-	return false;
+    if (!location.cgiEnabled)
+            return false;
+
+    // Part of the URL after the location prefix: /cgi-bin/hello.py -> /hello.py
+    std::string restPath;
+    if (request.path.compare(0, location.path.size(), location.path) == 0)
+            restPath = request.path.substr(location.path.size());
+    if (!restPath.empty() && restPath[0] != '/')
+            restPath = "/" + restPath;
+    std::string path = root + restPath;
+
+    // Extension of the file name only, so "/cgi.d/x" or "x.py/extra" are not treated as CGI.
+    std::string::size_type slash = path.find_last_of('/');
+    std::string::size_type dot = path.find_last_of('.');
+    if (dot == std::string::npos || (slash != std::string::npos && dot < slash))
+            return false;
+    std::map<std::string, std::string>::const_iterator it = location.cgiExtensions.find(path.substr(dot));
+    if (it == location.cgiExtensions.end())
+            return false;
+    outScriptPath = path;
+    outInterpreter = it->second;
+    return true;
 }
 
 static std::string    numberToString(std::size_t number)
@@ -80,38 +85,62 @@ static std::string    numberToString(std::size_t number)
       return (out.str());
 }
 
-CgiRequest RequestHandler::_buildCgiRequest(const HttpRequest& httpRequest, const LocationConfig& location, const RequestContext& requestContext)
+static std::string    cgiHeaderName(const std::string& headerName)
+{
+      std::string     name = headerName;
+
+      for (std::size_t i = 0; i < name.size(); ++i)
+      {
+              if (name[i] == '-')
+                      name[i] = '_';
+              else
+                      name[i] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[i])));
+      }
+      return ("HTTP_" + name);
+}
+
+CgiRequest RequestHandler::_buildCgiRequest(const HttpRequest& httpRequest, const std::string& scriptPath, const std::string& interpreter, const RequestContext& requestContext)
 {
 	CgiRequest cgiRequest;
 
-	if (_isCgiRequest(httpRequest, location, cgiRequest.scriptPath, cgiRequest.interpreterPath))
+	cgiRequest.scriptPath = scriptPath;
+	cgiRequest.interpreterPath = interpreter;
+	std::string::size_type delimiter = scriptPath.find_last_of('/');
+	if (delimiter != std::string::npos)
+	    cgiRequest.workingDirectory = scriptPath.substr(0, delimiter);
+	// Request line
+	cgiRequest.env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+	cgiRequest.env.push_back("SERVER_PROTOCOL=" + httpRequest.version);
+	cgiRequest.env.push_back("REQUEST_METHOD=" + httpRequest.method);
+	cgiRequest.env.push_back("REQUEST_URI=" + httpRequest.target);
+	cgiRequest.env.push_back("QUERY_STRING=" + httpRequest.query);
+	cgiRequest.env.push_back("SCRIPT_NAME=" + httpRequest.path);
+	cgiRequest.env.push_back("SCRIPT_FILENAME=" + scriptPath);
+	cgiRequest.env.push_back("PATH_INFO=" + httpRequest.path);
+	cgiRequest.env.push_back("REDIRECT_STATUS=200");
+	// Server
+	std::string     serverName = requestContext.localHost;
+	if (requestContext.selectedServer)
+		serverName = requestContext.selectedServer->getName();
+	cgiRequest.env.push_back("SERVER_NAME=" + serverName);
+	cgiRequest.env.push_back("SERVER_PORT=" + numberToString(requestContext.localPort));
+	// Body
+	cgiRequest.env.push_back("CONTENT_LENGTH=" + numberToString(httpRequest.contentLength));
+	std::string     contentType;
+	if (HttpHeaderUtils::getValue(httpRequest.headers, "Content-Type", contentType))
+	    cgiRequest.env.push_back("CONTENT_TYPE=" + contentType);
+	if (httpRequest.hasBody)
+	    cgiRequest.body = httpRequest.body;
+	// Every other request header as HTTP_<NAME>
+	for (std::map<std::string, std::string>::const_iterator header = httpRequest.headers.begin();
+	    header != httpRequest.headers.end(); ++header)
 	{
-		size_t delimiter = cgiRequest.scriptPath.find_last_of("/");
-		if (delimiter != std::string::npos)
-			cgiRequest.workingDirectory = cgiRequest.scriptPath.substr(0, delimiter);
-		cgiRequest.env.push_back("REQUEST_METHOD=" + httpRequest.method);
-		cgiRequest.env.push_back("QUERY_STRING=" + httpRequest.query);
-		cgiRequest.env.push_back("CONTENT_LENGTH=" + numberToString(httpRequest.contentLength));
-
-		std::string	contentType;
-		if (HttpHeaderUtils::getValue(httpRequest.headers, "Content-Type", contentType))
-            cgiRequest.env.push_back("CONTENT_TYPE=" + contentType);
-
-		cgiRequest.env.push_back("SCRIPT_NAME=" + cgiRequest.scriptPath);
-		cgiRequest.env.push_back("PATH_INFO=" + httpRequest.path);
-		cgiRequest.env.push_back("SERVER_PROTOCOL=" + httpRequest.version);
-
-		std::string    serverName = requestContext.localHost;
-        if (requestContext.selectedServer)
-            serverName = requestContext.selectedServer->getName();
-        cgiRequest.env.push_back("SERVER_NAME=" + serverName);
-        cgiRequest.env.push_back("SERVER_PORT=" + numberToString(requestContext.localPort));
-
-		cgiRequest.env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-		if (httpRequest.hasBody)
-			cgiRequest.body = httpRequest.body;
+	    std::string     name = cgiHeaderName(header->first);
+	    if (name == "HTTP_CONTENT_TYPE" || name == "HTTP_CONTENT_LENGTH")
+	        continue;       // already passed above without the HTTP_ prefix
+	    cgiRequest.env.push_back(name + "=" + header->second);
 	}
-	return cgiRequest;
+	return (cgiRequest);
 }
 
 
@@ -212,7 +241,7 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 	}
 
 	std::string scriptPath, interpreter;
-	if (_isCgiRequest(request, *location, scriptPath, interpreter))
+	if (_isCgiRequest(request, *location, requestRoot, scriptPath, interpreter))
 	{
 		struct stat	status;
 
@@ -222,7 +251,7 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 			return RequestResult::fromResponse(ErrorResponseFactory::create(404, effectiveContext));
 		else if (S_ISREG(status.st_mode))
 		{
-			CgiRequest cgiRequest = _buildCgiRequest(request, *location, effectiveContext);
+			CgiRequest cgiRequest = _buildCgiRequest(request, scriptPath, interpreter, effectiveContext);
 			return RequestResult::fromCgiRequest(cgiRequest);
 		}
 		else
