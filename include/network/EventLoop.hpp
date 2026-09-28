@@ -24,7 +24,7 @@ class EventLoop {
 
 private:
 	static const int	CLIENT_TIMEOUT_SECONDS = 30;
-	static const int	CGI_TIMEOUT_SECONDS = 30;
+	static const int	CGI_TIMEOUT_SECONDS = 10;
 
 	std::vector<struct pollfd>			_pollFds;
 	std::map<int, Listener *>			_listeners;

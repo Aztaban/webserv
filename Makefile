@@ -105,3 +105,5 @@ re: fclean all
 
 # -------- PHONY --------
 .PHONY: all clean fclean re run test runtest
+
+-include $(DEPS)

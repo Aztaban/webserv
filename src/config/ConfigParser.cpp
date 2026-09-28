@@ -369,30 +369,36 @@ void ConfigParser::parseServer(TokenStream& tokenStream, ServerConfig& serverCon
 	tokenStream.expect(T_RBRACE);
 }
 
+static void   validateUniqueServers(const std::vector<ServerConfig>& servers)
+{
+	for (std::size_t i = 0; i < servers.size(); i++)
+	{
+		for (std::size_t j = i + 1; j < servers.size(); j++)
+		{
+			if (servers[i].getHost() == servers[j].getHost() && servers[i].getPort() == servers[j].getPort()
+				&& servers[i].getName() == servers[j].getName())
+			{
+				std::ostringstream      message;
+				message << "duplicate server block for " << servers[i].getHost()
+					<< ":" << servers[i].getPort() << " (server_name " << servers[i].getName() << ")";
+				throw std::runtime_error(message.str());
+			}
+		}
+	}
+}
+
 std::vector<ServerConfig> ConfigParser::parse()
 {
 	TokenStream tokenStream(_tokens);
 	std::vector<ServerConfig> vectorServerConfig;
 
-	try 
+	while (!tokenStream.atEnd() && tokenStream.peek().type == T_WORD
+		&& tokenStream.expect(T_WORD).value == "server")
 	{
-		while (!tokenStream.atEnd() && tokenStream.peek().type == T_WORD
-			&& tokenStream.expect(T_WORD).value == "server")
-		{
-			ServerConfig serverConfig;
-			parseServer(tokenStream, serverConfig);
-
-			vectorServerConfig.push_back(serverConfig);
-		}
+		ServerConfig serverConfig;
+		parseServer(tokenStream, serverConfig);
+		vectorServerConfig.push_back(serverConfig);
 	}
-	catch (std::exception& error)
-	{
-		Logger::error(error.what());
-	}
+	validateUniqueServers(vectorServerConfig);
 	return vectorServerConfig;
 }
-
-// std::vector<ServerConfig> ConfigParser::parse()
-// {
-	
-// }

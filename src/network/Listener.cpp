@@ -10,6 +10,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <netdb.h>
+#include <sstream>
+
 Listener::Listener(const std::string& host, int port) 
 	: _host(host),
 	  _port(port) ,
@@ -56,17 +59,22 @@ void	Listener::setup()
 	Logger::debug("Setting listener fd " + toString(_fd) + " non-blocking");
 	_setNonBlocking(_fd);
 
-	std::memset(&addr, 0, sizeof(addr));
+	struct addrinfo         hints;
+    struct addrinfo         *result = NULL;
+    std::ostringstream      port;
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(_port);
+    std::memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+    port << _port;
 
-	if (_host == "0.0.0.0")
-		addr.sin_addr.s_addr = INADDR_ANY;
-	else
-		addr.sin_addr.s_addr = inet_addr(_host.c_str());
-	if (addr.sin_addr.s_addr == INADDR_NONE)
-		throw std::runtime_error("invalid host address");
+    int status = getaddrinfo(_host.c_str(), port.str().c_str(), &hints, &result);
+
+    if (status != 0)
+            throw std::runtime_error(std::string("invalid host address: ") + gai_strerror(status));
+    std::memcpy(&addr, result->ai_addr, sizeof(addr));
+    freeaddrinfo(result);
 
 	Logger::debug("Binding listener socket");
 	if (bind(_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
@@ -109,8 +117,6 @@ int	Listener::acceptClient() const
 	int clientFd = accept(_fd, reinterpret_cast<struct sockaddr *>(&clientAddr), &clientLen);
 	if (clientFd == -1)
 		return (-1);
-		
-	Logger::info("Accepted client from " + std::string(inet_ntoa(clientAddr.sin_addr)) + ":" + toString(ntohs(clientAddr.sin_port)));
 
 	return (clientFd);
 }

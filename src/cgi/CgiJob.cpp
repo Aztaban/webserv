@@ -2,7 +2,6 @@
 #include "cgi/CgiOutputParser.hpp"
 
 #include <unistd.h>
-#include <limits.h>
 #include <iostream>
 #include <cstdlib>
 #include <cerrno>
@@ -53,30 +52,19 @@ void	CgiJob::start(const CgiRequest& request)
 	for (size_t i = 0; i < request.env.size(); ++i)
 		envVector.push_back(const_cast<char*>(request.env[i].c_str()));
 	envVector.push_back(NULL);
-	char resolved[PATH_MAX];
-	int inFds[2] = {-1, -1};
-	int outFds[2] = {-1, -1};
-	if (realpath(request.scriptPath.c_str(), resolved) == NULL)
-	{
-		_failStart(inFds, outFds);
-		return;
-	}
-	if (pipe(inFds) == -1 || pipe(outFds) == -1)
-	{
-		_failStart(inFds, outFds);
-		return;
-	}
-	// Close all original pipe descriptors at exec; dup2 creates CGI stdin/stdout.
-	if (fcntl(inFds[0], F_SETFD, FD_CLOEXEC) == -1
-		|| fcntl(inFds[1], F_SETFD, FD_CLOEXEC) == -1
-		|| fcntl(outFds[0], F_SETFD, FD_CLOEXEC) == -1
-		|| fcntl(outFds[1], F_SETFD, FD_CLOEXEC) == -1
-		|| fcntl(inFds[1], F_SETFL, O_NONBLOCK) == -1
-		|| fcntl(outFds[0], F_SETFL, O_NONBLOCK) == -1)
-	{
-		_failStart(inFds, outFds);
-		return;
-	}
+
+	std::string scriptName = request.scriptPath;
+    std::string::size_type slash = scriptName.find_last_of('/');
+    if (slash != std::string::npos)
+        scriptName = scriptName.substr(slash + 1);
+    int inFds[2] = {-1, -1};
+    int outFds[2] = {-1, -1};
+    if (pipe(inFds) == -1 || pipe(outFds) == -1)
+    {
+            _failStart(inFds, outFds);
+            return;
+    }
+
 	_pid = fork();
 	if (_pid == -1)
 	{
@@ -88,19 +76,17 @@ void	CgiJob::start(const CgiRequest& request)
 		close(inFds[1]);
 		close(outFds[0]);
 		if (dup2(inFds[0], STDIN_FILENO) == -1
-			|| dup2(outFds[1], STDOUT_FILENO) == -1
-			|| fcntl(STDIN_FILENO, F_SETFD, 0) == -1
-			|| fcntl(STDOUT_FILENO, F_SETFD, 0) == -1)
+			|| dup2(outFds[1], STDOUT_FILENO) == -1)
 			_exit(1);
 		if (inFds[0] != STDIN_FILENO && inFds[0] != STDOUT_FILENO)
 			close(inFds[0]);
 		if (outFds[1] != STDIN_FILENO && outFds[1] != STDOUT_FILENO)
 			close(outFds[1]);
-		if (chdir(request.workingDirectory.c_str()) == -1)
+		if (!request.workingDirectory.empty() && chdir(request.workingDirectory.c_str()) == -1)
 			_exit(1);
 		char *argv[3];
 		argv[0] = const_cast<char*>(request.interpreterPath.c_str());
-		argv[1] = resolved;
+		argv[1] = const_cast<char*>(scriptName.c_str());
 		argv[2] = NULL;
 		execve(request.interpreterPath.c_str(), argv, &envVector[0]);
 		_exit(1);

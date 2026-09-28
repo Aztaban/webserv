@@ -2,6 +2,7 @@
 #include "core/ErrorResponseFactory.hpp"
 #include "core/RequestResult.hpp"
 #include "http/HttpRequestHandler.hpp"
+#include "http/HttpHeaderUtils.hpp"
 #include "routing/Router.hpp"
 #include "utils/Logger.hpp"
 #include <sys/stat.h>
@@ -71,10 +72,17 @@ bool RequestHandler::_isCgiRequest(const HttpRequest& request, const LocationCon
 	return false;
 }
 
+static std::string    numberToString(std::size_t number)
+{
+      std::ostringstream      out;
+
+      out << number;
+      return (out.str());
+}
+
 CgiRequest RequestHandler::_buildCgiRequest(const HttpRequest& httpRequest, const LocationConfig& location, const RequestContext& requestContext)
 {
 	CgiRequest cgiRequest;
-	std::stringstream ss;
 
 	if (_isCgiRequest(httpRequest, location, cgiRequest.scriptPath, cgiRequest.interpreterPath))
 	{
@@ -83,17 +91,22 @@ CgiRequest RequestHandler::_buildCgiRequest(const HttpRequest& httpRequest, cons
 			cgiRequest.workingDirectory = cgiRequest.scriptPath.substr(0, delimiter);
 		cgiRequest.env.push_back("REQUEST_METHOD=" + httpRequest.method);
 		cgiRequest.env.push_back("QUERY_STRING=" + httpRequest.query);
-		ss << httpRequest.contentLength;
-		cgiRequest.env.push_back("CONTENT_LENGTH=" + ss.str());
-		ss.clear();
-		std::map<std::string, std::string>::const_iterator it = httpRequest.headers.find("Content-Type");
-		if (it != httpRequest.headers.end())
-			cgiRequest.env.push_back("CONTENT_TYPE=" + it->second);
+		cgiRequest.env.push_back("CONTENT_LENGTH=" + numberToString(httpRequest.contentLength));
+
+		std::string	contentType;
+		if (HttpHeaderUtils::getValue(httpRequest.headers, "Content-Type", contentType))
+            cgiRequest.env.push_back("CONTENT_TYPE=" + contentType);
+
 		cgiRequest.env.push_back("SCRIPT_NAME=" + cgiRequest.scriptPath);
 		cgiRequest.env.push_back("PATH_INFO=" + httpRequest.path);
 		cgiRequest.env.push_back("SERVER_PROTOCOL=" + httpRequest.version);
-		ss << requestContext.localPort;
-		cgiRequest.env.push_back("SERVER_NAME=" + requestContext.localHost + "/" + ss.str());
+
+		std::string    serverName = requestContext.localHost;
+        if (requestContext.selectedServer)
+            serverName = requestContext.selectedServer->getName();
+        cgiRequest.env.push_back("SERVER_NAME=" + serverName);
+        cgiRequest.env.push_back("SERVER_PORT=" + numberToString(requestContext.localPort));
+
 		cgiRequest.env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 		if (httpRequest.hasBody)
 			cgiRequest.body = httpRequest.body;
@@ -201,8 +214,19 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 	std::string scriptPath, interpreter;
 	if (_isCgiRequest(request, *location, scriptPath, interpreter))
 	{
-		CgiRequest cgiRequest = _buildCgiRequest(request, *location, effectiveContext);
-		return RequestResult::fromCgiRequest(cgiRequest);
+		struct stat	status;
+
+		if (request.path.find("..") != std::string::npos)
+			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
+		if (stat(scriptPath.c_str(), &status) == -1)
+			return RequestResult::fromResponse(ErrorResponseFactory::create(404, effectiveContext));
+		else if (S_ISREG(status.st_mode))
+		{
+			CgiRequest cgiRequest = _buildCgiRequest(request, *location, effectiveContext);
+			return RequestResult::fromCgiRequest(cgiRequest);
+		}
+		else
+			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
 	}
 
 	// CGI POST is independent of permission to store uploaded files.

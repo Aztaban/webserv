@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Router.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: diana <diana@student.42.fr>                +#+  +:+       +#+        */
+/*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/27 15:18:09 by lformank          #+#    #+#             */
-/*   Updated: 2026/09/15 15:13:06 by diana            ###   ########.fr       */
+/*   Updated: 2026/09/28 13:20:32 by lformank         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "routing/Router.hpp"
+#include "http/HttpHeaderUtils.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -79,11 +80,11 @@ const ServerConfig* Router::matchServer(const std::vector<ServerConfig>& servers
 	if (servers.empty())
 		return NULL;
 
-	std::map<std::string, std::string>::const_iterator hostIt = request.headers.find("Host");
-	if (hostIt == request.headers.end())
-		return NULL;
-
-	std::string host = normalizeHost(hostIt->second);
+	std::string hostValue;
+	if (!HttpHeaderUtils::getValue(request.headers, "host", hostValue))
+		return &servers[0];
+	
+	std::string host = normalizeHost(hostValue);
 	if (host.empty())
 		return NULL;
 
