@@ -4,6 +4,7 @@
 # include "cgi/CgiRequest.hpp"
 # include "core/RequestContext.hpp"
 # include "http/HttpResponse.hpp"
+# include "http/HttpRequestParser.hpp"
 
 # include <string>
 # include <ctime>
@@ -40,13 +41,13 @@ private:
 	std::time_t		_lastActivity;
 	RequestContext	_context;
 	CgiRequest		_pendingCgiRequest;
+	HttpRequestParser _parser;
 
 	ClientConnection(const ClientConnection &other);
 	ClientConnection &operator=(const ClientConnection &other);
 
 	void		_processReadBuffer();
 	std::size_t	_getClientMaxBodySize() const;
-	bool		_bodyExceedsLimit() const;
 
 public:
 	ClientConnection(int fd, const RequestContext& context);

@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-std::string HttpResponseBuilder::build(const HttpResponse& response)
+std::string HttpResponseBuilder::build(const HttpResponse& response, bool headOnly)
 {
 	std::ostringstream	raw;
 	const bool noContent = response.statusCode == 204;
@@ -27,7 +27,7 @@ std::string HttpResponseBuilder::build(const HttpResponse& response)
 		}
 	}
 
-	if (!noContent)
+	if (!noContent && !headOnly)
 		raw << "Content-Length: " << response.body.size() << "\r\n";
 
 	if (response.closeConnection)
@@ -39,7 +39,7 @@ std::string HttpResponseBuilder::build(const HttpResponse& response)
 		raw << "Content-Type: text/plain\r\n";
 
 	raw << "\r\n";
-	if (!noContent)
+	if (!noContent && !headOnly)
 		raw << response.body;
 
 	return (raw.str());

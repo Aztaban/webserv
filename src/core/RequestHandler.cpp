@@ -258,6 +258,10 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
 	}
 
+	if (request.method == "POST" && location->acceptBody)
+		return RequestResult::fromResponse(
+			HttpResponse(200, "OK", "Body accepted\n"));
+
 	// CGI POST is independent of permission to store uploaded files.
 	if (request.method == "POST" && !location->uploadEnabled)
 		return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));

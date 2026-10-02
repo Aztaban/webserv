@@ -82,13 +82,6 @@ void ClientConnection::readFromSocket()
 		_state = CLIENT_WRITING;
 		return;
 	}
-	if (_bodyExceedsLimit())
-	{
-		Logger::error("Client fd " + toString(_fd) + " request too large");
-		prepareErrorResponse(413);
-		_state = CLIENT_WRITING;
-		return;
-	}
 	_processReadBuffer();
 }
 
@@ -119,15 +112,16 @@ void ClientConnection::writeToSocket()
 
 void	ClientConnection::prepareResponse(const HttpResponse& response)
 {
+	const bool headOnly = _readBuffer.compare(0, 5, "HEAD ") == 0;
 	// Apply configured pages at the shared boundary for static, parser and CGI errors.
 	if (response.statusCode >= 400 && response.statusCode <= 599)
 	{
 		HttpResponse effectiveResponse = response;
 		ErrorResponseFactory::applyCustomPage(effectiveResponse, _context);
-		_writeBuffer = HttpResponseBuilder::build(effectiveResponse);
+		_writeBuffer = HttpResponseBuilder::build(effectiveResponse, headOnly);
 	}
 	else
-		_writeBuffer = HttpResponseBuilder::build(response);
+		_writeBuffer = HttpResponseBuilder::build(response, headOnly);
 	_state = CLIENT_WRITING;
 	touch();
 
@@ -146,10 +140,8 @@ bool ClientConnection::isTimedOut(std::time_t now, int timeoutSeconds) const
 
 void ClientConnection::_processReadBuffer()
 {
-	HttpRequestParser				parser;
-	HttpRequestParser::ParseStatus	status;
-
-	status = parser.parse(_readBuffer);
+	HttpRequestParser& parser = _parser;
+	HttpRequestParser::ParseStatus status = parser.parse(_readBuffer, _getClientMaxBodySize());
 
 	if (status == HttpRequestParser::PARSE_ERROR)
 	{
@@ -204,47 +196,46 @@ void ClientConnection::_processReadBuffer()
 
 std::size_t ClientConnection::_getClientMaxBodySize() const
 {
-	if (_context.selectedServer)
-		return _context.selectedServer->getClientMaxBodySize();
-	if (_context.serverCandidates && !_context.serverCandidates->empty())
+	const ServerConfig* server = _context.selectedServer;
+
+	if (!server && _context.serverCandidates
+		&& !_context.serverCandidates->empty())
 	{
-		HttpRequestParser parser;
-		HttpRequestParser::ParseStatus status = parser.parse(_readBuffer);
-		if (parser.headersComplete())
-		{
-			Router router;
-			const ServerConfig* selectedServer = router.matchServer(*_context.serverCandidates, parser.getRequest());
-			if (selectedServer)
-				return selectedServer->getClientMaxBodySize();
-		}
-		if (status == HttpRequestParser::PARSE_ERROR)
-			return ((*_context.serverCandidates)[0].getClientMaxBodySize());
-		return ((*_context.serverCandidates)[0].getClientMaxBodySize());
+		server = &(*_context.serverCandidates)[0];
 	}
 
-	return (DEFAULT_CLIENT_MAX_BODY_SIZE);
-}
+	if (!server)
+		return DEFAULT_CLIENT_MAX_BODY_SIZE;
 
-bool	ClientConnection::_bodyExceedsLimit() const
-{
-	std::size_t	headerEnd;
-	std::size_t	bodyStart;
-	std::size_t	bodySize;
-
-	headerEnd = _readBuffer.find("\r\n\r\n");
+	const std::size_t headerEnd = _readBuffer.find("\r\n\r\n");
 	if (headerEnd == std::string::npos)
-		return false;
-	bodyStart = headerEnd + 4;
-	if (_readBuffer.size() <= bodyStart)
-		return false;
+		return server->getClientMaxBodySize();
 
-	bodySize = _readBuffer.size() - bodyStart;
-	if (bodySize <= _getClientMaxBodySize())
-		return false;
+	HttpRequestParser parser;
+	parser.parse(_readBuffer.substr(0, headerEnd + 4));
 
-	return true;
+	if (!parser.headersComplete())
+		return server->getClientMaxBodySize();
+
+	Router router;
+
+	if (!_context.selectedServer && _context.serverCandidates)
+	{
+		const ServerConfig* matched = router.matchServer(
+			*_context.serverCandidates, parser.getRequest());
+
+		if (matched)
+			server = matched;
+	}
+
+	const LocationConfig* location =
+		router.matchLocation(parser.getRequest(), *server);
+
+	if (location && location->hasClientMaxBodySize)
+		return location->clientMaxBodySize;
+
+	return server->getClientMaxBodySize();
 }
-
 
 void ClientConnection::prepareErrorResponse(int code)
 {

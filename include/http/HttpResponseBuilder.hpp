@@ -11,7 +11,7 @@
 class HttpResponseBuilder
 {
 	public:
-		static std::string	build(const HttpResponse& response);
+		static std::string build(const HttpResponse& response, bool headOnly = false);
 
 		static std::string	buildSimpleResponse(int statusCode, const std::string& reasonPhrase, const std::string& body);
 };

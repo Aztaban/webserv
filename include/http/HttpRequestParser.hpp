@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <cctype>
+#include <limits>
 
 class HttpRequestParser
 {
@@ -21,6 +22,11 @@ class HttpRequestParser
 		int			_errorStatusCode;
 		std::size_t	_consumedBytes;
 		bool		_headersComplete;
+		std::size_t _chunkOffset;
+		ParseStatus parseChunkedBody(
+		const std::string& rawRequest,
+		std::size_t maxBodySize);
+
 
 		ParseStatus	parseRequestLine(const std::string& requestLine);
 		ParseStatus	parseHeaders(const std::string& rawRequest, size_t startPos);
@@ -32,7 +38,10 @@ class HttpRequestParser
 		HttpRequestParser& operator=(const HttpRequestParser& other);
 		~HttpRequestParser();
 
-		ParseStatus parse(const std::string& rawRequest);
+		ParseStatus parse(
+		const std::string& rawRequest,
+		std::size_t maxBodySize =
+		std::numeric_limits<std::size_t>::max());
 
 		const HttpRequest&	getRequest() const;
 		int					getErrorStatusCode() const;

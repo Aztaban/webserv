@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CgiOutputParser.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
+/*   By: diana <diana@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 17:43:44 by lformank          #+#    #+#             */
-/*   Updated: 2026/09/13 14:56:38 by lformank         ###   ########.fr       */
+/*   Updated: 2026/10/01 16:45:16 by diana            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,8 @@ void saveHeader(const std::string& rawOutput, HttpResponse& response, size_t& i)
 	else
 		response.headers.insert(std::make_pair(header, body));
 	i = endBody;
+	if (i != std::string::npos && rawOutput[i] == '\r')
+		++i;
 }
 
 size_t findHeadersDelimiter(const std::string& rawOutput, size_t& delimiterLength)

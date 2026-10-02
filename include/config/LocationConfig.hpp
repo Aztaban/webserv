@@ -4,6 +4,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <cstddef>
 
 struct LocationConfig
 {
@@ -21,25 +22,30 @@ struct LocationConfig
 
     bool        uploadEnabled;
     std::string uploadPath;
+	bool        acceptBody;
+	bool        hasClientMaxBodySize;
+	std::size_t clientMaxBodySize;
 
     bool        cgiEnabled;
     std::map<std::string, std::string>  cgiExtensions;   // example: ".py" -> "/usr/bin/python3"
 
     LocationConfig()
-        : path(),
-          root(),
-          index(),
-          methods(),
-          autoindex(false),
-          hasRedirect(false),
-          redirectCode(0),
-          redirectUrl(),
-          uploadEnabled(false),
-          uploadPath(),
-          cgiEnabled(false),
-          cgiExtensions()
-    {
-    }
+			: path(),
+			root(),
+			index(),
+			methods(),
+			autoindex(false),
+			hasRedirect(false),
+			redirectCode(0),
+			redirectUrl(),
+			uploadEnabled(false),
+			uploadPath(),
+			acceptBody(false),
+			hasClientMaxBodySize(false),
+			clientMaxBodySize(0),
+			cgiEnabled(false),
+			cgiExtensions()
+	{}
 };
 
 #endif

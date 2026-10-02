@@ -262,6 +262,27 @@ void parseLocation(TokenStream& tokenStream, ServerConfig& serverConfig)
 			locationConfig.cgiEnabled = true;
 			locationConfig.cgiExtensions = checkCgiExtensions(tokenStream);
 		}
+		else if (token.value == "accept_body")
+		{
+			locationConfig.acceptBody = validBool(tokenStream);
+		}
+		else if (token.value == "client_max_body_size")
+		{
+			if (locationConfig.hasClientMaxBodySize)
+				throw std::runtime_error(
+					"Duplicate location client_max_body_size");
+
+			Token value = tokenStream.expect(T_WORD);
+			if (!checkNumber(value.value, 0, LONG_MAX))
+				throw std::runtime_error(
+					"Invalid location client_max_body_size");
+
+			locationConfig.clientMaxBodySize =
+				static_cast<std::size_t>(
+					std::strtoul(value.value.c_str(), NULL, 10));
+			locationConfig.hasClientMaxBodySize = true;
+			tokenStream.expect(T_SEMICOLON);
+		}
 		else
 			throw std::runtime_error("Invalid property of location: " + token.value);
 		token = tokenStream.advance();
