@@ -262,6 +262,15 @@ void parseLocation(TokenStream& tokenStream, ServerConfig& serverConfig)
 			locationConfig.cgiEnabled = true;
 			locationConfig.cgiExtensions = checkCgiExtensions(tokenStream);
 		}
+		else if (token.value == "client_max_body_size")
+		{
+			Token size = tokenStream.expect(T_WORD);
+			if (!checkNumber(size.value, 0, LONG_MAX))
+				throw std::runtime_error("Invalid 'client_max_body_size' number\n");
+			locationConfig.clientMaxBodySize = std::strtoul(size.value.c_str(), NULL, 10);
+			locationConfig.hasClientMaxBodySize = true;
+			tokenStream.expect(T_SEMICOLON);
+		}
 		else
 			throw std::runtime_error("Invalid property of location: " + token.value);
 		token = tokenStream.advance();

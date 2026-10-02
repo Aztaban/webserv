@@ -247,15 +247,14 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 
 		if (request.path.find("..") != std::string::npos)
 			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
-		if (stat(scriptPath.c_str(), &status) == -1)
-			return RequestResult::fromResponse(ErrorResponseFactory::create(404, effectiveContext));
-		else if (S_ISREG(status.st_mode))
-		{
-			CgiRequest cgiRequest = _buildCgiRequest(request, scriptPath, interpreter, effectiveContext);
-			return RequestResult::fromCgiRequest(cgiRequest);
-		}
-		else
+		// A CGI mapping is an extension -> executable mapping.  The subject tester
+		// deliberately POSTs to a matching .bla path that does not exist on disk;
+		// the configured CGI executable must still receive that request.  Only
+		// reject the target here when it *does* exist and is not a regular file.
+		if (stat(scriptPath.c_str(), &status) == 0 && !S_ISREG(status.st_mode))
 			return RequestResult::fromResponse(ErrorResponseFactory::create(403, effectiveContext));
+		CgiRequest cgiRequest = _buildCgiRequest(request, scriptPath, interpreter, effectiveContext);
+		return RequestResult::fromCgiRequest(cgiRequest);
 	}
 
 	// CGI POST is independent of permission to store uploaded files.

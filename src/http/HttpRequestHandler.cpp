@@ -130,9 +130,6 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 		|| fileName.find("..") != std::string::npos)
 		return _error(400);
 
-	if (request.body.empty())
-		return _error(400);
-
 	std::string fullPath = uploadDir + fileName;
 
 	if (!FileUtils::write(fullPath, request.body))

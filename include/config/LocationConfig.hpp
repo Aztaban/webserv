@@ -4,6 +4,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <cstddef>
 
 struct LocationConfig
 {
@@ -25,6 +26,9 @@ struct LocationConfig
     bool        cgiEnabled;
     std::map<std::string, std::string>  cgiExtensions;   // example: ".py" -> "/usr/bin/python3"
 
+    bool        hasClientMaxBodySize;
+    std::size_t clientMaxBodySize;
+
     LocationConfig()
         : path(),
           root(),
@@ -37,7 +41,9 @@ struct LocationConfig
           uploadEnabled(false),
           uploadPath(),
           cgiEnabled(false),
-          cgiExtensions()
+          cgiExtensions(),
+          hasClientMaxBodySize(false),
+          clientMaxBodySize(0)
     {
     }
 };

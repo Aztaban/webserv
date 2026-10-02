@@ -133,11 +133,11 @@ static bool decodePath(std::string& path)
 }
 
 static HttpRequestParser::ParseStatus	parseChunkedBody(
-	const std::string& bodyPart,
+	const std::string& rawRequest, std::size_t bodyStart,
 	std::string& decodedBody,
 	std::size_t& consumedBytes, std::size_t maxBodySize, int& errorCode)
 {
-	std::size_t i = 0;
+	std::size_t i = bodyStart;
 
 	decodedBody.clear();
 	consumedBytes = 0;
@@ -150,15 +150,15 @@ static HttpRequestParser::ParseStatus	parseChunkedBody(
 		std::size_t	semiColon;
 		std::size_t chunkSize = 0;
 
-		lineEnd = bodyPart.find("\r\n", i);
+		lineEnd = rawRequest.find("\r\n", i);
 		// Bound framing separately from decoded payload size.
-		if ((lineEnd == std::string::npos && bodyPart.size() - i > 8192)
+		if ((lineEnd == std::string::npos && rawRequest.size() - i > 8192)
 			|| (lineEnd != std::string::npos && lineEnd - i > 8192))
 			return HttpRequestParser::PARSE_ERROR;
 		if (lineEnd == std::string::npos)
 			return HttpRequestParser::PARSE_INCOMPLETE;
 
-		sizeLine = bodyPart.substr(i, lineEnd - i);
+		sizeLine = rawRequest.substr(i, lineEnd - i);
 
 		semiColon = sizeLine.find(";");
 		if (semiColon != std::string::npos)
@@ -187,31 +187,31 @@ static HttpRequestParser::ParseStatus	parseChunkedBody(
 		{
 			std::size_t	trailerEnd;
 
-			if (bodyPart.size() - i >= 2 && bodyPart.compare(i, 2, "\r\n") == 0)
+			if (rawRequest.size() - i >= 2 && rawRequest.compare(i, 2, "\r\n") == 0)
 			{
-				consumedBytes = i + 2;
+				consumedBytes = i + 2 - bodyStart;
 				return HttpRequestParser::PARSE_COMPLETE;
 			}
-			trailerEnd = bodyPart.find("\r\n\r\n", i);
-			if ((trailerEnd == std::string::npos && bodyPart.size() - i > 8192)
+			trailerEnd = rawRequest.find("\r\n\r\n", i);
+			if ((trailerEnd == std::string::npos && rawRequest.size() - i > 8192)
 				|| (trailerEnd != std::string::npos && trailerEnd - i > 8192))
 				return HttpRequestParser::PARSE_ERROR;
 			if (trailerEnd != std::string::npos)
 			{
-				consumedBytes = trailerEnd + 4;
+				consumedBytes = trailerEnd + 4 - bodyStart;
 				return HttpRequestParser::PARSE_COMPLETE;
 			}
 
 			return HttpRequestParser::PARSE_INCOMPLETE;
 		}
 
-		if (bodyPart.size() - i < chunkSize || bodyPart.size() - i - chunkSize < 2)
+		if (rawRequest.size() - i < chunkSize || rawRequest.size() - i - chunkSize < 2)
 			return HttpRequestParser::PARSE_INCOMPLETE;
 
-		decodedBody.append(bodyPart.substr(i, static_cast<std::size_t>(chunkSize)));
+		decodedBody.append(rawRequest, i, static_cast<std::size_t>(chunkSize));
 		i += static_cast<std::size_t>(chunkSize);
 
-		if (bodyPart.substr(i, 2) != "\r\n")
+		if (rawRequest.compare(i, 2, "\r\n") != 0)
 			return HttpRequestParser::PARSE_ERROR;
 
 		i += 2;
@@ -372,7 +372,6 @@ HttpRequestParser::parse(const std::string& rawRequest, std::size_t maxBodySize)
 	std::size_t	headerEnd;
 	std::size_t	lineEnd;
 	ParseStatus	status;
-	std::string	bodyPart;
 	std::string	contentLengthValue;
 
 	reset();
@@ -438,14 +437,13 @@ HttpRequestParser::parse(const std::string& rawRequest, std::size_t maxBodySize)
 	if (status != PARSE_COMPLETE)
 		return (status);
 
-	bodyPart = rawRequest.substr(headerEnd + 4);
-
 	if (_request.isChunked)
 	{
 		std::string	decodedBody;
 		std::size_t	chunkedConsumed;
 
-		status = parseChunkedBody(bodyPart, decodedBody, chunkedConsumed, maxBodySize, _errorStatusCode);
+		status = parseChunkedBody(rawRequest, headerEnd + 4, decodedBody,
+			chunkedConsumed, maxBodySize, _errorStatusCode);
 		if (status == PARSE_INCOMPLETE)
 			return (PARSE_INCOMPLETE);
 
@@ -454,16 +452,16 @@ HttpRequestParser::parse(const std::string& rawRequest, std::size_t maxBodySize)
 		_errorStatusCode = 0;
 
 		_request.hasBody = (!decodedBody.empty());
-		_request.body = decodedBody;
+		_request.body.swap(decodedBody);
 		_request.contentLength = decodedBody.size();
 		_consumedBytes = headerEnd + 4 + chunkedConsumed;
 	}
 	else if (_request.hasBody)
 	{
-		if (bodyPart.size() < _request.contentLength)
+		if (rawRequest.size() - (headerEnd + 4) < _request.contentLength)
 			return (PARSE_INCOMPLETE);
 
-		_request.body = bodyPart.substr(0, _request.contentLength);
+		_request.body.assign(rawRequest, headerEnd + 4, _request.contentLength);
 		_consumedBytes = headerEnd + 4 + _request.contentLength;
 	}
 	else

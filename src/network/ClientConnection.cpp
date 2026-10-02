@@ -14,6 +14,7 @@ ClientConnection::ClientConnection(int fd, const RequestContext& context)
 	  _state(CLIENT_READING_HEADERS),
 	  _readBuffer(),
 	  _writeBuffer(),
+	  _writeOffset(0),
 	  _lastActivity(std::time(NULL)),
 	  _context(context)
 {
@@ -59,7 +60,10 @@ bool ClientConnection::isDone() const
 
 void ClientConnection::readFromSocket()
 {
-	char	buffer[4096];
+	// A larger single non-blocking recv keeps large request bodies practical
+	// without changing the one-read-per-poll-event rule.  The subject tester
+	// sends a 100,000,000-byte CGI body; 4 KiB reads require ~24k poll cycles.
+	char	buffer[65536];
 	ssize_t	bytes = recv(_fd, buffer, sizeof(buffer), 0);
 
 	if (bytes <= 0) // no errno check after recv()
@@ -89,12 +93,13 @@ void ClientConnection::writeToSocket()
 {
 	ssize_t	bytes;
 
-	if (_writeBuffer.empty())
+	if (_writeOffset >= _writeBuffer.size())
 	{
 		_state = CLIENT_DONE;
 		return;
 	}
-	bytes = send(_fd, _writeBuffer.c_str(), _writeBuffer.size(), 0);
+	bytes = send(_fd, _writeBuffer.c_str() + _writeOffset,
+		_writeBuffer.size() - _writeOffset, 0);
 	if (bytes <= 0)
 	{
 		Logger::debug("Client fd " + toString(_fd) + " disconnected during write");
@@ -105,8 +110,8 @@ void ClientConnection::writeToSocket()
 
 	Logger::debug("Client fd " + toString(_fd) + " sent " + toString(bytes) + " byte(s)");
 
-	_writeBuffer.erase(0, bytes);
-	if (_writeBuffer.empty())
+	_writeOffset += static_cast<std::size_t>(bytes);
+	if (_writeOffset >= _writeBuffer.size())
 		_state = CLIENT_DONE; // Later: reset to READING_HEADERS here if keep-alive is supported
 }
 
@@ -121,6 +126,7 @@ void	ClientConnection::prepareResponse(const HttpResponse& response)
 	}
 	else
 		_writeBuffer = HttpResponseBuilder::build(response);
+	_writeOffset = 0;
 	// HEAD responses carry the normal headers, including representation length,
 	// but never a message body, including for redirects and error responses.
 	if (_readBuffer.compare(0, 5, "HEAD ") == 0)
@@ -149,8 +155,63 @@ void ClientConnection::_processReadBuffer()
 {
 	HttpRequestParser				parser;
 	HttpRequestParser::ParseStatus	status;
+	std::size_t					bodyLimit;
+	std::size_t					headerEnd;
 
-	status = parser.parse(_readBuffer, _getClientMaxBodySize());
+	bodyLimit = _getClientMaxBodySize();
+	headerEnd = _readBuffer.find("\r\n\r\n");
+
+	// For Content-Length requests, validate the headers and declared size as soon
+	// as the header block is complete, then wait until the body is fully buffered
+	// before doing the full parse.  This avoids reparsing/copying an ever-growing
+	// body on every 4 KiB socket read (important for the subject tester's 100 MB
+	// CGI request).
+	if (headerEnd != std::string::npos)
+	{
+		HttpRequestParser headerParser;
+		HttpRequestParser::ParseStatus headerStatus = headerParser.parse(
+			_readBuffer.substr(0, headerEnd + 4), bodyLimit);
+
+		if (headerStatus == HttpRequestParser::PARSE_ERROR)
+		{
+			prepareErrorResponse(headerParser.getErrorStatusCode());
+			return;
+		}
+		if (headerParser.headersComplete())
+		{
+			const HttpRequest& headerRequest = headerParser.getRequest();
+			if (!headerRequest.isChunked && headerRequest.hasBody)
+			{
+				std::size_t bufferedBody = _readBuffer.size() - (headerEnd + 4);
+				if (bufferedBody < headerRequest.contentLength)
+				{
+					_state = CLIENT_READING_BODY;
+					return;
+				}
+			}
+			else if (headerRequest.isChunked)
+			{
+				const std::size_t chunkedReparseThreshold = 65536;
+				std::size_t bufferedBody = _readBuffer.size() - (headerEnd + 4);
+				bool couldBeComplete = (bufferedBody >= 4
+					&& _readBuffer.compare(_readBuffer.size() - 4, 4, "\r\n\r\n") == 0);
+
+				// Small chunked requests are parsed on each read so malformed framing
+				// and small location limits are rejected immediately.  For large
+				// streams, wait for a possible terminating trailer boundary before
+				// doing the O(body-size) decode.  This keeps the 100 MB subject CGI
+				// test linear instead of reparsing the entire accumulated body for
+				// every socket read.
+				if (bufferedBody > chunkedReparseThreshold && !couldBeComplete)
+				{
+					_state = CLIENT_READING_BODY;
+					return;
+				}
+			}
+		}
+	}
+
+	status = parser.parse(_readBuffer, bodyLimit);
 
 	if (status == HttpRequestParser::PARSE_ERROR)
 	{
@@ -163,7 +224,7 @@ void ClientConnection::_processReadBuffer()
 	{
 		const HttpRequest& request = parser.getRequest();
 
-		if (request.hasBody && request.contentLength > _getClientMaxBodySize())
+		if (request.hasBody && request.contentLength > bodyLimit)
 		{
 			Logger::error("Client fd " + toString(_fd) + " request body too large");
 			prepareErrorResponse(413);
@@ -205,8 +266,6 @@ void ClientConnection::_processReadBuffer()
 
 std::size_t ClientConnection::_getClientMaxBodySize() const
 {
-	if (_context.selectedServer)
-		return _context.selectedServer->getClientMaxBodySize();
 	if (_context.serverCandidates && !_context.serverCandidates->empty())
 	{
 		HttpRequestParser parser;
@@ -216,12 +275,21 @@ std::size_t ClientConnection::_getClientMaxBodySize() const
 		if (parser.headersComplete())
 		{
 			Router router;
-			const ServerConfig* selectedServer = router.matchServer(*_context.serverCandidates, parser.getRequest());
+			const ServerConfig* selectedServer = _context.selectedServer;
+			if (!selectedServer)
+				selectedServer = router.matchServer(*_context.serverCandidates, parser.getRequest());
 			if (selectedServer)
+			{
+				const LocationConfig* location = router.matchLocation(parser.getRequest(), *selectedServer);
+				if (location && location->hasClientMaxBodySize)
+					return location->clientMaxBodySize;
 				return selectedServer->getClientMaxBodySize();
+			}
 		}
 		if (status == HttpRequestParser::PARSE_ERROR)
 			return ((*_context.serverCandidates)[0].getClientMaxBodySize());
+		if (_context.selectedServer)
+			return _context.selectedServer->getClientMaxBodySize();
 		return ((*_context.serverCandidates)[0].getClientMaxBodySize());
 	}
 

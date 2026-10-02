@@ -17,6 +17,9 @@ def review_server(ctx, piped_logs=False):
         (root / 'uploads').mkdir()
         (root / 'index.html').write_bytes(b'healthy')
         (root / 'echo.py').write_text('import sys\nbody = sys.stdin.buffer.read()\nsys.stdout.buffer.write(b"Content-Type: text/plain\\r\\nStatus: 201 Created\\r\\nX-Test:yes\\r\\ncontent-length: 999\\r\\n\\r\\n" + body)\n')
+        cgi_echo = root / 'cgi_echo'
+        cgi_echo.write_text('#!/usr/bin/python3\nimport sys\nbody = sys.stdin.buffer.read()\nsys.stdout.buffer.write(b"Content-Type: application/octet-stream\\r\\n\\r\\n" + body)\n')
+        cgi_echo.chmod(0o755)
         with socket.socket() as reservation:
             reservation.bind(('127.0.0.1', 0))
             port = reservation.getsockname()[1]
@@ -26,7 +29,7 @@ def review_server(ctx, piped_logs=False):
  root {root};
  client_max_body_size 32;
  location / {{ methods GET POST DELETE; autoindex on; upload on;
-  upload_path {root}/uploads; cgi_extension .py /usr/bin/python3; }}
+  upload_path {root}/uploads; cgi_extension .py /usr/bin/python3 .bla {root}/cgi_echo; }}
  location /listing {{ methods GET; root {root}/uploads; autoindex on; }}
 }}''')
 
@@ -103,7 +106,7 @@ def test_regular_files_only(ctx):
 
 
 def test_cgi_headers_and_decoded_limits(ctx):
-    with review_server(ctx) as (_, request, _):
+    with review_server(ctx) as (root, request, _):
         bodies = [
             (b'x' * 32, 'Content-Length: 32\r\n'),
             (b'20\r\n' + b'x' * 32 + b'\r\n0\r\n\r\n', 'Transfer-Encoding: chunked\r\n'),
@@ -124,6 +127,15 @@ def test_cgi_headers_and_decoded_limits(ctx):
         assert status(request('/echo.py', 'POST', b'', 'Content-Length: 33\r\n')) == 413
         assert status(request('/echo.py', 'POST', b'1\r\nx\r\n20\r\n', 'Transfer-Encoding: chunked\r\n')) == 413
         assert payload(request('/echo.py', 'POST', b'0\r\n\r\n', 'Transfer-Encoding: chunked\r\n')) == b''
+        # Extension dispatch must reach the configured CGI executable even when
+        # the requested pseudo-script itself is absent (the official .bla tester case).
+        missing_cgi = request('/missing.bla', 'POST', b'cgi body', 'Content-Length: 8\r\n')
+        assert status(missing_cgi) == 200
+        assert payload(missing_cgi) == b'cgi body'
+        # Empty POST bodies are valid and must not be rejected before upload dispatch.
+        empty_upload = request('/empty.bin', 'POST', b'', 'Content-Length: 0\r\n')
+        assert status(empty_upload) == 201
+        assert (root / 'uploads' / 'empty.bin').read_bytes() == b''
         # Exercise the same limit on file uploads, not just CGI input.
         raw = request('/upload.bin', 'POST', bodies[1][0], bodies[1][1])
         assert status(raw) == 201

@@ -95,7 +95,7 @@ def test_custom_error_page_paths(ctx):
                 for host in ('primary', 'alternate'):
                     cases = [('/missing', 'GET', None, 404), ('/other/missing', 'GET', None, 404),
                              ('/missing', 'POST', 'x', 405), ('/delete/missing', 'DELETE', None, 404),
-                             ('/upload/file.txt', 'POST', '', 400), ('/upload/file.txt', 'POST', 'x', 500),
+                             ('/upload/file.txt', 'POST', '', 500), ('/upload/file.txt', 'POST', 'x', 500),
                              ('/upload/file.txt', 'POST', 'x'*9, 413), ('/cgi-bin/error.py', 'GET', None, 500),
                              ('/cgi-bin/bad_output.py', 'GET', None, 500), ('/cgi-bin/owned_error.py', 'GET', None, 404)]
                     for path, method, body, code in cases:

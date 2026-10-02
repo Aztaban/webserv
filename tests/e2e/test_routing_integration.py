@@ -99,6 +99,47 @@ def test_body_limit_follows_selected_server(ctx: TestContext) -> None:
         os.remove(primary_path)
 
 
+def test_body_limit_can_be_overridden_per_location(ctx: TestContext) -> None:
+    accepted_path = ctx.path("tests", "fixtures", "www", "uploads", "location-ok.txt")
+    chunked_path = ctx.path("tests", "fixtures", "www", "uploads", "location-chunked.txt")
+
+    for path in (accepted_path, chunked_path):
+        if os.path.exists(path):
+            os.remove(path)
+
+    accepted = _request(
+        ctx,
+        "POST",
+        "/limited/location-ok.txt",
+        "primary.test",
+        "A" * 16,
+    )
+    rejected = _request(
+        ctx,
+        "POST",
+        "/limited/location-too-big.txt",
+        "primary.test",
+        "B" * 17,
+    )
+    chunked_rejected = ctx.send_raw_request(
+        "POST /limited/location-chunked.txt HTTP/1.1\r\n"
+        "Host: primary.test\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "Connection: close\r\n"
+        "\r\n"
+        "11\r\n"
+        + ("C" * 17)
+        + "\r\n0\r\n\r\n"
+    )
+
+    assert_status(accepted, 201)
+    assert_status(rejected, 413)
+    assert_status(chunked_rejected, 413)
+
+    for path in (accepted_path, chunked_path):
+        if os.path.exists(path):
+            os.remove(path)
+
 def test_custom_error_page_follows_selected_server(ctx: TestContext) -> None:
     primary = _request(ctx, "GET", "/missing-primary", "primary.test")
     alternate = _request(ctx, "GET", "/missing-alternate", "alternate.test")
@@ -167,6 +208,7 @@ def register_tests():
         ("malformed Host returns 400", test_malformed_host_returns_400),
         ("longest location and segment boundary", test_longest_location_and_segment_boundary),
         ("body limit follows selected server", test_body_limit_follows_selected_server),
+        ("body limit can be overridden per location", test_body_limit_can_be_overridden_per_location),
         ("custom error page follows selected server", test_custom_error_page_follows_selected_server),
         ("upload enabled and disabled", test_upload_enabled_and_disabled),
         ("traversal attempt is rejected", test_traversal_attempt_is_rejected),

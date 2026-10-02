@@ -37,6 +37,7 @@ private:
 	ClientState		_state;
 	std::string		_readBuffer;
 	std::string		_writeBuffer;
+	std::size_t		_writeOffset;
 	std::time_t		_lastActivity;
 	RequestContext	_context;
 	CgiRequest		_pendingCgiRequest;
