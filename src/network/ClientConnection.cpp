@@ -82,13 +82,6 @@ void ClientConnection::readFromSocket()
 		_state = CLIENT_WRITING;
 		return;
 	}
-	if (_bodyExceedsLimit())
-	{
-		Logger::error("Client fd " + toString(_fd) + " request too large");
-		prepareErrorResponse(413);
-		_state = CLIENT_WRITING;
-		return;
-	}
 	_processReadBuffer();
 }
 
@@ -128,6 +121,14 @@ void	ClientConnection::prepareResponse(const HttpResponse& response)
 	}
 	else
 		_writeBuffer = HttpResponseBuilder::build(response);
+	// HEAD responses carry the normal headers, including representation length,
+	// but never a message body, including for redirects and error responses.
+	if (_readBuffer.compare(0, 5, "HEAD ") == 0)
+	{
+		std::size_t headerEnd = _writeBuffer.find("\r\n\r\n");
+		if (headerEnd != std::string::npos)
+			_writeBuffer.erase(headerEnd + 4);
+	}
 	_state = CLIENT_WRITING;
 	touch();
 
@@ -149,7 +150,7 @@ void ClientConnection::_processReadBuffer()
 	HttpRequestParser				parser;
 	HttpRequestParser::ParseStatus	status;
 
-	status = parser.parse(_readBuffer);
+	status = parser.parse(_readBuffer, _getClientMaxBodySize());
 
 	if (status == HttpRequestParser::PARSE_ERROR)
 	{
@@ -209,7 +210,9 @@ std::size_t ClientConnection::_getClientMaxBodySize() const
 	if (_context.serverCandidates && !_context.serverCandidates->empty())
 	{
 		HttpRequestParser parser;
-		HttpRequestParser::ParseStatus status = parser.parse(_readBuffer);
+		std::size_t headerEnd = _readBuffer.find("\r\n\r\n");
+		HttpRequestParser::ParseStatus status = parser.parse(
+			headerEnd == std::string::npos ? _readBuffer : _readBuffer.substr(0, headerEnd + 4));
 		if (parser.headersComplete())
 		{
 			Router router;
@@ -224,27 +227,6 @@ std::size_t ClientConnection::_getClientMaxBodySize() const
 
 	return (DEFAULT_CLIENT_MAX_BODY_SIZE);
 }
-
-bool	ClientConnection::_bodyExceedsLimit() const
-{
-	std::size_t	headerEnd;
-	std::size_t	bodyStart;
-	std::size_t	bodySize;
-
-	headerEnd = _readBuffer.find("\r\n\r\n");
-	if (headerEnd == std::string::npos)
-		return false;
-	bodyStart = headerEnd + 4;
-	if (_readBuffer.size() <= bodyStart)
-		return false;
-
-	bodySize = _readBuffer.size() - bodyStart;
-	if (bodySize <= _getClientMaxBodySize())
-		return false;
-
-	return true;
-}
-
 
 void ClientConnection::prepareErrorResponse(int code)
 {

@@ -68,6 +68,12 @@ void	Logger::log(LogLevel level, const std::string& message)
 {
 	if (level == LOG_DEBUG && !_debugEnabled)
 		return;
+	// Only regular files are exempt from readiness polling. Never log to a
+	// terminal, pipe or socket, whose output could block the event loop.
+	struct stat destination;
+	const char *path = (level == LOG_ERROR) ? "/dev/fd/2" : "/dev/fd/1";
+	if (stat(path, &destination) != 0 || !S_ISREG(destination.st_mode))
+		return;
 	std::ostream&	out = (level == LOG_ERROR) ? std::cerr : std::cout;
 	out << _levelToColor(level) << "[" << _getTimestamp() << "] " << "[" << _levelToString(level)
 		<< "] " << message << RESET << std::endl;

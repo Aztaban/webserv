@@ -187,7 +187,7 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 		return RequestResult::fromResponse(response);
 	}
 
-	if (!location->methods.empty())
+	if (!location->methods.empty() || request.method == "HEAD")
 	{
 		bool allowed = false;
 		for (std::size_t i = 0; i < location->methods.size(); ++i)
@@ -201,7 +201,7 @@ RequestResult	RequestHandler::handle(const HttpRequest& request, const RequestCo
 		if (!allowed)
 		{
 			HttpResponse response = ErrorResponseFactory::create(405, effectiveContext);
-			std::string allow;
+			std::string allow = location->methods.empty() ? "GET, POST, DELETE" : "";
 			for (std::size_t i = 0; i < location->methods.size(); ++i)
 			{
 				if (i != 0)

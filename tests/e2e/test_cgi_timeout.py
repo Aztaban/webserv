@@ -63,7 +63,8 @@ def test_cgi_deadline_returns_504(ctx):
                     if '504' not in get_body(raw):
                         raise AssertionError(name + ': timeout should have an error body')
                 elapsed = time.monotonic() - started
-                if not 28 <= elapsed <= 35:
+                # std::time() has one-second resolution; allow scheduling overhead.
+                if not 9 <= elapsed <= 12:
                     raise AssertionError('Unexpected CGI deadline: %.2fs' % elapsed)
             deadline = time.monotonic() + 2
             while child_pids:

@@ -124,15 +124,11 @@ bool ErrorResponseFactory::applyCustomPage(HttpResponse& response, const Request
 	struct stat status;
 	if (stat(it->second.c_str(), &status) != 0 || !S_ISREG(status.st_mode))
 		return false;
-	std::ifstream file(it->second.c_str(), std::ios::binary);
-	if (!file.is_open())
-		return false;
-	std::ostringstream body;
-	body << file.rdbuf();
-	if (file.bad() || body.bad())
+	std::string body;
+	if (FileUtils::read(it->second, body) != 0)
 		return false;
 
-	response.body = body.str();
+	response.body = body;
 	// Keep status and policy headers, but discard metadata for the replaced body.
 	for (std::map<std::string, std::string>::iterator header = response.headers.begin();
 		header != response.headers.end();)

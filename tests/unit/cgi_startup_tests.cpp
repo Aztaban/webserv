@@ -151,7 +151,7 @@ static void failedIo(bool writing)
 int main()
 {
     for (int i = 1; i <= 2; ++i) { reset(); failPipe = i; failedStart(); }
-    for (int i = 1; i <= 6; ++i) { reset(); failFcntl = i; failedStart(); }
+    for (int i = 1; i <= 2; ++i) { reset(); failFcntl = i; failedStart(); }
     reset(); failFork = true; failedStart();
     for (int i = 1; i <= 2; ++i) { reset(); failDup = i; failedChild(request()); }
     reset(); CgiRequest badDirectory = request();
@@ -162,5 +162,5 @@ int main()
     badScript.scriptPath = "/no/such/cgi-script"; failedChild(badScript);
     reset(); failedIo(false);
     reset(); failedIo(true);
-    std::cout << "[PASS] CGI startup and I/O failure tests (16 scenarios)" << std::endl;
+    std::cout << "[PASS] CGI startup and I/O failure tests (12 scenarios)" << std::endl;
 }

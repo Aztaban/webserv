@@ -8,7 +8,7 @@ Webserv is an HTTP/1.1 server written in C++98. We built it to learn how TCP con
 
 Configuration defines listening addresses, virtual hosts and locations. One `poll()` loop manages nonblocking listening/client sockets and CGI pipes. Requests select a virtual host and the longest matching location, then serve a file, handle an upload or deletion, redirect, or launch a CGI process. Responses are buffered and sent as the client socket becomes writable. Each connection closes after its response; persistent connections are not implemented.
 
-The implementation is divided into configuration, networking, HTTP, routing, CGI and utility modules. Regular-file access is synchronous. CGI runs in a child process; the parent collects its output without blocking on child exit and enforces a 30-second timeout.
+The implementation is divided into configuration, networking, HTTP, routing, CGI and utility modules. Regular-file access is synchronous. CGI runs in a child process; the parent collects its output without blocking on child exit and enforces a 10-second timeout.
 
 ## Instructions
 

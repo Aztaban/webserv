@@ -46,7 +46,6 @@ private:
 
 	void		_processReadBuffer();
 	std::size_t	_getClientMaxBodySize() const;
-	bool		_bodyExceedsLimit() const;
 
 public:
 	ClientConnection(int fd, const RequestContext& context);

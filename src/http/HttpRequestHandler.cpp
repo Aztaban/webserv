@@ -1,5 +1,6 @@
 #include "http/HttpRequestHandler.hpp"
 #include "core/ErrorResponseFactory.hpp"
+#include <cerrno>
 
 // ----------------- CONSTRUCTORS ----------------
 
@@ -72,7 +73,7 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request, const st
 		return _error(404);
 
 	if (stat(path.c_str(), &st) != 0)
-		return _error(404);
+		return _error((errno == EACCES || errno == EPERM) ? 403 : 404);
 
 	// Directory requests use the configured index first, then listing policy.
 	if (S_ISDIR(st.st_mode))
@@ -93,7 +94,9 @@ HttpResponse HttpRequestHandler::_handleGET(const HttpRequest& request, const st
 
 	res.statusCode = 200;
 	res.reasonPhrase = "OK";
-	res.body = FileUtils::read(path);
+	int readError = FileUtils::read(path, res.body);
+	if (readError != 0)
+		return _error(readError);
 	res.headers["Content-Type"] = FileUtils::mimeType(path);
 
 	return res;
@@ -132,14 +135,7 @@ HttpResponse HttpRequestHandler::_handlePOST(const HttpRequest& request)
 
 	std::string fullPath = uploadDir + fileName;
 
-	std::ofstream out(fullPath.c_str(), std::ios::binary);
-	if (!out.is_open())
-		return _error(500);
-
-	out.write(request.body.c_str(), request.body.size());
-	out.close();
-	// close() flushes buffered bytes; fail() also retains earlier write errors.
-	if (out.fail())
+	if (!FileUtils::write(fullPath, request.body))
 		return _error(500);
 
 	res.statusCode = 201;
@@ -207,6 +203,26 @@ static std::string escapeListingHtml(const std::string& value)
 	return escaped;
 }
 
+static std::string encodeUriPath(const std::string& path)
+{
+	const char *hex = "0123456789ABCDEF";
+	std::string encoded;
+	for (std::size_t i = 0; i < path.size(); ++i)
+	{
+		unsigned char c = static_cast<unsigned char>(path[i]);
+		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+			|| (c >= '0' && c <= '9') || c == '-' || c == '_' || c == '.' || c == '~' || c == '/')
+			encoded += c;
+		else
+		{
+			encoded += '%';
+			encoded += hex[c >> 4];
+			encoded += hex[c & 15];
+		}
+	}
+	return encoded;
+}
+
 HttpResponse HttpRequestHandler::_generateAutoIndex(
 	const std::string& dirPath,
 	const std::string& uri)
@@ -217,7 +233,7 @@ HttpResponse HttpRequestHandler::_generateAutoIndex(
 	if (!dir)
 		return _error(404);
 
-	std::string base = uri.substr(0, uri.find('?'));
+	std::string base = uri;
 	if (base.empty() || base[base.size() - 1] != '/')
 		base += "/";
 	html << "<html><body><h1>Index of " << escapeListingHtml(base) << "</h1><ul>";
@@ -232,7 +248,7 @@ HttpResponse HttpRequestHandler::_generateAutoIndex(
 		bool isDirectory = (stat((dirPath + name).c_str(), &entryStatus) == 0
 			&& S_ISDIR(entryStatus.st_mode));
 		std::string suffix = isDirectory ? "/" : "";
-		html << "<li><a href=\"" << escapeListingHtml(base + name + suffix)
+		html << "<li><a href=\"" << escapeListingHtml(encodeUriPath(base + name + suffix))
 			<< "\">" << escapeListingHtml(name + suffix) << "</a></li>";
 	}
 	closedir(dir);
@@ -264,10 +280,6 @@ std::string HttpRequestHandler::_resolvePath(const std::string& target)
 		return "";
 
 	std::string cleanTarget = target;
-
-	size_t q = cleanTarget.find('?');
-	if (q != std::string::npos)
-		cleanTarget = cleanTarget.substr(0, q);
 
 	if (cleanTarget.find("..") != std::string::npos)
 		return "";

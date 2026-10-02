@@ -102,24 +102,59 @@ static bool	getHeaderValue(const std::map<std::string, std::string>& headers,
 	return (false);
 }
 
+static int hexValue(unsigned char c)
+{
+	if (c >= '0' && c <= '9') return c - '0';
+	if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+	if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+	return -1;
+}
+
+static bool decodePath(std::string& path)
+{
+	std::string decoded;
+	for (std::size_t i = 0; i < path.size(); ++i)
+	{
+		unsigned char c = static_cast<unsigned char>(path[i]);
+		if (c == '%')
+		{
+			if (i + 2 >= path.size()) return false;
+			int high = hexValue(path[i + 1]);
+			int low = hexValue(path[i + 2]);
+			if (high < 0 || low < 0) return false;
+			c = static_cast<unsigned char>(high * 16 + low);
+			i += 2;
+		}
+		if (c < 32 || c == 127) return false;
+		decoded += c;
+	}
+	path.swap(decoded);
+	return true;
+}
+
 static HttpRequestParser::ParseStatus	parseChunkedBody(
 	const std::string& bodyPart,
 	std::string& decodedBody,
-	std::size_t& consumedBytes)
+	std::size_t& consumedBytes, std::size_t maxBodySize, int& errorCode)
 {
 	std::size_t i = 0;
 
 	decodedBody.clear();
 	consumedBytes = 0;
+	errorCode = 400;
 
 	while (true)
 	{
 		std::size_t	lineEnd;
 		std::string	sizeLine;
 		std::size_t	semiColon;
-		long		chunkSize;
+		std::size_t chunkSize = 0;
 
 		lineEnd = bodyPart.find("\r\n", i);
+		// Bound framing separately from decoded payload size.
+		if ((lineEnd == std::string::npos && bodyPart.size() - i > 8192)
+			|| (lineEnd != std::string::npos && lineEnd - i > 8192))
+			return HttpRequestParser::PARSE_ERROR;
 		if (lineEnd == std::string::npos)
 			return HttpRequestParser::PARSE_INCOMPLETE;
 
@@ -133,9 +168,18 @@ static HttpRequestParser::ParseStatus	parseChunkedBody(
 		if (!isHexDigits(sizeLine))
 			return HttpRequestParser::PARSE_ERROR;
 		
-		chunkSize = std::strtol(sizeLine.c_str(), NULL, 16);
-		if (chunkSize < 0)
+		for (std::size_t digit = 0; digit < sizeLine.size(); ++digit)
+		{
+			std::size_t value = hexValue(sizeLine[digit]);
+			if (chunkSize > (static_cast<std::size_t>(-1) - value) / 16)
+				return HttpRequestParser::PARSE_ERROR;
+			chunkSize = chunkSize * 16 + value;
+		}
+		if (chunkSize > maxBodySize - decodedBody.size())
+		{
+			errorCode = 413;
 			return HttpRequestParser::PARSE_ERROR;
+		}
 
 		i = lineEnd + 2;
 
@@ -143,22 +187,25 @@ static HttpRequestParser::ParseStatus	parseChunkedBody(
 		{
 			std::size_t	trailerEnd;
 
+			if (bodyPart.size() - i >= 2 && bodyPart.compare(i, 2, "\r\n") == 0)
+			{
+				consumedBytes = i + 2;
+				return HttpRequestParser::PARSE_COMPLETE;
+			}
 			trailerEnd = bodyPart.find("\r\n\r\n", i);
+			if ((trailerEnd == std::string::npos && bodyPart.size() - i > 8192)
+				|| (trailerEnd != std::string::npos && trailerEnd - i > 8192))
+				return HttpRequestParser::PARSE_ERROR;
 			if (trailerEnd != std::string::npos)
 			{
 				consumedBytes = trailerEnd + 4;
 				return HttpRequestParser::PARSE_COMPLETE;
 			}
 
-			if (bodyPart.size() >= i + 2 && bodyPart.substr(i, 2) == "\r\n")
-			{
-				consumedBytes = i + 2;
-				return HttpRequestParser::PARSE_COMPLETE;
-			}
 			return HttpRequestParser::PARSE_INCOMPLETE;
 		}
 
-		if (bodyPart.size() < i + static_cast<std::size_t>(chunkSize) + 2)
+		if (bodyPart.size() - i < chunkSize || bodyPart.size() - i - chunkSize < 2)
 			return HttpRequestParser::PARSE_INCOMPLETE;
 
 		decodedBody.append(bodyPart.substr(i, static_cast<std::size_t>(chunkSize)));
@@ -244,6 +291,11 @@ HttpRequestParser::parseRequestLine(const std::string& requestLine)
 		_request.query = _request.target.substr(queryPos + 1);
 	}
 
+	if (!decodePath(_request.path))
+	{
+		_errorStatusCode = 400;
+		return PARSE_ERROR;
+	}
 	return PARSE_COMPLETE;
 }
 
@@ -256,7 +308,8 @@ HttpRequestParser::validateRequest()
 
 	if (_request.method != "GET"
 		&& _request.method != "POST"
-		&& _request.method != "DELETE")
+		&& _request.method != "DELETE"
+		&& _request.method != "HEAD")
 	{
 		_errorStatusCode = 501;
 		return (PARSE_ERROR);
@@ -314,7 +367,7 @@ HttpRequestParser::validateRequest()
 
 //------------------------ PARSE ENTRY ------------------
 HttpRequestParser::ParseStatus
-HttpRequestParser::parse(const std::string& rawRequest)
+HttpRequestParser::parse(const std::string& rawRequest, std::size_t maxBodySize)
 {
 	std::size_t	headerEnd;
 	std::size_t	lineEnd;
@@ -376,6 +429,11 @@ HttpRequestParser::parse(const std::string& rawRequest)
 		_request.contentLength = 0;
 	}
 
+	if (_request.contentLength > maxBodySize)
+	{
+		_errorStatusCode = 413;
+		return PARSE_ERROR;
+	}
 	status = validateRequest();
 	if (status != PARSE_COMPLETE)
 		return (status);
@@ -387,15 +445,13 @@ HttpRequestParser::parse(const std::string& rawRequest)
 		std::string	decodedBody;
 		std::size_t	chunkedConsumed;
 
-		status = parseChunkedBody(bodyPart, decodedBody, chunkedConsumed);
+		status = parseChunkedBody(bodyPart, decodedBody, chunkedConsumed, maxBodySize, _errorStatusCode);
 		if (status == PARSE_INCOMPLETE)
 			return (PARSE_INCOMPLETE);
 
 		if (status == PARSE_ERROR)
-		{
-			_errorStatusCode = 400;
 			return (PARSE_ERROR);
-		}
+		_errorStatusCode = 0;
 
 		_request.hasBody = (!decodedBody.empty());
 		_request.body = decodedBody;

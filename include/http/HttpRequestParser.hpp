@@ -32,7 +32,8 @@ class HttpRequestParser
 		HttpRequestParser& operator=(const HttpRequestParser& other);
 		~HttpRequestParser();
 
-		ParseStatus parse(const std::string& rawRequest);
+		ParseStatus parse(const std::string& rawRequest,
+			std::size_t maxBodySize = static_cast<std::size_t>(-1));
 
 		const HttpRequest&	getRequest() const;
 		int					getErrorStatusCode() const;

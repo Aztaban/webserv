@@ -1,104 +1,83 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   CgiOutputParser.cpp                                :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lformank <lformank@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/06 17:43:44 by lformank          #+#    #+#             */
-/*   Updated: 2026/09/13 14:56:38 by lformank         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "cgi/CgiOutputParser.hpp"
-#include <map>
-#include <cstdlib>
-#include <cctype>
+#include "http/HttpHeaderUtils.hpp"
 
-void checkStatusBody(HttpResponse& response, const std::string& body)
+namespace
 {
-	size_t space;
-
-	if (body.find(' ') != std::string::npos)
+	HttpResponse invalidOutput()
 	{
-		std::string num;
-		std::string reason;
+		return HttpResponse(500, "Internal Server Error", "Invalid CGI response headers");
+	}
 
-		space = body.find(' ');
-		num = body.substr(0, space);
-		reason = body.substr(space + 1, body.length() - space);
-
-		for (size_t i = 0; i < num.size(); i++)
+	bool validHeaderName(const std::string& name)
+	{
+		if (name.empty()) return false;
+		for (std::size_t i = 0; i < name.size(); ++i)
 		{
-			if (!isdigit(num[i]))
-				return;
+			unsigned char c = static_cast<unsigned char>(name[i]);
+			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+				|| (c >= '0' && c <= '9')
+				|| std::string("!#$%&'*+-.^_`|~").find(c) != std::string::npos))
+				return false;
 		}
-
-		response.statusCode = std::strtol(num.c_str(), NULL, 0);
-		response.reasonPhrase = reason;
+		return true;
 	}
-}
-
-void saveHeader(const std::string& rawOutput, HttpResponse& response, size_t& i)
-{
-	size_t delimiter = rawOutput.find(":", i);
-	size_t endBody = std::string::npos;
-
-	if (rawOutput.find("\r\n", delimiter) != std::string::npos)
-		endBody = rawOutput.find("\r\n", delimiter);
-	else if (rawOutput.find('\n', delimiter) != std::string::npos)
-		endBody = rawOutput.find('\n', delimiter);
-	
-	std::string header = rawOutput.substr(i, delimiter - i);
-	std::string body = rawOutput.substr(delimiter + 2, endBody - (delimiter + 2));
-
-	if (header == "Status")
-		checkStatusBody(response, body);
-	else
-		response.headers.insert(std::make_pair(header, body));
-	i = endBody;
-}
-
-size_t findHeadersDelimiter(const std::string& rawOutput, size_t& delimiterLength)
-{
-	if (rawOutput.find("\r\n\r\n") != std::string::npos)
-	{
-		delimiterLength = 4;
-		return (rawOutput.find("\r\n\r\n"));
-	}
-	if (rawOutput.find("\n\n") != std::string::npos)
-	{
-		delimiterLength = 2;
-		return (rawOutput.find("\n\n"));
-	}
-	delimiterLength = 0;
-	return std::string::npos;
 }
 
 HttpResponse CgiOutputParser::parse(const std::string& rawOutput)
 {
 	HttpResponse response;
-	size_t delimiterLength;
-	size_t index = findHeadersDelimiter(rawOutput, delimiterLength);
+	std::size_t pos = 0;
+	bool hasContentType = false;
+	bool hasStatus = false;
 
-	for (size_t i = 0; index != std::string::npos && i < index; i++)
+	// Consume complete lines, accepting either LF or CRLF from the CGI.
+	while (true)
 	{
-		size_t colon = rawOutput.find(":", i);
-		if (colon != std::string::npos && colon < index)
-		{
-			saveHeader(rawOutput, response, i);
-		}
-		else
+		std::size_t end = rawOutput.find('\n', pos);
+		if (end == std::string::npos)
+			return invalidOutput();
+		std::string line = rawOutput.substr(pos, end - pos);
+		if (!line.empty() && line[line.size() - 1] == '\r')
+			line.erase(line.size() - 1);
+		pos = end + 1;
+		if (line.empty())
 			break;
+		std::size_t colon = line.find(':');
+		if (colon == std::string::npos || !validHeaderName(line.substr(0, colon)))
+			return invalidOutput();
+		std::string name = line.substr(0, colon);
+		std::string lower = HttpHeaderUtils::lowercase(name);
+		std::string value = HttpHeaderUtils::trimOws(line.substr(colon + 1));
+		for (std::size_t i = 0; i < value.size(); ++i)
+		{
+			unsigned char c = static_cast<unsigned char>(value[i]);
+			if ((c < 32 && c != '\t') || c == 127)
+				return invalidOutput();
+		}
+		if (lower == "status")
+		{
+			if (hasStatus || value.size() < 5 || value[3] != ' '
+				|| value[0] < '2' || value[0] > '5'
+				|| value[1] < '0' || value[1] > '9'
+				|| value[2] < '0' || value[2] > '9')
+				return invalidOutput();
+			response.statusCode = (value[0] - '0') * 100 + (value[1] - '0') * 10 + value[2] - '0';
+			response.reasonPhrase = value.substr(4);
+			hasStatus = true;
+		}
+		else if (lower == "content-type")
+		{
+			if (hasContentType || value.empty())
+				return invalidOutput();
+			response.headers["Content-Type"] = value;
+			hasContentType = true;
+		}
+		else if (lower != "content-length" && lower != "connection" && lower != "transfer-encoding")
+			response.headers[name] = value;
 	}
-	if (index == std::string::npos)
-		response.body = rawOutput;
-	else
-		response.body = rawOutput.substr(index + delimiterLength);
-	if (response.headers.find("Content-Type") == response.headers.end())
-	{
-		return HttpResponse(500, "Internal Server Error", "CGI output missing Content-Type header");
-	}
-	
+	if (!hasContentType)
+		return invalidOutput();
+	// The server collects CGI stdout through EOF and owns HTTP framing.
+	response.body = rawOutput.substr(pos);
 	return response;
 }
