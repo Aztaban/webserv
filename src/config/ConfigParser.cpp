@@ -114,7 +114,6 @@ void ConfigParser::tokenize()
 			{
 				pushWord(word);
 				while (_source[++i] && _source[i] != '\n') {}
-				pushToken("", T_COMMENT);
 			}
 			else
 				word += _source[i];
