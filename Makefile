@@ -1,6 +1,5 @@
 # -------- Project --------
 NAME      = webserv
-TEST_NAME = http_test
 
 SRC_DIR := src
 OBJ_DIR := build
@@ -39,20 +38,8 @@ SRCS := \
 OBJS := $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
-# -------- Sources (TEST) --------
-TEST_SRCS := \
-	$(SRC_DIR)/http/test.cpp \
-	$(SRC_DIR)/http/HttpRequestParser.cpp \
-	$(SRC_DIR)/http/HttpRequestHandler.cpp \
-	$(SRC_DIR)/http/HttpResponseBuilder.cpp \
-	$(SRC_DIR)/core/ErrorResponseFactory.cpp \
-	$(SRC_DIR)/utils/FileUtils.cpp
-
-TEST_OBJS := $(TEST_SRCS:%.cpp=$(OBJ_DIR)/%.o)
-
 # -------- Colors --------
 RESET := \033[0m
-BOLD  := \033[1m
 RED   := \033[31m
 GRN   := \033[32m
 YEL   := \033[33m
@@ -67,18 +54,6 @@ $(NAME): $(OBJS)
 	@$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) && \
 		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
 		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
-
-# -------- Test --------
-test: $(TEST_NAME)
-
-$(TEST_NAME): $(TEST_OBJS)
-	@printf "$(BLU)Link$(RESET)   $(TEST_NAME)... "
-	@$(CXX) $(CXXFLAGS) $(TEST_OBJS) -o $(TEST_NAME) && \
-		printf "%-25s[$(GRN)OK$(RESET)]\n" || \
-		(printf "[$(RED)FAIL$(RESET)]\n"; exit 1)
-
-runtest: $(TEST_NAME)
-	@./$(TEST_NAME)
 
 # -------- Compile --------
 $(OBJ_DIR)/%.o: %.cpp
@@ -99,11 +74,12 @@ clean:
 
 fclean: clean
 	@printf "$(YEL)Cleaning binaries...$(RESET)\n"
-	@$(RM) $(NAME) $(TEST_NAME)
+	@$(RM) $(NAME)
 
-re: fclean all
+re: fclean
+	$(MAKE) all
 
 # -------- PHONY --------
-.PHONY: all clean fclean re run test runtest
+.PHONY: all clean fclean re run
 
 -include $(DEPS)
