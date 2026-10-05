@@ -139,19 +139,19 @@ void	CgiJob::start(CgiRequest& request, int highestFd)
 		int childStdin = bodyFromFile ? inputFileFd : inFds[0];
 		if (dup2(childStdin, STDIN_FILENO) == -1
 			|| dup2(outFds[1], STDOUT_FILENO) == -1)
-			_exit(1);
+			std::exit(EXIT_FAILURE);
 		// Close everything except stdin/stdout/stderr: server sockets, other CGIs'
 		// pipes and the original pipe ends. Replaces close-on-exec (F_SETFD).
 		for (int fd = 3; fd <= lastFd; ++fd)
 			close(fd);
 		if (!request.workingDirectory.empty() && chdir(request.workingDirectory.c_str()) == -1)
-			_exit(1);
+			std::exit(EXIT_FAILURE);
 		char *argv[3];
 		argv[0] = const_cast<char*>(request.interpreterPath.c_str());
 		argv[1] = const_cast<char*>(scriptName.c_str());
 		argv[2] = NULL;
 		execve(request.interpreterPath.c_str(), argv, &envVector[0]);
-		_exit(1);
+		std::exit(EXIT_FAILURE);
 	}
 	if (bodyFromFile)
 	{
