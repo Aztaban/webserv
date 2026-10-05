@@ -36,6 +36,7 @@ public:
     CgiJob();
     ~CgiJob();
 
+    void    start(CgiRequest& request, int highestFd = 1023);
     void    start(const CgiRequest& request, int highestFd = 1023);
 
     int     getStdinFd() const;
@@ -56,7 +57,7 @@ public:
     void    killProcess();
     void    updateProcessState();
 
-    HttpResponse    buildResponse() const;
+    HttpResponse    buildResponse();
 
 };
 

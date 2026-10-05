@@ -183,7 +183,8 @@ void	EventLoop::_handleClientEvent(int fd, short revents)
 	}
 	if ((revents & POLLIN) && client->wantsRead())
 		client->readFromSocket();
-	if (client->getState() == CLIENT_WAITING_CGI)
+	if (client->getState() == CLIENT_WAITING_CGI
+		&& _cgiByClientFd.size() < MAX_CONCURRENT_CGI)
 	{
 		_startCgiForClient(fd, client);
 	}
@@ -202,9 +203,26 @@ void	EventLoop::_handleClientEvent(int fd, short revents)
 	_updateClientEvents(fd);
 }
 
+void EventLoop::_startQueuedCgi()
+{
+	if (_cgiByClientFd.size() >= MAX_CONCURRENT_CGI)
+		return;
+
+	for (std::map<int, ClientConnection *>::iterator it = _clients.begin();
+		it != _clients.end() && _cgiByClientFd.size() < MAX_CONCURRENT_CGI; ++it)
+	{
+		if (it->second->getState() != CLIENT_WAITING_CGI)
+			continue;
+		if (_cgiByClientFd.find(it->first) != _cgiByClientFd.end())
+			continue;
+		_startCgiForClient(it->first, it->second);
+		_updateClientEvents(it->first);
+	}
+}
+
 void EventLoop::_startCgiForClient(int fd, ClientConnection* client)
 {
-	CgiRequest	cgiRequest = client->getCgiRequest();
+	CgiRequest&	cgiRequest = client->getCgiRequest();
 	CgiJob *job = new CgiJob();
 
 	_cgiByClientFd[fd] = job;
@@ -334,11 +352,13 @@ void	EventLoop::_checkCgiProcesses()
 		job->updateProcessState();
 		if (job->hasFailed() || job->isDone())
 		{
-			_clients.find(clientFd)->second->prepareResponse(job->buildResponse());
+			HttpResponse response = job->buildResponse();
+			_clients.find(clientFd)->second->prepareOwnedResponse(response);
 			_releaseCgi(clientFd);
 			_updateClientEvents(clientFd);
 		}
 	}
+	_startQueuedCgi();
 }
 
 void  EventLoop::_recoverFromError(int fd)
@@ -372,6 +392,7 @@ void	EventLoop::run()
 		try
 		{
 			_checkCgiProcesses();
+			_startQueuedCgi();
 			int timeout = (_cgiByClientFd.empty() && _retiredCgiJobs.empty()) ? 1000 : 100;
 			int ready = poll(&_pollFds[0], _pollFds.size(), timeout);
 			if (ready == -1)

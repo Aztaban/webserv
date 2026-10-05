@@ -20,7 +20,7 @@
 class CgiOutputParser {
 
 	public:
-		static HttpResponse parse(const std::string& rawOutput);
+	static HttpResponse parse(std::string& rawOutput);
 
 };
 

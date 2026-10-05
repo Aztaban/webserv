@@ -25,6 +25,7 @@ class EventLoop {
 private:
 	static const int	CLIENT_TIMEOUT_SECONDS = 30;
 	static const int	CGI_TIMEOUT_SECONDS = 10;
+	static const std::size_t MAX_CONCURRENT_CGI = 4;
 
 	std::vector<struct pollfd>			_pollFds;
 	std::map<int, Listener *>			_listeners;
@@ -46,6 +47,7 @@ private:
 	void	_handleClientEvent(int fd, short revents);
 	void	_handleJobEvent(int fd, short revents);
 	void	_startCgiForClient(int fd, ClientConnection* client);
+	void	_startQueuedCgi();
 	void	_addClient(int clientFd, Listener* listener);
 	void	_removeClient(int clientFd);
 	void	_setNonBlocking(int fd);

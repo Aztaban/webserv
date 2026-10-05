@@ -23,7 +23,7 @@ namespace
 	}
 }
 
-HttpResponse CgiOutputParser::parse(const std::string& rawOutput)
+HttpResponse CgiOutputParser::parse(std::string& rawOutput)
 {
 	HttpResponse response;
 	std::size_t pos = 0;
@@ -78,6 +78,9 @@ HttpResponse CgiOutputParser::parse(const std::string& rawOutput)
 	if (!hasContentType)
 		return invalidOutput();
 	// The server collects CGI stdout through EOF and owns HTTP framing.
-	response.body = rawOutput.substr(pos);
+	// Drop the small CGI header prefix in place and transfer ownership of the
+	// potentially huge body instead of allocating/copying it again.
+	rawOutput.erase(0, pos);
+	response.body.swap(rawOutput);
 	return response;
 }

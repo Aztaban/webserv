@@ -479,6 +479,11 @@ const HttpRequest& HttpRequestParser::getRequest() const
 	return _request;
 }
 
+void HttpRequestParser::swapBody(std::string& body)
+{
+	_request.body.swap(body);
+}
+
 int HttpRequestParser::getErrorStatusCode() const
 {
 	return _errorStatusCode;

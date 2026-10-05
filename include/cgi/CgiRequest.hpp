@@ -15,9 +15,12 @@ public:
     std::string                 workingDirectory;
     std::vector<std::string>    env;
     std::string                 body;
+	std::string                 bodyFilePath;
 
     CgiRequest(/* args */);
     ~CgiRequest();
+
+	void swap(CgiRequest& other);
 };
 
 

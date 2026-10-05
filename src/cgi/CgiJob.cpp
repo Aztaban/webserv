@@ -7,6 +7,7 @@
 #include <cerrno>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <cstdio>
 
 CgiJob::CgiJob()
 	: _pid(-1),
@@ -44,10 +45,11 @@ void	CgiJob::_failStart(int inFds[2], int outFds[2])
 	_done = true;
 }
 
-void	CgiJob::start(const CgiRequest& request, int highestFd)
+void	CgiJob::start(CgiRequest& request, int highestFd)
 {
-	// Allocate buffers before acquiring descriptors or creating a child.
-	_inputBuffer = request.body;
+	const bool bodyFromFile = !request.bodyFilePath.empty();
+	if (!bodyFromFile)
+		_inputBuffer.swap(request.body);
 	std::vector<char *> envVector;
 	for (size_t i = 0; i < request.env.size(); ++i)
 		envVector.push_back(const_cast<char*>(request.env[i].c_str()));
@@ -61,16 +63,48 @@ void	CgiJob::start(const CgiRequest& request, int highestFd)
 
 	int inFds[2] = {-1, -1};
 	int outFds[2] = {-1, -1};
-	if (pipe(inFds) == -1 || pipe(outFds) == -1)
+	int inputFileFd = -1;
+	if (bodyFromFile)
 	{
+		inputFileFd = open(request.bodyFilePath.c_str(), O_RDONLY);
+		if (inputFileFd == -1)
+		{
+			std::remove(request.bodyFilePath.c_str());
+			request.bodyFilePath.clear();
+			_failed = true;
+			_done = true;
+			return;
+		}
+	}
+	else if (pipe(inFds) == -1)
+	{
+		_failStart(inFds, outFds);
+		return;
+	}
+	if (pipe(outFds) == -1)
+	{
+		if (inputFileFd != -1)
+			close(inputFileFd);
+		if (bodyFromFile)
+		{
+			std::remove(request.bodyFilePath.c_str());
+			request.bodyFilePath.clear();
+		}
 		_failStart(inFds, outFds);
 		return;
 	}
 	// Parent ends must be non-blocking: poll() only promises *some* free space,
 	// a blocking write() of the whole body could freeze the event loop.
-	if (fcntl(inFds[1], F_SETFL, O_NONBLOCK) == -1
+	if ((!bodyFromFile && fcntl(inFds[1], F_SETFL, O_NONBLOCK) == -1)
 		|| fcntl(outFds[0], F_SETFL, O_NONBLOCK) == -1)
 	{
+		if (inputFileFd != -1)
+			close(inputFileFd);
+		if (bodyFromFile)
+		{
+			std::remove(request.bodyFilePath.c_str());
+			request.bodyFilePath.clear();
+		}
 		_failStart(inFds, outFds);
 		return;
 	}
@@ -84,16 +118,26 @@ void	CgiJob::start(const CgiRequest& request, int highestFd)
 		if (outFds[i] > lastFd)
 			lastFd = outFds[i];
 	}
+	if (inputFileFd > lastFd)
+		lastFd = inputFileFd;
 
 	_pid = fork();
 	if (_pid == -1)
 	{
+		if (inputFileFd != -1)
+			close(inputFileFd);
+		if (bodyFromFile)
+		{
+			std::remove(request.bodyFilePath.c_str());
+			request.bodyFilePath.clear();
+		}
 		_failStart(inFds, outFds);
 		return;
 	}
 	if (_pid == 0)
 	{
-		if (dup2(inFds[0], STDIN_FILENO) == -1
+		int childStdin = bodyFromFile ? inputFileFd : inFds[0];
+		if (dup2(childStdin, STDIN_FILENO) == -1
 			|| dup2(outFds[1], STDOUT_FILENO) == -1)
 			_exit(1);
 		// Close everything except stdin/stdout/stderr: server sockets, other CGIs'
@@ -109,12 +153,32 @@ void	CgiJob::start(const CgiRequest& request, int highestFd)
 		execve(request.interpreterPath.c_str(), argv, &envVector[0]);
 		_exit(1);
 	}
-	close(inFds[0]);
+	if (bodyFromFile)
+	{
+		close(inputFileFd);
+		std::remove(request.bodyFilePath.c_str());
+		request.bodyFilePath.clear();
+		_stdinClosed = true;
+		_stdinFd = -1;
+	}
+	else
+	{
+		close(inFds[0]);
+		_stdinClosed = false;
+		_stdinFd = inFds[1];
+	}
 	close(outFds[1]);
-	_stdinClosed = false;
 	_stdoutClosed = false;
-	_stdinFd = inFds[1];
 	_stdoutFd = outFds[0];
+}
+
+void	CgiJob::start(const CgiRequest& request, int highestFd)
+{
+	// Compatibility path for callers that cannot transfer ownership (not used
+	// by the server event loop). The normal server path uses the non-const
+	// overload above and swaps the body instead of copying it.
+	CgiRequest copy = request;
+	start(copy, highestFd);
 }
 
 int CgiJob::getStdinFd() const
@@ -208,6 +272,8 @@ void	CgiJob::closeStdin()
 		_stdinFd = -1;
 	}
 	_stdinClosed = true;
+	_inputOffset = 0;
+	std::string().swap(_inputBuffer);
 }
 
 void	CgiJob::closeStdout()
@@ -252,7 +318,7 @@ void	CgiJob::killProcess()
 	updateProcessState();
 }
 
-HttpResponse	CgiJob::buildResponse() const
+HttpResponse	CgiJob::buildResponse()
 {
 	if (_failed)
 		return (HttpResponse(500, "Internal Server Error", "CGI failed"));

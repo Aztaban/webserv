@@ -8,6 +8,9 @@
 
 #include <unistd.h>
 #include <sys/socket.h>
+#include <fcntl.h>
+#include <cstdio>
+#include <sstream>
 
 ClientConnection::ClientConnection(int fd, const RequestContext& context)
 	: _fd(fd),
@@ -15,17 +18,263 @@ ClientConnection::ClientConnection(int fd, const RequestContext& context)
 	  _readBuffer(),
 	  _writeBuffer(),
 	  _writeOffset(0),
+	  _writeBody(),
+	  _writeBodyOffset(0),
 	  _lastActivity(std::time(NULL)),
-	  _context(context)
+	  _context(context),
+	  _pendingCgiRequest(),
+	  _spoolingCgiBody(false),
+	  _cgiBodyFileFd(-1),
+	  _cgiBodyFilePath(),
+	  _cgiBodyExpected(0),
+	  _cgiBodyReceived(0),
+	  _spoolingChunkedCgi(false),
+	  _cgiBodyLimit(0),
+	  _cgiChunkBuffer(),
+	  _cgiChunkRemaining(0),
+	  _cgiChunkState(0)
 {
 }
 
 static const std::size_t DEFAULT_CLIENT_MAX_BODY_SIZE = 1000000;
+static const int CGI_CHUNK_SIZE = 0;
+static const int CGI_CHUNK_DATA = 1;
+static const int CGI_CHUNK_CRLF = 2;
+static const int CGI_CHUNK_TRAILERS = 3;
+
+static bool parseCgiChunkSize(const std::string& rawLine, std::size_t& size)
+{
+	std::string line = rawLine;
+	std::size_t semi = line.find(';');
+	if (semi != std::string::npos)
+		line.erase(semi);
+	std::size_t first = line.find_first_not_of(" \t");
+	std::size_t last = line.find_last_not_of(" \t");
+	if (first == std::string::npos)
+		return false;
+	line = line.substr(first, last - first + 1);
+	size = 0;
+	for (std::size_t i = 0; i < line.size(); ++i)
+	{
+		unsigned char c = static_cast<unsigned char>(line[i]);
+		std::size_t value;
+		if (c >= '0' && c <= '9') value = c - '0';
+		else if (c >= 'a' && c <= 'f') value = c - 'a' + 10;
+		else if (c >= 'A' && c <= 'F') value = c - 'A' + 10;
+		else return false;
+		if (size > (static_cast<std::size_t>(-1) - value) / 16)
+			return false;
+		size = size * 16 + value;
+	}
+	return true;
+}
 
 ClientConnection::~ClientConnection()
 {
+	if (_cgiBodyFileFd != -1)
+		close(_cgiBodyFileFd);
+	if (!_cgiBodyFilePath.empty())
+		std::remove(_cgiBodyFilePath.c_str());
 	if (_fd != -1)
 		close(_fd);
+}
+
+bool ClientConnection::_writeCgiBodyFile(const char* data, std::size_t size)
+{
+	std::size_t offset = 0;
+	while (offset < size)
+	{
+		ssize_t written = write(_cgiBodyFileFd, data + offset, size - offset);
+		if (written <= 0)
+			return false;
+		offset += static_cast<std::size_t>(written);
+	}
+	return true;
+}
+
+void ClientConnection::_finishCgiBodySpool()
+{
+	if (_cgiBodyFileFd != -1)
+	{
+		close(_cgiBodyFileFd);
+		_cgiBodyFileFd = -1;
+	}
+	_spoolingCgiBody = false;
+	_spoolingChunkedCgi = false;
+	_pendingCgiRequest.bodyFilePath.swap(_cgiBodyFilePath);
+	std::ostringstream length;
+	length << _cgiBodyReceived;
+	for (std::size_t i = 0; i < _pendingCgiRequest.env.size(); ++i)
+	{
+		if (_pendingCgiRequest.env[i].compare(0, 15, "CONTENT_LENGTH=") == 0)
+		{
+			_pendingCgiRequest.env[i] = "CONTENT_LENGTH=" + length.str();
+			break;
+		}
+	}
+	_state = CLIENT_WAITING_CGI;
+}
+
+bool ClientConnection::_consumeChunkedCgiData(const char* data, std::size_t size)
+{
+	_cgiChunkBuffer.append(data, size);
+	while (true)
+	{
+		if (_cgiChunkState == CGI_CHUNK_SIZE)
+		{
+			std::size_t lineEnd = _cgiChunkBuffer.find("\r\n");
+			if (lineEnd == std::string::npos)
+			{
+				if (_cgiChunkBuffer.size() > 8192)
+					prepareErrorResponse(400);
+				return _cgiChunkBuffer.size() <= 8192;
+			}
+			std::size_t chunkSize;
+			if (!parseCgiChunkSize(_cgiChunkBuffer.substr(0, lineEnd), chunkSize))
+			{
+				prepareErrorResponse(400);
+				return false;
+			}
+			if (chunkSize > _cgiBodyLimit - _cgiBodyReceived)
+			{
+				prepareErrorResponse(413);
+				return false;
+			}
+			_cgiChunkBuffer.erase(0, lineEnd + 2);
+			if (chunkSize == 0)
+				_cgiChunkState = CGI_CHUNK_TRAILERS;
+			else
+			{
+				_cgiChunkRemaining = chunkSize;
+				_cgiChunkState = CGI_CHUNK_DATA;
+			}
+		}
+		else if (_cgiChunkState == CGI_CHUNK_DATA)
+		{
+			if (_cgiChunkBuffer.empty())
+				return true;
+			std::size_t amount = _cgiChunkBuffer.size();
+			if (amount > _cgiChunkRemaining)
+				amount = _cgiChunkRemaining;
+			if (!_writeCgiBodyFile(_cgiChunkBuffer.data(), amount))
+			{
+				prepareErrorResponse(500);
+				return false;
+			}
+			_cgiChunkBuffer.erase(0, amount);
+			_cgiChunkRemaining -= amount;
+			_cgiBodyReceived += amount;
+			if (_cgiChunkRemaining == 0)
+				_cgiChunkState = CGI_CHUNK_CRLF;
+			else
+				return true;
+		}
+		else if (_cgiChunkState == CGI_CHUNK_CRLF)
+		{
+			if (_cgiChunkBuffer.size() < 2)
+				return true;
+			if (_cgiChunkBuffer.compare(0, 2, "\r\n") != 0)
+			{
+				prepareErrorResponse(400);
+				return false;
+			}
+			_cgiChunkBuffer.erase(0, 2);
+			_cgiChunkState = CGI_CHUNK_SIZE;
+		}
+		else
+		{
+			if (_cgiChunkBuffer.size() >= 2
+				&& _cgiChunkBuffer.compare(0, 2, "\r\n") == 0)
+			{
+				_cgiChunkBuffer.erase(0, 2);
+				_finishCgiBodySpool();
+				return true;
+			}
+			std::size_t trailerEnd = _cgiChunkBuffer.find("\r\n\r\n");
+			if (trailerEnd != std::string::npos)
+			{
+				_cgiChunkBuffer.erase(0, trailerEnd + 4);
+				_finishCgiBodySpool();
+				return true;
+			}
+			if (_cgiChunkBuffer.size() > 8192)
+			{
+				prepareErrorResponse(400);
+				return false;
+			}
+			return true;
+		}
+	}
+}
+
+bool ClientConnection::_startCgiBodySpool(const HttpRequest& request,
+	std::size_t headerEnd, std::size_t bodyLimit, bool chunked)
+{
+	Router router;
+	const ServerConfig* selectedServer = router.matchServer(*_context.serverCandidates, request);
+	if (!selectedServer)
+		return false;
+	const LocationConfig* location = router.matchLocation(request, *selectedServer);
+	if (!location)
+		return false;
+	std::string requestRoot = location->root.empty() ? selectedServer->getRoot() : location->root;
+	std::string scriptPath;
+	std::string interpreter;
+	if (!RequestHandler::_isCgiRequest(request, *location, requestRoot, scriptPath, interpreter))
+		return false;
+
+	RequestContext effectiveContext = _context;
+	effectiveContext.selectedServer = selectedServer;
+	RequestResult routed = RequestHandler::handle(request, effectiveContext);
+	if (routed.type != RequestResult::CGI_REQUIRED)
+		return false;
+
+	static unsigned long spoolCounter = 0;
+	std::ostringstream path;
+	path << "/tmp/webserv_cgi_body_" << _fd << "_" << spoolCounter++;
+	_cgiBodyFilePath = path.str();
+	_cgiBodyFileFd = open(_cgiBodyFilePath.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0600);
+	if (_cgiBodyFileFd == -1)
+	{
+		prepareErrorResponse(500);
+		return true;
+	}
+
+	_pendingCgiRequest.swap(routed.cgiRequest);
+	_context.selectedServer = selectedServer;
+	_spoolingCgiBody = true;
+	_spoolingChunkedCgi = chunked;
+	_cgiBodyLimit = bodyLimit;
+	_cgiBodyExpected = chunked ? 0 : request.contentLength;
+	_cgiBodyReceived = 0;
+	_cgiChunkRemaining = 0;
+	_cgiChunkState = CGI_CHUNK_SIZE;
+	_cgiChunkBuffer.clear();
+
+	std::size_t bodyStart = headerEnd + 4;
+	std::size_t bufferedBody = _readBuffer.size() - bodyStart;
+	bool ok = true;
+	if (bufferedBody > 0)
+	{
+		if (chunked)
+			ok = _consumeChunkedCgiData(_readBuffer.data() + bodyStart, bufferedBody);
+		else
+		{
+			std::size_t amount = bufferedBody;
+			if (amount > _cgiBodyExpected)
+				amount = _cgiBodyExpected;
+			ok = _writeCgiBodyFile(_readBuffer.data() + bodyStart, amount);
+			_cgiBodyReceived = amount;
+			if (ok && _cgiBodyReceived >= _cgiBodyExpected)
+				_finishCgiBodySpool();
+		}
+	}
+	_readBuffer.erase(bodyStart);
+	if (!ok)
+		return true;
+	if (_state != CLIENT_WAITING_CGI)
+		_state = CLIENT_READING_BODY;
+	return true;
 }
 
 int ClientConnection::getFd() const
@@ -33,7 +282,7 @@ int ClientConnection::getFd() const
 	return (_fd);
 }
 
-CgiRequest	ClientConnection::getCgiRequest() const
+CgiRequest&	ClientConnection::getCgiRequest()
 {
 	return (_pendingCgiRequest);
 }
@@ -76,6 +325,30 @@ void ClientConnection::readFromSocket()
 
 	Logger::debug("Client fd " + toString(_fd) + " read " + toString(bytes) + " byte(s)");
 
+	if (_spoolingCgiBody)
+	{
+		if (_spoolingChunkedCgi)
+		{
+			_consumeChunkedCgiData(buffer, static_cast<std::size_t>(bytes));
+			return;
+		}
+		std::size_t remaining = _cgiBodyExpected - _cgiBodyReceived;
+		std::size_t toWrite = static_cast<std::size_t>(bytes);
+		if (toWrite > remaining)
+			toWrite = remaining;
+		if (toWrite > 0 && !_writeCgiBodyFile(buffer, toWrite))
+		{
+			prepareErrorResponse(500);
+			return;
+		}
+		_cgiBodyReceived += toWrite;
+		if (_cgiBodyReceived >= _cgiBodyExpected)
+		{
+			_finishCgiBodySpool();
+		}
+		return;
+	}
+
 	_readBuffer.append(buffer, bytes);
 
 	if (_readBuffer.find("\r\n\r\n") == std::string::npos
@@ -93,13 +366,28 @@ void ClientConnection::writeToSocket()
 {
 	ssize_t	bytes;
 
-	if (_writeOffset >= _writeBuffer.size())
+	if (_writeOffset < _writeBuffer.size())
+	{
+		bytes = send(_fd, _writeBuffer.c_str() + _writeOffset,
+			_writeBuffer.size() - _writeOffset, 0);
+		if (bytes <= 0)
+		{
+			Logger::debug("Client fd " + toString(_fd) + " disconnected during write");
+			_state = CLIENT_DONE;
+			return;
+		}
+		touch();
+		_writeOffset += static_cast<std::size_t>(bytes);
+		Logger::debug("Client fd " + toString(_fd) + " sent " + toString(bytes) + " byte(s)");
+		return;
+	}
+	if (_writeBodyOffset >= _writeBody.size())
 	{
 		_state = CLIENT_DONE;
 		return;
 	}
-	bytes = send(_fd, _writeBuffer.c_str() + _writeOffset,
-		_writeBuffer.size() - _writeOffset, 0);
+	bytes = send(_fd, _writeBody.c_str() + _writeBodyOffset,
+		_writeBody.size() - _writeBodyOffset, 0);
 	if (bytes <= 0)
 	{
 		Logger::debug("Client fd " + toString(_fd) + " disconnected during write");
@@ -110,13 +398,15 @@ void ClientConnection::writeToSocket()
 
 	Logger::debug("Client fd " + toString(_fd) + " sent " + toString(bytes) + " byte(s)");
 
-	_writeOffset += static_cast<std::size_t>(bytes);
-	if (_writeOffset >= _writeBuffer.size())
+	_writeBodyOffset += static_cast<std::size_t>(bytes);
+	if (_writeBodyOffset >= _writeBody.size())
 		_state = CLIENT_DONE; // Later: reset to READING_HEADERS here if keep-alive is supported
 }
 
 void	ClientConnection::prepareResponse(const HttpResponse& response)
 {
+	std::string().swap(_writeBody);
+	_writeBodyOffset = 0;
 	// Apply configured pages at the shared boundary for static, parser and CGI errors.
 	if (response.statusCode >= 400 && response.statusCode <= 599)
 	{
@@ -138,6 +428,26 @@ void	ClientConnection::prepareResponse(const HttpResponse& response)
 	_state = CLIENT_WRITING;
 	touch();
 
+	Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
+}
+
+void	ClientConnection::prepareOwnedResponse(HttpResponse& response)
+{
+	if (response.statusCode >= 400 && response.statusCode <= 599)
+	{
+		ErrorResponseFactory::applyCustomPage(response, _context);
+		prepareResponse(response);
+		return;
+	}
+
+	_writeBuffer = HttpResponseBuilder::buildHeaders(response, response.body.size());
+	_writeOffset = 0;
+	_writeBodyOffset = 0;
+	_writeBody.swap(response.body);
+	if (_readBuffer.compare(0, 5, "HEAD ") == 0)
+		std::string().swap(_writeBody);
+	_state = CLIENT_WRITING;
+	touch();
 	Logger::debug("Client fd " + toString(_fd) + " switched to CLIENT_WRITING");
 }
 
@@ -180,29 +490,29 @@ void ClientConnection::_processReadBuffer()
 		if (headerParser.headersComplete())
 		{
 			const HttpRequest& headerRequest = headerParser.getRequest();
-			if (!headerRequest.isChunked && headerRequest.hasBody)
+			if (headerRequest.isChunked)
 			{
+				if (_startCgiBodySpool(headerRequest, headerEnd, bodyLimit, true))
+					return;
+				const std::size_t chunkedReparseThreshold = 65536;
 				std::size_t bufferedBody = _readBuffer.size() - (headerEnd + 4);
-				if (bufferedBody < headerRequest.contentLength)
+				bool couldBeComplete = (bufferedBody >= 4
+					&& _readBuffer.compare(_readBuffer.size() - 4, 4, "\r\n\r\n") == 0);
+				if (bufferedBody > chunkedReparseThreshold && !couldBeComplete)
 				{
 					_state = CLIENT_READING_BODY;
 					return;
 				}
 			}
-			else if (headerRequest.isChunked)
+			else if (headerRequest.hasBody)
 			{
-				const std::size_t chunkedReparseThreshold = 65536;
 				std::size_t bufferedBody = _readBuffer.size() - (headerEnd + 4);
-				bool couldBeComplete = (bufferedBody >= 4
-					&& _readBuffer.compare(_readBuffer.size() - 4, 4, "\r\n\r\n") == 0);
-
-				// Small chunked requests are parsed on each read so malformed framing
-				// and small location limits are rejected immediately.  For large
-				// streams, wait for a possible terminating trailer boundary before
-				// doing the O(body-size) decode.  This keeps the 100 MB subject CGI
-				// test linear instead of reparsing the entire accumulated body for
-				// every socket read.
-				if (bufferedBody > chunkedReparseThreshold && !couldBeComplete)
+				const std::size_t cgiSpoolThreshold = 1024 * 1024;
+				if (headerRequest.contentLength >= cgiSpoolThreshold
+					&& bufferedBody < headerRequest.contentLength
+					&& _startCgiBodySpool(headerRequest, headerEnd, bodyLimit, false))
+					return;
+				if (bufferedBody < headerRequest.contentLength)
 				{
 					_state = CLIENT_READING_BODY;
 					return;
@@ -259,7 +569,11 @@ void ClientConnection::_processReadBuffer()
 		prepareResponse(response.response);
 	else if (response.type == RequestResult::CGI_REQUIRED)
 	{
-		_pendingCgiRequest = response.cgiRequest;
+		// Routing only builds CGI metadata. Transfer the parsed request body and
+		// then the CGI request itself without duplicating a potentially 100 MB body.
+		parser.swapBody(response.cgiRequest.body);
+		_pendingCgiRequest.swap(response.cgiRequest);
+		std::string().swap(_readBuffer);
 		_state = CLIENT_WAITING_CGI;
 	}
 }

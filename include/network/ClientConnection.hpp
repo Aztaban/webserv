@@ -38,22 +38,39 @@ private:
 	std::string		_readBuffer;
 	std::string		_writeBuffer;
 	std::size_t		_writeOffset;
+	std::string		_writeBody;
+	std::size_t		_writeBodyOffset;
 	std::time_t		_lastActivity;
 	RequestContext	_context;
 	CgiRequest		_pendingCgiRequest;
+	bool			_spoolingCgiBody;
+	int				_cgiBodyFileFd;
+	std::string		_cgiBodyFilePath;
+	std::size_t		_cgiBodyExpected;
+	std::size_t		_cgiBodyReceived;
+	bool			_spoolingChunkedCgi;
+	std::size_t		_cgiBodyLimit;
+	std::string		_cgiChunkBuffer;
+	std::size_t		_cgiChunkRemaining;
+	int				_cgiChunkState;
 
 	ClientConnection(const ClientConnection &other);
 	ClientConnection &operator=(const ClientConnection &other);
 
 	void		_processReadBuffer();
 	std::size_t	_getClientMaxBodySize() const;
+	bool		_writeCgiBodyFile(const char* data, std::size_t size);
+	bool		_startCgiBodySpool(const HttpRequest& request,
+				std::size_t headerEnd, std::size_t bodyLimit, bool chunked);
+	bool		_consumeChunkedCgiData(const char* data, std::size_t size);
+	void		_finishCgiBodySpool();
 
 public:
 	ClientConnection(int fd, const RequestContext& context);
 	~ClientConnection();
 
 	int			getFd() const;
-	CgiRequest	getCgiRequest() const;
+	CgiRequest&	getCgiRequest();
 	ClientState	getState() const;
 	bool		wantsRead() const;
 	bool		wantsWrite() const;
@@ -81,6 +98,7 @@ public:
 	 * EventLoop needs to give the final response back to the client.
 	 */
 	void		prepareResponse(const HttpResponse& response);
+	void		prepareOwnedResponse(HttpResponse& response);
 	void		prepareErrorResponse(int code);
 
 	/**

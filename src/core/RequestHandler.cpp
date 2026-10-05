@@ -129,8 +129,9 @@ CgiRequest RequestHandler::_buildCgiRequest(const HttpRequest& httpRequest, cons
 	std::string     contentType;
 	if (HttpHeaderUtils::getValue(httpRequest.headers, "Content-Type", contentType))
 	    cgiRequest.env.push_back("CONTENT_TYPE=" + contentType);
-	if (httpRequest.hasBody)
-	    cgiRequest.body = httpRequest.body;
+	// The request body is transferred by ClientConnection after routing has
+	// selected CGI.  Copying it here would duplicate very large request bodies
+	// (the subject tester uses 100 MB per request).
 	// Every other request header as HTTP_<NAME>
 	for (std::map<std::string, std::string>::const_iterator header = httpRequest.headers.begin();
 	    header != httpRequest.headers.end(); ++header)

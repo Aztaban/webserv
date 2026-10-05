@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-std::string HttpResponseBuilder::build(const HttpResponse& response)
+std::string HttpResponseBuilder::buildHeaders(const HttpResponse& response, std::size_t bodySize)
 {
 	std::ostringstream	raw;
 	const bool noContent = response.statusCode == 204;
@@ -28,7 +28,7 @@ std::string HttpResponseBuilder::build(const HttpResponse& response)
 	}
 
 	if (!noContent)
-		raw << "Content-Length: " << response.body.size() << "\r\n";
+		raw << "Content-Length: " << bodySize << "\r\n";
 
 	if (response.closeConnection)
 		raw << "Connection: close\r\n";
@@ -39,10 +39,15 @@ std::string HttpResponseBuilder::build(const HttpResponse& response)
 		raw << "Content-Type: text/plain\r\n";
 
 	raw << "\r\n";
-	if (!noContent)
-		raw << response.body;
-
 	return (raw.str());
+}
+
+std::string HttpResponseBuilder::build(const HttpResponse& response)
+{
+	std::string raw = buildHeaders(response, response.body.size());
+	if (response.statusCode != 204)
+		raw += response.body;
+	return raw;
 }
 
 std::string HttpResponseBuilder::buildSimpleResponse(int statusCode, const std::string& reasonPhrase, const std::string& body)

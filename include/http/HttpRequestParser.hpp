@@ -36,6 +36,7 @@ class HttpRequestParser
 			std::size_t maxBodySize = static_cast<std::size_t>(-1));
 
 		const HttpRequest&	getRequest() const;
+		void				swapBody(std::string& body);
 		int					getErrorStatusCode() const;
 		bool				headersComplete() const;
 		std::size_t			getConsumedBytes() const;
